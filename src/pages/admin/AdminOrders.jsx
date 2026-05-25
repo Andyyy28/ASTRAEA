@@ -89,11 +89,11 @@ const AdminOrders = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-800">Orders Management</h1>
+    <div className="space-y-8 animate-fade-in">
+      <h1 className="text-3xl font-extrabold text-astraea-darkgray tracking-tight">Orders Management</h1>
       
       {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border border-astraea-pink/5 space-y-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -154,49 +154,49 @@ const AdminOrders = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-sm border border-astraea-pink/5 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
-          <table className="w-full text-left whitespace-nowrap">
+          <table className="w-full text-left whitespace-nowrap border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-sm text-gray-500">
+              <tr className="bg-[#FCFAFB] border-b border-gray-50 text-xs uppercase tracking-wider font-bold text-gray-400">
                 <th className="px-6 py-4 font-medium">Reference #</th>
                 <th className="px-6 py-4 font-medium">Customer Name</th>
                 <th className="px-6 py-4 font-medium">Type</th>
                 <th className="px-6 py-4 font-medium">Delivery</th>
-                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('total_amount')}>
+                <th className="px-6 py-5 cursor-pointer hover:text-gray-600 transition-colors" onClick={() => handleSort('total_amount')}>
                   <div className="flex items-center">Total <ArrowUpDown className="w-4 h-4 ml-1" /></div>
                 </th>
-                <th className="px-6 py-4 font-medium cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('created_at')}>
+                <th className="px-6 py-5 cursor-pointer hover:text-gray-600 transition-colors" onClick={() => handleSort('created_at')}>
                   <div className="flex items-center">Date <ArrowUpDown className="w-4 h-4 ml-1" /></div>
                 </th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Paid</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5">Paid</th>
+                <th className="px-6 py-5 text-right rounded-tr-xl">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 text-sm">
+            <tbody className="divide-y divide-gray-50 text-sm">
               {loading ? (
                 <tr><td colSpan="9" className="text-center py-10"><div className="w-6 h-6 border-2 border-astraea-pink border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
               ) : currentOrders.length === 0 ? (
                 <tr><td colSpan="9" className="text-center py-10 text-gray-500">No orders found.</td></tr>
               ) : (
                 currentOrders.map(order => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-astraea-pink">{order.reference_number}</td>
-                    <td className="px-6 py-4 font-medium text-gray-800">{order.customer_name}</td>
-                    <td className="px-6 py-4 capitalize text-gray-600">{order.order_type}</td>
-                    <td className="px-6 py-4 capitalize text-gray-600">{order.delivery_method}</td>
-                    <td className="px-6 py-4 font-bold text-gray-800">₱{Number(order.total_amount).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-gray-600">{new Date(order.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
-                    <td className="px-6 py-4">
+                  <tr key={order.id} className="hover:bg-[#FCFAFB]/60 transition-colors duration-200">
+                    <td className="px-6 py-5 font-bold text-astraea-pink">{order.reference_number}</td>
+                    <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
+                    <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
+                    <td className="px-6 py-5 capitalize text-gray-500">{order.delivery_method}</td>
+                    <td className="px-6 py-5 font-bold text-gray-700">₱{Number(order.total_amount).toFixed(2)}</td>
+                    <td className="px-6 py-5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-5">{getStatusBadge(order.status)}</td>
+                    <td className="px-6 py-5">
                       {order.is_paid 
-                        ? <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">Paid</span>
-                        : <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md">Unpaid</span>
+                        ? <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">Paid</span>
+                        : <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">Unpaid</span>
                       }
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link to={`/admin/orders/${order.id}`} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors text-xs inline-block">
+                    <td className="px-6 py-5 text-right">
+                      <Link to={`/admin/orders/${order.id}`} className="px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100 inline-block">
                         View
                       </Link>
                     </td>
@@ -209,8 +209,8 @@ const AdminOrders = () => {
         
         {/* Pagination */}
         {!loading && filteredOrders.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
+          <div className="px-8 py-5 border-t border-gray-50 flex items-center justify-between bg-[#FCFAFB]">
+            <span className="text-sm font-medium text-gray-500">
               Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
             </span>
             <div className="flex space-x-2">

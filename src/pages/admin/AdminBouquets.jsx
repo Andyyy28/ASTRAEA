@@ -80,14 +80,26 @@ const AdminBouquets = () => {
       images: formData.images.filter(i => i.trim() !== '')
     };
     
+    console.log("Submitting payload:", payload);
+    
     if (editingId) {
       const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
-      if (!error && data) {
+      if (error) {
+        console.error("Error updating bouquet:", error);
+        alert("Failed to update bouquet: " + error.message);
+        return;
+      }
+      if (data) {
         setBouquets(prev => prev.map(b => b.id === editingId ? data[0] : b));
       }
     } else {
       const { data, error } = await supabase.from('bouquets').insert([payload]).select();
-      if (!error && data) {
+      if (error) {
+        console.error("Error inserting bouquet:", error);
+        alert("Failed to create bouquet: " + error.message);
+        return;
+      }
+      if (data) {
         setBouquets([data[0], ...bouquets]);
       }
     }
@@ -95,13 +107,14 @@ const AdminBouquets = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+      <div className="space-y-6 animate-fade-in">
       
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">Ready-Made Bouquets</h1>
         <button 
           onClick={() => openModal()} 
-          className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-lg font-bold hover:bg-astraea-pink/90 transition-colors shadow-sm"
+          className="flex items-center px-5 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
         >
           <Plus className="w-5 h-5 mr-1" /> Add Bouquet
         </button>
@@ -168,6 +181,8 @@ const AdminBouquets = () => {
         </div>
       </div>
 
+      </div>
+
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -230,19 +245,71 @@ const AdminBouquets = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Bouquet Image</label>
+                
+                {/* Drag and Drop / File Browser */}
+                <div 
+                  className="border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[160px] hover:bg-astraea-blush/10"
+                  onClick={() => document.getElementById('image-upload').click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setFormData({...formData, images: [event.target.result]});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                >
+                  <input 
+                    type="file" 
+                    id="image-upload" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          setFormData({...formData, images: [event.target.result]});
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                  
+                  {formData.images[0] ? (
+                    <div className="relative group w-32 h-32 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                      <img src={formData.images[0]} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
+                        Change Image
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <ImageIcon className="w-8 h-8 text-gray-400 mx-auto" />
+                      <p className="text-sm font-medium text-gray-600">Drag & drop or click to upload</p>
+                      <p className="text-xs text-gray-400">Supports PNG, JPG, JPEG</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative flex py-3 items-center">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">or use image URL</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
+                </div>
+
                 <input 
                   type="url" 
                   value={formData.images[0] || ''} 
                   onChange={e => setFormData({...formData, images: [e.target.value]})} 
                   placeholder="https://example.com/image.jpg"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none mb-2" 
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none" 
                 />
-                {formData.images[0] && (
-                  <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200 mt-2">
-                    <img src={formData.images[0]} alt="Preview" className="w-full h-full object-cover" />
-                  </div>
-                )}
               </div>
               
               <div className="flex gap-6 pt-2">
@@ -267,14 +334,25 @@ const AdminBouquets = () => {
               </div>
 
               <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-bold hover:bg-gray-200 transition-colors">Cancel</button>
-                <button type="submit" className="px-6 py-2.5 bg-astraea-pink text-white rounded-lg font-bold hover:bg-astraea-pink/90 transition-colors shadow-sm text-lg">Save Bouquet</button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg"
+                >
+                  Save Bouquet
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

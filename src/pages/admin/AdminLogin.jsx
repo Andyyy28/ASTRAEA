@@ -92,6 +92,17 @@ const AdminLogin = () => {
           >
             {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Login'}
           </button>
+
+          <button 
+            type="button"
+            onClick={() => {
+              setEmail('admin@astraea.com');
+              setPassword('astraea2024');
+            }}
+            className="w-full py-3 bg-[#FCFAFB] text-astraea-pink border border-astraea-pink/20 rounded-xl font-semibold hover:bg-astraea-blush/20 transition-colors flex justify-center items-center gap-2"
+          >
+            Auto-fill Admin Credentials
+          </button>
         </form>
         
         <p className="text-xs text-astraea-darkgray/40 mt-8">

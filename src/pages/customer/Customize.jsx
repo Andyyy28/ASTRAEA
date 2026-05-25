@@ -387,7 +387,7 @@ const Customize = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Progress Bar */}
-        <div className="mb-12 overflow-x-auto pb-4">
+        <div className="mb-12 overflow-x-auto pb-8 pt-2 px-2">
           <div className="flex items-center min-w-max justify-center md:justify-start">
             {steps.map((step, idx) => (
               <React.Fragment key={idx}>
@@ -399,7 +399,7 @@ const Customize = () => {
                   }`}>
                     {currentStep > idx ? <Check className="w-4 h-4" /> : idx + 1}
                   </div>
-                  <span className={`absolute top-10 text-xs font-bold ${
+                  <span className={`absolute top-10 text-xs font-bold whitespace-nowrap ${
                     currentStep >= idx ? 'text-astraea-darkgray' : 'text-astraea-darkgray/40'
                   }`}>{step}</span>
                 </div>

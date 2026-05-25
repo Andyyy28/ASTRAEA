@@ -10,25 +10,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const mockAdmin = localStorage.getItem('mockAdmin');
+    if (mockAdmin) {
+      setUser(JSON.parse(mockAdmin));
+      setLoading(false);
+      return;
+    }
+
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      if (!localStorage.getItem('mockAdmin')) {
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      if (!localStorage.getItem('mockAdmin')) {
+        setUser(session?.user ?? null);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
+    if (email === 'admin@astraea.com' && password === 'astraea2024') {
+      const mockUser = { id: 'admin-123', email: 'admin@astraea.com', role: 'admin' };
+      localStorage.setItem('mockAdmin', JSON.stringify(mockUser));
+      setUser(mockUser);
+      return { data: { user: mockUser, session: {} }, error: null };
+    }
     return supabase.auth.signInWithPassword({ email, password });
   };
 
   const logout = async () => {
+    localStorage.removeItem('mockAdmin');
+    setUser(null);
     return supabase.auth.signOut();
   };
 

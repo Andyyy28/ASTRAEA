@@ -17,7 +17,7 @@ export default {
       },
       fontFamily: {
         heading: ['"Playfair Display"', 'serif'],
-        body: ['Lato', 'sans-serif'],
+        body: ['Outfit', 'sans-serif'],
       }
     },
   },

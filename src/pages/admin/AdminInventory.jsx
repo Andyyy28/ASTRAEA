@@ -84,30 +84,56 @@ const AdminInventory = () => {
     
     if (modalType === 'add_flower') {
       const { data, error } = await supabase.from('flowers').insert([{ name: formData.name, price_per_stem: parseFloat(formData.price) }]).select();
-      if (!error && data) setFlowers([...flowers, data[0]]);
+      if (error) {
+        console.error("Error adding flower:", error);
+        alert("Failed to add flower: " + error.message);
+        return;
+      }
+      if (data) setFlowers([...flowers, data[0]]);
     } 
     else if (modalType === 'add_flower_color') {
       const { data, error } = await supabase.from('flower_colors').insert([{ flower_id: activeItem.id, color_name: formData.name, hex_code: formData.hex, is_available: true }]).select();
-      if (!error && data) setFlowerColors([...flowerColors, data[0]]);
+      if (error) {
+        console.error("Error adding flower color:", error);
+        alert("Failed to add color: " + error.message);
+        return;
+      }
+      if (data) setFlowerColors([...flowerColors, data[0]]);
     }
     else if (modalType === 'add_filler') {
       const { data, error } = await supabase.from('fillers').insert([{ name: formData.name, price: parseFloat(formData.price), is_available: true }]).select();
-      if (!error && data) setFillers([...fillers, data[0]]);
+      if (error) {
+        console.error("Error adding filler:", error);
+        alert("Failed to add filler: " + error.message);
+        return;
+      }
+      if (data) setFillers([...fillers, data[0]]);
     }
     else if (modalType === 'add_wrapper') {
       const { data, error } = await supabase.from('wrappers').insert([{ material: formData.name, price: parseFloat(formData.price) }]).select();
-      if (!error && data) setWrappers([...wrappers, data[0]]);
+      if (error) {
+        console.error("Error adding wrapper:", error);
+        alert("Failed to add wrapper: " + error.message);
+        return;
+      }
+      if (data) setWrappers([...wrappers, data[0]]);
     }
     else if (modalType === 'add_wrapper_color') {
       const { data, error } = await supabase.from('wrapper_colors').insert([{ wrapper_id: activeItem.id, color_name: formData.name, hex_code: formData.hex, is_available: true }]).select();
-      if (!error && data) setWrapperColors([...wrapperColors, data[0]]);
+      if (error) {
+        console.error("Error adding wrapper color:", error);
+        alert("Failed to add wrapper color: " + error.message);
+        return;
+      }
+      if (data) setWrapperColors([...wrapperColors, data[0]]);
     }
 
     closeModal();
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <>
+      <div className="space-y-6 animate-fade-in">
       <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
 
       {/* Tabs */}
@@ -142,7 +168,7 @@ const AdminInventory = () => {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Flower Types</h2>
-                  <button onClick={() => openModal('add_flower')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-lg text-sm font-bold hover:bg-astraea-pink/90 transition-colors">
+                  <button onClick={() => openModal('add_flower')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Flower
                   </button>
                 </div>
@@ -201,7 +227,7 @@ const AdminInventory = () => {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Fillers</h2>
-                  <button onClick={() => openModal('add_filler')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-lg text-sm font-bold hover:bg-astraea-pink/90 transition-colors">
+                  <button onClick={() => openModal('add_filler')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Filler
                   </button>
                 </div>
@@ -246,7 +272,7 @@ const AdminInventory = () => {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Wrappers</h2>
-                  <button onClick={() => openModal('add_wrapper')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-lg text-sm font-bold hover:bg-astraea-pink/90 transition-colors">
+                  <button onClick={() => openModal('add_wrapper')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Wrapper
                   </button>
                 </div>
@@ -302,6 +328,7 @@ const AdminInventory = () => {
           </>
         )}
       </div>
+    </div>
 
       {/* Modal Overlay */}
       {isModalOpen && (
@@ -374,14 +401,25 @@ const AdminInventory = () => {
               )}
 
               <div className="mt-6 flex justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-astraea-pink text-white rounded-lg font-medium hover:bg-astraea-pink/90">Save</button>
+                <button 
+                  type="button" 
+                  onClick={closeModal} 
+                  className="px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg"
+                >
+                  Save
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
