@@ -10,43 +10,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockAdmin = localStorage.getItem('mockAdmin');
-    if (mockAdmin) {
-      setUser(JSON.parse(mockAdmin));
-      setLoading(false);
-      return;
-    }
-
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!localStorage.getItem('mockAdmin')) {
-        setUser(session?.user ?? null);
+    const applySession = async (session) => {
+      if (!session) {
+        setUser(null);
+        return;
       }
+
+      const { data: isAdmin, error } = await supabase.rpc('is_admin');
+      setUser(!error && isAdmin ? session.user : null);
+    };
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      await applySession(session);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!localStorage.getItem('mockAdmin')) {
-        setUser(session?.user ?? null);
-      }
+      applySession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    if (email === 'admin@astraea.com' && password === 'astraea2024') {
-      const mockUser = { id: 'admin-123', email: 'admin@astraea.com', role: 'admin' };
-      localStorage.setItem('mockAdmin', JSON.stringify(mockUser));
-      setUser(mockUser);
-      return { data: { user: mockUser, session: {} }, error: null };
+    const result = await supabase.auth.signInWithPassword({ email, password });
+    if (result.error) return result;
+
+    const { data: isAdmin, error } = await supabase.rpc('is_admin');
+    if (error || !isAdmin) {
+      await supabase.auth.signOut();
+      return { data: null, error: new Error('This user is not an administrator.') };
     }
-    return supabase.auth.signInWithPassword({ email, password });
+
+    return result;
   };
 
   const logout = async () => {
-    localStorage.removeItem('mockAdmin');
     setUser(null);
     return supabase.auth.signOut();
   };

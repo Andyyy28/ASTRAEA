@@ -11,19 +11,19 @@ const AdminOrderDetail = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
+    const fetchOrderDetails = async () => {
+      setLoading(true);
+      const { data: orderData } = await supabase.from('orders').select('*').eq('id', id).single();
+      if (orderData) {
+        setOrder(orderData);
+        const { data: itemsData } = await supabase.from('order_items').select('*').eq('order_id', id);
+        if (itemsData) setItems(itemsData);
+      }
+      setLoading(false);
+    };
+
     fetchOrderDetails();
   }, [id]);
-
-  const fetchOrderDetails = async () => {
-    setLoading(true);
-    const { data: orderData } = await supabase.from('orders').select('*').eq('id', id).single();
-    if (orderData) {
-      setOrder(orderData);
-      const { data: itemsData } = await supabase.from('order_items').select('*').eq('order_id', id);
-      if (itemsData) setItems(itemsData);
-    }
-    setLoading(false);
-  };
 
   const handleUpdateStatus = async (newStatus) => {
     setUpdating(true);

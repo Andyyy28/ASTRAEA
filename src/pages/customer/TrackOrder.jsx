@@ -11,6 +11,7 @@ const statuses = [
 
 const TrackOrder = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [verification, setVerification] = useState('');
   const [order, setOrder] = useState(null);
   const [orderItems, setOrderItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const TrackOrder = () => {
 
   const handleTrack = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim() || !verification.trim()) return;
 
     setLoading(true);
     setError('');
@@ -26,32 +27,22 @@ const TrackOrder = () => {
     setOrderItems([]);
 
     try {
-      // Search by reference_number or email
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select('*')
-        .or(`reference_number.eq.${searchQuery},email.eq.${searchQuery}`)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      const { data, error: orderError } = await supabase.rpc('track_order', {
+        p_reference: searchQuery,
+        p_verification: verification
+      });
 
       if (orderError) throw orderError;
       
-      if (orderData) {
-        setOrder(orderData);
-        // Fetch order items
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('order_items')
-          .select('*')
-          .eq('order_id', orderData.id);
-          
-        if (itemsData) setOrderItems(itemsData);
+      if (data) {
+        setOrder(data.order);
+        setOrderItems(data.items || []);
       } else {
-        setError('No order found. Please check your reference number or email.');
+        setError('No order found. Please check your reference number and contact detail.');
       }
     } catch (err) {
       console.error(err);
-      setError('No order found. Please check your reference number or email.');
+      setError('No order found. Please check your reference number and contact detail.');
     } finally {
       setLoading(false);
     }
@@ -72,28 +63,38 @@ const TrackOrder = () => {
             Track Your Order
           </h1>
           <p className="text-lg text-astraea-darkgray/70">
-            Enter your reference number or email to check your order status.
+            Enter your reference number and your email or phone number to check its status.
           </p>
         </div>
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-16">
-          <form onSubmit={handleTrack} className="flex relative shadow-lg rounded-full overflow-hidden">
-            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-astraea-darkgray/40" />
+          <form onSubmit={handleTrack} className="space-y-4">
+            <div className="flex relative shadow-lg rounded-full overflow-hidden">
+              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-astraea-darkgray/40" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Reference number, e.g. AC-2026-AB12CD34"
+                className="block w-full pl-14 pr-6 py-5 border-none outline-none text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
+                required
+              />
             </div>
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g. AC-2024-1234 or jane@example.com"
-              className="block w-full pl-14 pr-32 py-5 border-none outline-none text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
+              value={verification}
+              onChange={(e) => setVerification(e.target.value)}
+              placeholder="Email address or contact number used at checkout"
+              className="block w-full px-6 py-5 rounded-full shadow-lg border-none outline-none text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="absolute inset-y-1 right-1 px-8 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors disabled:opacity-70"
+              className="w-full py-4 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors disabled:opacity-70 flex justify-center"
             >
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Track'}
             </button>

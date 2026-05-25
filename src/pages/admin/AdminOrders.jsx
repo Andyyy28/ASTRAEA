@@ -24,7 +24,7 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('orders').select('*');
+    const { data } = await supabase.from('orders').select('*');
     if (data) setOrders(data);
     setLoading(false);
   };

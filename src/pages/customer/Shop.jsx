@@ -17,7 +17,7 @@ const Shop = () => {
   useEffect(() => {
     const fetchBouquets = async () => {
       // Fetch all visible bouquets
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('bouquets')
         .select('*')
         .eq('is_visible', true)

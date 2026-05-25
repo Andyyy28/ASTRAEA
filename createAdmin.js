@@ -2,9 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase credentials in .env");
+if (!supabaseUrl || !supabaseAnonKey || !adminEmail || !adminPassword) {
+  console.error("Missing VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, ADMIN_EMAIL, or ADMIN_PASSWORD in .env");
   process.exit(1);
 }
 
@@ -13,8 +15,8 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 async function createAdmin() {
   console.log("Attempting to create admin user...");
   const { data, error } = await supabase.auth.signUp({
-    email: 'admin@astraea.com',
-    password: 'astraea2024',
+    email: adminEmail,
+    password: adminPassword,
   });
 
   if (error) {

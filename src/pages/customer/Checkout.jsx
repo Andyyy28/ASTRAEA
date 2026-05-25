@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store } from 'lucide-react';
 
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const navigate = useNavigate();
 
   const [deliveryMethod, setDeliveryMethod] = useState('pickup');
   const [formData, setFormData] = useState({
@@ -25,12 +24,6 @@ const Checkout = () => {
   const deliveryFee = deliveryMethod === 'delivery' ? 80 : 0;
   const grandTotal = cartTotal + deliveryFee;
 
-  // Generate a random reference number
-  const generateReferenceNumber = () => {
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return `AC-2024-${random}`;
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -41,56 +34,38 @@ const Checkout = () => {
     if (cartItems.length === 0) return;
     
     setLoading(true);
-    const refNumber = generateReferenceNumber();
 
     try {
-      // 1. Insert into orders
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([{
-          reference_number: refNumber,
-          customer_name: formData.customer_name,
-          contact_number: formData.contact_number,
-          email: formData.email,
-          order_type: cartItems.some(i => i.item_type === 'custom') ? 'custom' : 'ready-made',
-          delivery_method: deliveryMethod,
-          delivery_address: deliveryMethod === 'delivery' ? formData.delivery_address : null,
-          preferred_date: formData.preferred_date || null,
-          preferred_time: formData.preferred_time || null,
-          special_notes: formData.special_notes,
-          total_amount: grandTotal,
-          status: 'pending',
-          is_paid: false
-        }])
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // 2. Insert into order_items
-      const orderItemsToInsert = cartItems.map(item => ({
-        order_id: orderData.id,
+      const orderItems = cartItems.map(item => ({
         item_type: item.item_type,
-        bouquet_id: item.bouquet_id || null, // null for custom items that don't map to a ready-made bouquet
-        size: item.custom_details?.size?.name || null,
+        bouquet_id: item.bouquet_id || null,
+        size: item.custom_details?.size?.id || null,
         flowers: item.custom_details?.flowers || null,
         fillers: item.custom_details?.fillers || null,
         wrapper: item.custom_details?.wrapper || null,
         addons: item.custom_details?.addons || null,
         message_card: item.message_card || item.custom_details?.message || null,
-        quantity: item.quantity,
-        subtotal: item.subtotal * item.quantity
+        quantity: item.quantity
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsToInsert);
+      const { data, error } = await supabase.rpc('place_order', {
+        p_order: {
+          customer_name: formData.customer_name,
+          contact_number: formData.contact_number,
+          email: formData.email,
+          delivery_method: deliveryMethod,
+          delivery_address: deliveryMethod === 'delivery' ? formData.delivery_address : null,
+          preferred_date: formData.preferred_date || null,
+          preferred_time: formData.preferred_time || null,
+          special_notes: formData.special_notes
+        },
+        p_items: orderItems
+      });
 
-      if (itemsError) throw itemsError;
+      if (error) throw error;
 
-      // Success
       clearCart();
-      setOrderPlaced(refNumber);
+      setOrderPlaced(data.reference_number);
     } catch (error) {
       console.error('Error placing order:', error);
       alert('There was an error placing your order. Please try again.');
