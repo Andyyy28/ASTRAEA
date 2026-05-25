@@ -1,4 +1,5 @@
 -- Astraea Collection Supabase Schema
+-- After this initial schema is applied, run migrations/20260525_secure_database.sql.
 
 -- 1. bouquets
 CREATE TABLE bouquets (
@@ -159,5 +160,6 @@ INSERT INTO reviews (customer_name, message, rating) VALUES
 ('Anna Cruz', 'Perfect gift for my anniversary. The packaging was so premium.', 5),
 ('Bea Gonzalez', 'Great customizability. I picked exactly the colors I wanted.', 4);
 
--- Admin Auth (Note): 
--- Admin credentials admin@astraea.com / astraea2024 should be created directly via Supabase Auth Dashboard.
+-- Admin Auth:
+-- Create an authenticated user in Supabase, then add its auth.users id to
+-- public.admin_users after applying migrations/20260525_secure_database.sql.

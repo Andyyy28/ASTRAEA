@@ -101,14 +101,24 @@ const Customize = () => {
   };
 
   const handleAddToCart = () => {
+    if (Object.keys(selectedFlowers).length === 0) {
+      alert('Please select at least one flower before adding a custom bouquet.');
+      setCurrentStep(1);
+      return;
+    }
+
     const buildDetails = {
       size: selectedSize,
       flowers: Object.entries(selectedFlowers).map(([id, qty]) => {
         const f = dbFlowers.find(x => x.id === id);
-        return { name: f.name, quantity: qty, color: selectedFlowerColors[id] };
+        return { id, name: f.name, quantity: qty, color: selectedFlowerColors[id] };
       }),
-      fillers: Object.keys(selectedFillers).map(id => dbFillers.find(x => x.id === id)?.name),
+      fillers: Object.keys(selectedFillers).map(id => {
+        const filler = dbFillers.find(x => x.id === id);
+        return { id, name: filler?.name };
+      }),
       wrapper: selectedWrapper ? {
+        id: selectedWrapper,
         material: dbWrappers.find(x => x.id === selectedWrapper)?.material,
         color: selectedWrapperColor
       } : null,
@@ -202,7 +212,7 @@ const Customize = () => {
           </div>
         );
 
-      case 2: // Colors
+      case 2: { // Colors
         const selectedFlowerObjs = dbFlowers.filter(f => selectedFlowers[f.id] > 0);
         if (selectedFlowerObjs.length === 0) {
           return (
@@ -241,6 +251,7 @@ const Customize = () => {
             </div>
           </div>
         );
+      }
 
       case 3: // Fillers
         return (
@@ -277,7 +288,7 @@ const Customize = () => {
           </div>
         );
 
-      case 4: // Wrapper
+      case 4: { // Wrapper
         const activeWrapperColors = selectedWrapper ? dbWrapperColors.filter(wc => wc.wrapper_id === selectedWrapper) : [];
         return (
           <div className="space-y-8 animate-fade-in">
@@ -321,6 +332,7 @@ const Customize = () => {
             )}
           </div>
         );
+      }
 
       case 5: // Add-ons
         return (
