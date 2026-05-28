@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Upload, Loader } from 'lucide-react';
+
+// Upload image to Supabase Storage, returns the public URL
+const uploadImage = async (file) => {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+  const filePath = `bouquet-images/${fileName}`;
+
+  const { error } = await supabase.storage.from('bouquets').upload(filePath, file);
+  if (error) {
+    console.error('Storage upload error:', error);
+    return null;
+  }
+
+  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(filePath);
+  return urlData.publicUrl;
+};
 
 const AdminBouquets = () => {
   const [bouquets, setBouquets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageFile, setImageFile] = useState(null); // Track the actual file for upload
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -70,40 +88,60 @@ const AdminBouquets = () => {
       setEditingId(null);
     }
     setIsModalOpen(true);
+    setImageFile(null);
   };
 
   const handleModalSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      price: parseFloat(formData.price),
-      images: formData.images.filter(i => i.trim() !== '')
-    };
+    setUploading(true);
     
-    console.log("Submitting payload:", payload);
-    
-    if (editingId) {
-      const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
-      if (error) {
-        console.error("Error updating bouquet:", error);
-        alert("Failed to update bouquet: " + error.message);
-        return;
+    try {
+      // If user selected a file, upload it to Supabase Storage
+      let imageUrls = formData.images.filter(i => i.trim() !== '');
+      
+      if (imageFile) {
+        const publicUrl = await uploadImage(imageFile);
+        if (publicUrl) {
+          imageUrls = [publicUrl];
+        } else {
+          alert('Failed to upload image. Please try again or use an image URL instead.');
+          setUploading(false);
+          return;
+        }
       }
-      if (data) {
-        setBouquets(prev => prev.map(b => b.id === editingId ? data[0] : b));
+
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price),
+        images: imageUrls
+      };
+      
+      if (editingId) {
+        const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
+        if (error) {
+          console.error("Error updating bouquet:", error);
+          alert("Failed to update bouquet: " + error.message);
+          return;
+        }
+        if (data) {
+          setBouquets(prev => prev.map(b => b.id === editingId ? data[0] : b));
+        }
+      } else {
+        const { data, error } = await supabase.from('bouquets').insert([payload]).select();
+        if (error) {
+          console.error("Error inserting bouquet:", error);
+          alert("Failed to create bouquet: " + error.message);
+          return;
+        }
+        if (data) {
+          setBouquets([data[0], ...bouquets]);
+        }
       }
-    } else {
-      const { data, error } = await supabase.from('bouquets').insert([payload]).select();
-      if (error) {
-        console.error("Error inserting bouquet:", error);
-        alert("Failed to create bouquet: " + error.message);
-        return;
-      }
-      if (data) {
-        setBouquets([data[0], ...bouquets]);
-      }
+      setIsModalOpen(false);
+      setImageFile(null);
+    } finally {
+      setUploading(false);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -256,11 +294,8 @@ const AdminBouquets = () => {
                     e.preventDefault();
                     const file = e.dataTransfer.files[0];
                     if (file && file.type.startsWith('image/')) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        setFormData({...formData, images: [event.target.result]});
-                      };
-                      reader.readAsDataURL(file);
+                      setImageFile(file);
+                      setFormData({...formData, images: [URL.createObjectURL(file)]});
                     }
                   }}
                 >
@@ -272,11 +307,8 @@ const AdminBouquets = () => {
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          setFormData({...formData, images: [event.target.result]});
-                        };
-                        reader.readAsDataURL(file);
+                        setImageFile(file);
+                        setFormData({...formData, images: [URL.createObjectURL(file)]});
                       }
                     }}
                   />
@@ -305,8 +337,11 @@ const AdminBouquets = () => {
 
                 <input 
                   type="url" 
-                  value={formData.images[0] || ''} 
-                  onChange={e => setFormData({...formData, images: [e.target.value]})} 
+                  value={imageFile ? '' : (formData.images[0] || '')} 
+                  onChange={e => {
+                    setImageFile(null); // Clear file if user types a URL instead
+                    setFormData({...formData, images: [e.target.value]});
+                  }} 
                   placeholder="https://example.com/image.jpg"
                   className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none" 
                 />
@@ -343,9 +378,15 @@ const AdminBouquets = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg"
+                  disabled={uploading}
+                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center gap-2"
                 >
-                  Save Bouquet
+                  {uploading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : 'Save Bouquet'}
                 </button>
               </div>
             </form>

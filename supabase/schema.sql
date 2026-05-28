@@ -1,7 +1,29 @@
--- Astraea Collection Supabase Schema
+-- ================================================
+-- ASTRAEA COLLECTION - FULL DATABASE SETUP
+-- Run this ENTIRE script in the Supabase SQL Editor
 -- After this initial schema is applied, run migrations/20260525_secure_database.sql.
+-- ================================================
 
--- 1. bouquets
+-- ================================================
+-- 1. DROP EXISTING TABLES & POLICIES (clean slate)
+-- ================================================
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS flower_colors CASCADE;
+DROP TABLE IF EXISTS wrapper_colors CASCADE;
+DROP TABLE IF EXISTS flowers CASCADE;
+DROP TABLE IF EXISTS fillers CASCADE;
+DROP TABLE IF EXISTS wrappers CASCADE;
+DROP TABLE IF EXISTS bouquets CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS settings CASCADE;
+
+
+-- ================================================
+-- 2. CREATE ALL TABLES
+-- ================================================
+
+-- bouquets
 CREATE TABLE bouquets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -14,7 +36,7 @@ CREATE TABLE bouquets (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. flowers
+-- flowers
 CREATE TABLE flowers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -22,7 +44,7 @@ CREATE TABLE flowers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. flower_colors
+-- flower_colors
 CREATE TABLE flower_colors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     flower_id UUID REFERENCES flowers(id) ON DELETE CASCADE,
@@ -31,7 +53,7 @@ CREATE TABLE flower_colors (
     is_available BOOLEAN DEFAULT true
 );
 
--- 4. fillers
+-- fillers
 CREATE TABLE fillers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
@@ -39,14 +61,14 @@ CREATE TABLE fillers (
     is_available BOOLEAN DEFAULT true
 );
 
--- 5. wrappers
+-- wrappers
 CREATE TABLE wrappers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     material TEXT NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 6. wrapper_colors
+-- wrapper_colors
 CREATE TABLE wrapper_colors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     wrapper_id UUID REFERENCES wrappers(id) ON DELETE CASCADE,
@@ -55,30 +77,30 @@ CREATE TABLE wrapper_colors (
     is_available BOOLEAN DEFAULT true
 );
 
--- 7. orders
+-- orders
 CREATE TABLE orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     reference_number TEXT UNIQUE NOT NULL,
     customer_name TEXT NOT NULL,
     contact_number TEXT NOT NULL,
     email TEXT,
-    order_type TEXT NOT NULL, -- 'ready-made' or 'custom'
-    delivery_method TEXT NOT NULL, -- 'pickup' or 'delivery'
+    order_type TEXT NOT NULL,
+    delivery_method TEXT NOT NULL,
     delivery_address TEXT,
     preferred_date DATE,
     preferred_time TEXT,
     special_notes TEXT,
     total_amount DECIMAL(10, 2) NOT NULL,
-    status TEXT DEFAULT 'pending', -- pending, being-made, ready, completed, cancelled
+    status TEXT DEFAULT 'pending',
     is_paid BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 8. order_items
+-- order_items
 CREATE TABLE order_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
-    item_type TEXT NOT NULL, -- 'bouquet' or 'custom'
+    item_type TEXT NOT NULL,
     bouquet_id UUID REFERENCES bouquets(id),
     size TEXT,
     flowers JSONB,
@@ -90,7 +112,7 @@ CREATE TABLE order_items (
     subtotal DECIMAL(10, 2) NOT NULL
 );
 
--- 9. reviews
+-- reviews
 CREATE TABLE reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_name TEXT NOT NULL,
@@ -99,7 +121,7 @@ CREATE TABLE reviews (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 10. settings
+-- settings
 CREATE TABLE settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     key TEXT UNIQUE NOT NULL,
@@ -107,11 +129,32 @@ CREATE TABLE settings (
 );
 
 
--- ==============================
--- SEED DATA
--- ==============================
+-- ================================================
+-- 3. STORAGE BUCKET FOR BOUQUET IMAGES
+-- ================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('bouquets', 'bouquets', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
 
--- Seed Flowers
+CREATE POLICY "Admin upload bouquet images" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'bouquets' AND auth.role() = 'authenticated'
+  );
+
+CREATE POLICY "Admin manage bouquet images" ON storage.objects
+  FOR ALL USING (
+    bucket_id = 'bouquets' AND auth.role() = 'authenticated'
+  );
+
+CREATE POLICY "Public view bouquet images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'bouquets');
+
+
+-- ================================================
+-- 4. SEED DATA
+-- ================================================
+
+-- Flowers
 INSERT INTO flowers (id, name, price_per_stem) VALUES
 ('11111111-1111-1111-1111-111111111111', 'Rose', 50.00),
 ('22222222-2222-2222-2222-222222222222', 'Tulip', 60.00),
@@ -119,7 +162,7 @@ INSERT INTO flowers (id, name, price_per_stem) VALUES
 ('44444444-4444-4444-4444-444444444444', 'Daisy', 40.00),
 ('55555555-5555-5555-5555-555555555555', 'Lily', 70.00);
 
--- Seed Flower Colors (For all flowers generically or specifically)
+-- Flower Colors
 INSERT INTO flower_colors (flower_id, color_name, hex_code, is_available) VALUES
 ('11111111-1111-1111-1111-111111111111', 'Red', '#FF0000', true),
 ('11111111-1111-1111-1111-111111111111', 'Pink', '#FFC0CB', true),
@@ -128,38 +171,48 @@ INSERT INTO flower_colors (flower_id, color_name, hex_code, is_available) VALUES
 ('11111111-1111-1111-1111-111111111111', 'Purple', '#800080', false),
 ('11111111-1111-1111-1111-111111111111', 'Peach', '#FFDAB9', false);
 
--- Seed Fillers
+-- Fillers
 INSERT INTO fillers (name, price, is_available) VALUES
 ('Baby''s Breath', 30.00, true),
 ('Eucalyptus Leaves', 25.00, true),
 ('Fern', 20.00, true);
 
--- Seed Wrappers
+-- Wrappers
 INSERT INTO wrappers (id, material, price) VALUES
 ('66666666-6666-6666-6666-666666666666', 'Kraft Paper', 20.00),
 ('77777777-7777-7777-7777-777777777777', 'Satin Ribbon Wrap', 35.00),
 ('88888888-8888-8888-8888-888888888888', 'Korean Wrap', 40.00);
 
--- Seed Wrapper Colors
+-- Wrapper Colors
 INSERT INTO wrapper_colors (wrapper_id, color_name, hex_code, is_available) VALUES
 ('66666666-6666-6666-6666-666666666666', 'White', '#FFFFFF', true),
 ('66666666-6666-6666-6666-666666666666', 'Pink', '#FFC0CB', true),
 ('66666666-6666-6666-6666-666666666666', 'Nude', '#E3BC9A', true),
 ('66666666-6666-6666-6666-666666666666', 'Black', '#000000', true);
 
--- Seed Ready-made Bouquets
+-- Bouquets
 INSERT INTO bouquets (name, description, price, category, images, is_featured) VALUES
-('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Rose', ARRAY['/bouquets/b1.jpg'], true),
-('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Sunflower', ARRAY['/bouquets/b2.jpg'], true),
-('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Lily', ARRAY['/bouquets/b3.jpg'], true),
-('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Rose', ARRAY['/bouquets/b4.jpg'], true);
+('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Romantic', ARRAY['/bouquets/b1.jpg'], true),
+('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Birthday', ARRAY['/bouquets/b2.jpg'], true),
+('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Other', ARRAY['/bouquets/b3.jpg'], true),
+('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/bouquets/b4.jpg'], true);
 
--- Seed Reviews
+-- Reviews
 INSERT INTO reviews (customer_name, message, rating) VALUES
 ('Maria Santos', 'Absolutely loved my fuzzy wire tulip bouquet! It looks so real and the best part is it won''t die.', 5),
 ('Anna Cruz', 'Perfect gift for my anniversary. The packaging was so premium.', 5),
 ('Bea Gonzalez', 'Great customizability. I picked exactly the colors I wanted.', 4);
 
--- Admin Auth:
--- Create an authenticated user in Supabase, then add its auth.users id to
--- public.admin_users after applying migrations/20260525_secure_database.sql.
+
+-- ================================================
+-- DONE! After running this, also run:
+--   supabase/migrations/20260525_secure_database.sql
+-- to set up RLS policies, admin_users table, and RPC functions.
+--
+-- Then in Supabase Auth Settings:
+-- 1. Disable "Enable email confirmations" for easy setup
+-- 2. The admin account will auto-create on first login
+-- 3. After signup, add the user to admin_users table:
+--    INSERT INTO admin_users (user_id) 
+--    SELECT id FROM auth.users WHERE email = 'admin@astraea.com';
+-- ================================================

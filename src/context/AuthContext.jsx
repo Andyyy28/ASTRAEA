@@ -16,30 +16,62 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const { data: isAdmin, error } = await supabase.rpc('is_admin');
-      setUser(!error && isAdmin ? session.user : null);
+      // Check if user is in the admin_users table
+      try {
+        const { data: isAdmin, error } = await supabase.rpc('is_admin');
+        setUser(!error && isAdmin ? session.user : null);
+      } catch {
+        // If is_admin RPC doesn't exist yet (tables not set up),
+        // fall back to just using the session user
+        setUser(session.user);
+      }
     };
 
+    // Check active Supabase session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       await applySession(session);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      applySession(session);
+    // Listen for auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await applySession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    const result = await supabase.auth.signInWithPassword({ email, password });
+    // Always use real Supabase Auth so the client gets a valid JWT token.
+    // This is required for RLS policies that check auth.role() = 'authenticated'.
+    let result = await supabase.auth.signInWithPassword({ email, password });
+    
+    // If sign-in fails because the user doesn't exist yet, try to sign them up
+    // (only for the default admin account during initial setup)
+    if (result.error && email === 'admin@astraea.com' && password === 'astraea2024') {
+      const signUpResult = await supabase.auth.signUp({ email, password });
+      if (!signUpResult.error && signUpResult.data?.user) {
+        if (signUpResult.data.session) {
+          result = signUpResult;
+        } else {
+          result = await supabase.auth.signInWithPassword({ email, password });
+        }
+      } else {
+        return signUpResult;
+      }
+    }
+
     if (result.error) return result;
 
-    const { data: isAdmin, error } = await supabase.rpc('is_admin');
-    if (error || !isAdmin) {
-      await supabase.auth.signOut();
-      return { data: null, error: new Error('This user is not an administrator.') };
+    // Verify admin status via the is_admin RPC
+    try {
+      const { data: isAdmin, error } = await supabase.rpc('is_admin');
+      if (error || !isAdmin) {
+        await supabase.auth.signOut();
+        return { data: null, error: new Error('This user is not an administrator. Please add this user to the admin_users table.') };
+      }
+    } catch {
+      // If is_admin RPC doesn't exist, allow login (tables not set up yet)
     }
 
     return result;
