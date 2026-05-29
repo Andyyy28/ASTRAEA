@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,7 +10,10 @@
   }
 
   body {
-    @apply font-body text-astraea-darkgray bg-astraea-blush min-h-screen antialiased;
+    @apply font-body text-astraea-darkgray min-h-screen antialiased;
+    background-color: #fff5f7;
+    background-image: radial-gradient(#f9a8c940 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 
   img, video, canvas, svg {
@@ -26,17 +29,88 @@
   }
 
   input, select, textarea {
-    @apply text-base;
+    @apply text-base font-body;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
   }
 }
 
+@layer components {
+  .scrapbook-card {
+    @apply relative bg-[#FFFDFE] border-2 border-dashed border-[#F4BFCF] rounded-[20px] p-5 shadow-[4px_4px_0px_#F9A8C9] transition-all duration-300;
+  }
+
+  .scrapbook-card:hover {
+    transform: translate(-1px, -1px) rotate(0deg);
+    box-shadow: 6px 6px 0px #f9a8c9;
+  }
+
+  .scrapbook-card-tilt-left { transform: rotate(-1deg); }
+  .scrapbook-card-tilt-right { transform: rotate(1deg); }
+
+  .washi-strip::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 8%;
+    width: 84%;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f9a8c9, #e8d5f5);
+  }
+
+  .kawaii-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200;
+    box-shadow: 3px 3px 0px #e891b8;
+  }
+
+  .kawaii-btn:hover {
+    transform: translate(-1px, -1px) scale(1.01);
+    box-shadow: 4px 4px 0px #e891b8;
+  }
+
+  .kawaii-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px #e891b8;
+  }
+
+  .kawaii-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200 bg-astraea-pink text-white border-astraea-rosegold;
+    box-shadow: 3px 3px 0px #e891b8;
+  }
+
+  .kawaii-btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200 bg-white text-astraea-rosegold border-astraea-pink;
+    box-shadow: 3px 3px 0px #f9a8c9;
+  }
+
+  .kawaii-badge {
+    @apply inline-flex items-center gap-1 rounded-full border-2 px-3 py-1 text-sm font-semibold;
+    font-family: 'Caveat', cursive;
+  }
+
+  .kawaii-input {
+    @apply w-full rounded-xl border-2 border-[#F4BFCF] bg-white px-4 py-3 font-body text-astraea-darkgray outline-none transition-all placeholder:text-astraea-darkgray/30 focus:border-astraea-pink focus:shadow-[0_0_0_3px_#FDDDE6];
+  }
+
+  .section-heading {
+    @apply inline-block border-b-[3px] border-astraea-pink pb-1 font-heading font-extrabold text-astraea-darkgray;
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
-    animation: fadeIn 0.8s ease-out forwards;
+    animation: fadeIn 0.7s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 1.5s ease-out infinite;
   }
 }
 
@@ -48,5 +122,23 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 #f9a8c980;
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
   }
 }

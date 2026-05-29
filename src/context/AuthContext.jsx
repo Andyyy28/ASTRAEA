@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigReady } from '../lib/supabase';
 
 const AuthContext = createContext();
 const SESSION_LOAD_TIMEOUT_MS = 5000;
@@ -64,6 +64,13 @@ export const AuthProvider = ({ children }) => {
 
     // Check active Supabase session. Public pages should still render if
     // Supabase is unreachable or misconfigured.
+    if (!supabaseConfigReady) {
+      console.warn('Supabase anon key is missing or invalid. Rendering the app without auth.');
+      setUser(null);
+      setLoading(false);
+      return () => {};
+    }
+
     supabase.auth.getSession()
       .then(async ({ data: { session } }) => {
         await applySession(session);
@@ -153,6 +160,15 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (email === 'admin@astraea.com' && password === 'astraea2024') {
+      if (!supabaseConfigReady) {
+        return {
+          data: null,
+          error: new Error(
+            'Supabase anon key is missing or invalid in this deployment. Set VITE_SUPABASE_ANON_KEY in Vercel and redeploy.'
+          )
+        };
+      }
+
       return {
         data: null,
         error: new Error(

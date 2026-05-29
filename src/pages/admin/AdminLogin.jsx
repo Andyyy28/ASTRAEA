@@ -36,11 +36,6 @@ const AdminLogin = () => {
     }
   };
 
-  const handleAutofill = () => {
-    setEmail('admin@astraea.com');
-    setPassword('astraea2024');
-  };
-
   return (
     <div className="min-h-screen bg-astraea-blush/30 flex items-center justify-center p-4">
       <div className="bg-white max-w-md w-full p-8 rounded-3xl shadow-xl border border-astraea-rosegold/20 animate-fade-in text-center">
@@ -58,12 +53,13 @@ const AdminLogin = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6 text-left">
+        <form onSubmit={handleSubmit} className="space-y-6 text-left" autoComplete="off">
           <div>
             <label className="block text-sm font-bold text-astraea-darkgray mb-2">Email Address</label>
             <input 
               type="email" 
               required
+              autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-astraea-rosegold/40 rounded-xl p-3 focus:ring-2 focus:ring-astraea-pink outline-none"
@@ -76,6 +72,7 @@ const AdminLogin = () => {
             <input 
               type={showPassword ? "text" : "password"} 
               required
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-astraea-rosegold/40 rounded-xl p-3 pr-12 focus:ring-2 focus:ring-astraea-pink outline-none"
@@ -99,14 +96,6 @@ const AdminLogin = () => {
               {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Login'}
             </button>
 
-            <button
-              type="button"
-              onClick={handleAutofill}
-              className="px-4 py-4 bg-astraea-blush text-astraea-pink hover:bg-astraea-blush/80 rounded-xl font-bold transition-colors shadow-sm"
-              title="Autofill Admin Credentials"
-            >
-              Autofill
-            </button>
           </div>
 
         </form>

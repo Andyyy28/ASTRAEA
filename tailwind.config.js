@@ -10,14 +10,19 @@ export default {
         astraea: {
           pink: '#F9A8C9',
           white: '#FFFFFF',
-          blush: '#FDEEF4',
-          rosegold: '#C9906A',
-          darkgray: '#2D2D2D',
+          blush: '#FDDDE6',
+          cream: '#FFF5F7',
+          lavender: '#E8D5F5',
+          mint: '#D5F0E8',
+          butter: '#FFF3CC',
+          rosegold: '#E891B8',
+          darkgray: '#3D2C35',
         }
       },
       fontFamily: {
-        heading: ['"Playfair Display"', 'serif'],
-        body: ['Outfit', 'sans-serif'],
+        heading: ['"Nunito"', 'sans-serif'],
+        body: ['"Nunito"', 'sans-serif'],
+        accent: ['"Caveat"', 'cursive'],
       }
     },
   },

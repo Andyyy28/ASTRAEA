@@ -24,13 +24,14 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-astraea-rosegold/20 shadow-sm animate-fade-in transition-all">
+    <nav className="sticky top-0 z-50 bg-astraea-blush/95 backdrop-blur-md border-b-2 border-dashed border-astraea-pink shadow-[0_2px_0px_#F9A8C9] animate-fade-in transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="font-heading text-xl sm:text-2xl md:text-3xl font-bold text-astraea-pink tracking-wide">
+            <Link to="/" className="font-heading text-xl sm:text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-wide flex items-center gap-2 rounded-full px-3 py-2 hover:bg-white/70">
+              <span className="text-astraea-pink">✿</span>
               Astraea Collection
             </Link>
           </div>
@@ -41,8 +42,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-astraea-pink
-                  ${isActive(link.path) ? 'text-astraea-pink border-b-2 border-astraea-pink' : 'text-astraea-darkgray'}`}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all hover:bg-white/80 hover:text-astraea-pink
+                  ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray'}`}
               >
                 {link.name}
               </Link>
@@ -51,10 +52,10 @@ const Navbar = () => {
 
           {/* Cart Icon & Mobile Toggle */}
           <div className="flex items-center space-x-4">
-            <Link to="/cart" className="relative min-h-11 min-w-11 p-2 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink transition-colors">
+            <Link to="/cart" className="relative min-h-11 min-w-11 p-2 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink transition-colors rounded-full bg-white/70 border border-dashed border-astraea-pink">
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-astraea-pink rounded-full">
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-astraea-pink rounded-full border-2 border-white">
                   {cartCount}
                 </span>
               )}
@@ -77,14 +78,14 @@ const Navbar = () => {
       {/* Mobile Drawer */}
       <div className={`md:hidden fixed inset-0 z-40 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <div className={`absolute inset-0 bg-black/20 transition-opacity ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setIsOpen(false)}></div>
-        <div className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-xl flex flex-col pt-20 px-6 space-y-2 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`absolute right-0 top-0 h-full w-full max-w-sm bg-astraea-cream border-l-2 border-dashed border-astraea-pink shadow-xl flex flex-col pt-20 px-6 space-y-2 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
               onClick={() => setIsOpen(false)}
-              className={`min-h-12 flex items-center text-lg font-medium border-b border-astraea-rosegold/10 py-3
-                ${isActive(link.path) ? 'text-astraea-pink' : 'text-astraea-darkgray'}`}
+              className={`min-h-12 flex items-center text-lg font-bold border-b border-dashed border-astraea-pink/30 py-3 px-3 rounded-full
+                ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray'}`}
             >
               {link.name}
             </Link>

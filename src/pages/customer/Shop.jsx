@@ -16,7 +16,6 @@ const Shop = () => {
 
   useEffect(() => {
     const fetchBouquets = async () => {
-      // Fetch all visible bouquets
       const { data } = await supabase
         .from('bouquets')
         .select('*')
@@ -35,17 +34,9 @@ const Shop = () => {
 
   useEffect(() => {
     let result = [...bouquets];
-
-    // Apply category filter
     if (categoryFilter !== 'All') {
-      // In seed data, we used 'Rose', 'Sunflower', 'Lily' as categories, 
-      // but the spec asked for 'Romantic', 'Birthday' etc. 
-      // Let's do a loose inclusion check or just exact match.
-      // If we don't have matching seed categories, it might show empty, which is fine for demo.
       result = result.filter(b => b.category?.includes(categoryFilter));
     }
-
-    // Apply sort
     if (sortOption === 'Price Low to High') {
       result.sort((a, b) => a.price - b.price);
     } else if (sortOption === 'Price High to Low') {
@@ -53,7 +44,6 @@ const Shop = () => {
     } else if (sortOption === 'Newest') {
       result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
-
     setFilteredBouquets(result);
   }, [categoryFilter, sortOption, bouquets]);
 
@@ -71,44 +61,29 @@ const Shop = () => {
   };
 
   return (
-    <div className="animate-fade-in py-8 md:py-16 bg-astraea-blush/30 min-h-screen">
+    <div className="animate-fade-in py-8 md:py-16 bg-astraea-cream min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Page Header */}
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
-            Ready-Made Bouquets
-          </h1>
-          <p className="text-sm md:text-base text-astraea-darkgray/70 font-light">
-            Choose from our curated collection
-          </p>
+          <h1 className="section-heading text-2xl md:text-4xl mb-4">Ready-Made Bouquets</h1>
+          <p className="font-accent text-2xl text-astraea-rosegold">Choose from our curated collection</p>
         </div>
 
-        {/* Filters Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-astraea-rosegold/20 mb-8 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+        <div className="scrapbook-card mb-8 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-[#FFFDFE]">
           <div className="flex flex-wrap items-center gap-2">
             <Filter className="w-5 h-5 text-astraea-pink mr-2" />
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`min-h-11 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  categoryFilter === cat 
-                    ? 'bg-astraea-pink text-white' 
-                    : 'bg-astraea-blush text-astraea-darkgray hover:bg-astraea-pink/20'
-                }`}
+                className={`kawaii-btn min-h-11 px-4 py-2 text-sm font-bold ${categoryFilter === cat ? 'bg-astraea-pink text-white' : 'bg-white text-astraea-darkgray'}`}
               >
                 {cat}
               </button>
             ))}
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto">
-            <span className="text-sm font-medium text-astraea-darkgray">Sort by:</span>
-            <select 
-              value={sortOption} 
-              onChange={(e) => setSortOption(e.target.value)}
-              className="w-full bg-astraea-blush border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-astraea-pink outline-none cursor-pointer"
-            >
+            <span className="text-sm font-bold text-astraea-darkgray">Sort by:</span>
+            <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="kawaii-input w-full md:w-auto cursor-pointer">
               <option>Newest</option>
               <option>Price Low to High</option>
               <option>Price High to Low</option>
@@ -116,70 +91,45 @@ const Shop = () => {
           </div>
         </div>
 
-        {/* Bouquet Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-96 bg-white animate-pulse rounded-xl border border-astraea-rosegold/10"></div>
+              <div key={i} className="h-96 bg-white animate-pulse rounded-xl border-2 border-dashed border-astraea-pink shadow-[4px_4px_0px_#F9A8C9]"></div>
             ))}
           </div>
         ) : filteredBouquets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-astraea-rosegold/20 border-dashed">
+          <div className="scrapbook-card flex flex-col items-center justify-center py-20 bg-[#FFFDFE]">
             <Flower2 className="w-16 h-16 text-astraea-pink/40 mb-4" />
             <h3 className="font-heading text-xl md:text-2xl text-astraea-darkgray">No bouquets found</h3>
             <p className="text-astraea-darkgray/60 mt-2 text-center max-w-sm">
               We couldn't find any bouquets matching your current filters. Try selecting "All" categories.
             </p>
-            <button 
-              onClick={() => setCategoryFilter('All')} 
-              className="mt-6 min-h-11 px-6 py-2 bg-astraea-pink text-white rounded-full text-sm hover:bg-astraea-pink/90"
-            >
+            <button onClick={() => setCategoryFilter('All')} className="kawaii-btn-primary mt-6 min-h-11 px-6 py-2 text-sm">
               Clear Filters
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredBouquets.map((bouquet) => (
-              <div key={bouquet.id} className="group bg-white rounded-xl border border-astraea-rosegold/20 overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-300 relative flex flex-col">
-                
-                {/* Category Badge */}
+              <div key={bouquet.id} className={`group scrapbook-card overflow-hidden relative flex flex-col ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip bg-[#FFFDFE]`}>
                 {bouquet.category && (
-                  <div className="absolute top-4 left-4 z-10 bg-astraea-pink text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                  <div className="absolute top-4 left-4 z-10 kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]">
                     {bouquet.category}
                   </div>
                 )}
-                
-                {/* Image */}
-                <div className="aspect-[4/5] bg-astraea-blush flex items-center justify-center overflow-hidden">
+                <div className="aspect-[4/5] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-[16px]">
                   {bouquet.images?.[0] ? (
-                    <img 
-                      src={bouquet.images[0]} 
-                      alt={bouquet.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <img src={bouquet.images[0]} alt={bouquet.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-[16px]" />
                   ) : (
                     <Flower2 className="w-12 h-12 text-astraea-pink/30" />
                   )}
                 </div>
-                
-                {/* Details */}
                 <div className="p-4 md:p-6 flex flex-col flex-grow">
                   <h3 className="font-heading font-bold text-base md:text-lg text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
-                  <p className="font-bold text-astraea-pink text-xl mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
-                  
+                  <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914] mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
                   <div className="mt-auto flex flex-col space-y-3">
-                    <Link 
-                      to={`/shop/${bouquet.id}`} 
-                      className="min-h-11 w-full py-3 text-center border border-astraea-pink text-astraea-pink rounded-full font-medium hover:bg-astraea-pink/5 transition-colors"
-                    >
-                      View Details
-                    </Link>
-                    <button 
-                      onClick={() => handleAddToCart(bouquet)}
-                      className="min-h-11 w-full py-3 text-center bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90 transition-colors shadow-sm"
-                    >
-                      Add to Cart
-                    </button>
+                    <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 w-full py-3 text-center">View Details</Link>
+                    <button onClick={() => handleAddToCart(bouquet)} className="kawaii-btn-primary min-h-11 w-full py-3 text-center">Add to Cart</button>
                   </div>
                 </div>
               </div>

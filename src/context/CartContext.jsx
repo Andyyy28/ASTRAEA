@@ -6,8 +6,14 @@ export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
-    const saved = localStorage.getItem('astraea_cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('astraea_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.warn('Unable to load saved cart:', error);
+      localStorage.removeItem('astraea_cart');
+      return [];
+    }
   });
 
   useEffect(() => {

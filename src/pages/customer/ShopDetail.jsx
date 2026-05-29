@@ -8,7 +8,6 @@ const ShopDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  
   const [bouquet, setBouquet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -17,171 +16,69 @@ const ShopDetail = () => {
 
   useEffect(() => {
     const fetchBouquet = async () => {
-      const { data, error } = await supabase
-        .from('bouquets')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
-      if (data) {
-        setBouquet(data);
-      } else {
-        // Handle error or not found
-        console.error("Bouquet not found", error);
-      }
+      const { data, error } = await supabase.from('bouquets').select('*').eq('id', id).single();
+      if (data) setBouquet(data); else console.error('Bouquet not found', error);
       setLoading(false);
     };
-
     if (id) fetchBouquet();
   }, [id]);
 
   const handleAddToCart = () => {
-    addToCart({
-      item_type: 'bouquet',
-      bouquet_id: bouquet.id,
-      name: bouquet.name,
-      price: bouquet.price,
-      image: bouquet.images?.[0],
-      quantity: quantity,
-      message_card: messageCard,
-      subtotal: bouquet.price * quantity
-    });
+    addToCart({ item_type: 'bouquet', bouquet_id: bouquet.id, name: bouquet.name, price: bouquet.price, image: bouquet.images?.[0], quantity, message_card: messageCard, subtotal: bouquet.price * quantity });
     alert('Added to cart!');
     navigate('/cart');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen py-8 md:py-20 bg-astraea-blush/30 flex justify-center">
-        <div className="w-16 h-16 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!bouquet) {
-    return (
-      <div className="min-h-screen py-20 flex flex-col items-center justify-center bg-astraea-blush/30 text-center px-4">
-        <Flower2 className="w-20 h-20 text-astraea-pink/50 mb-6" />
-        <h2 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">Bouquet Not Found</h2>
-        <p className="text-sm md:text-base text-astraea-darkgray/70 mb-8">This bouquet might have been removed or the link is invalid.</p>
-        <Link to="/shop" className="min-h-11 px-8 py-3 bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90">
-          Back to Shop
-        </Link>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen py-8 md:py-20 bg-astraea-cream flex justify-center"><div className="w-16 h-16 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;
+  if (!bouquet) return <div className="min-h-screen py-20 flex flex-col items-center justify-center bg-astraea-cream text-center px-4"><Flower2 className="w-20 h-20 text-astraea-pink/50 mb-6" /><h2 className="section-heading text-2xl md:text-4xl mb-4">Bouquet Not Found</h2><p className="text-sm md:text-base text-astraea-darkgray/70 mb-8">This bouquet might have been removed or the link is invalid.</p><Link to="/shop" className="kawaii-btn-primary min-h-11 px-8 py-3">Back to Shop</Link></div>;
 
   const images = bouquet.images?.length ? bouquet.images : [];
 
   return (
-    <div className="animate-fade-in py-8 md:py-16 bg-white min-h-[80vh]">
+    <div className="animate-fade-in py-8 md:py-16 bg-astraea-cream min-h-[80vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <Link to="/shop" className="inline-flex items-center text-astraea-darkgray hover:text-astraea-pink transition-colors mb-8 font-medium">
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Shop
-        </Link>
-
+        <Link to="/shop" className="inline-flex items-center text-astraea-darkgray hover:text-astraea-pink transition-colors mb-8 font-medium"><ArrowLeft className="w-5 h-5 mr-2" />Back to Shop</Link>
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-          
-          {/* Left Column: Image Gallery */}
           <div className="md:w-1/2 flex flex-col gap-4">
-            <div className="aspect-[4/5] bg-astraea-blush rounded-2xl flex items-center justify-center overflow-hidden border border-astraea-rosegold/20">
-              {images[activeImage] ? (
-                <img src={images[activeImage]} alt={bouquet.name} className="w-full h-full object-cover" />
-              ) : (
-                <Flower2 className="w-32 h-32 text-astraea-pink/20" />
-              )}
+            <div className="scrapbook-card washi-strip aspect-[4/5] bg-astraea-blush rounded-2xl flex items-center justify-center overflow-hidden">
+              {images[activeImage] ? <img src={images[activeImage]} alt={bouquet.name} className="w-full h-full object-cover rounded-[14px]" /> : <Flower2 className="w-32 h-32 text-astraea-pink/20" />}
             </div>
-            
-            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => setActiveImage(idx)}
-                    className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${
-                      activeImage === idx ? 'border-astraea-pink opacity-100' : 'border-transparent opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img} alt={`Thumbnail ${idx+1}`} className="w-full h-full object-cover" />
+                  <button key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
                   </button>
                 ))}
               </div>
             )}
           </div>
-
-          {/* Right Column: Details */}
           <div className="md:w-1/2 flex flex-col">
-            {bouquet.category && (
-              <span className="inline-block bg-astraea-blush text-astraea-pink text-sm font-bold px-4 py-1.5 rounded-full mb-4 w-max border border-astraea-pink/30">
-                {bouquet.category}
-              </span>
-            )}
-            
-            <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
-              {bouquet.name}
-            </h1>
-            
-            <p className="font-bold text-lg md:text-3xl text-astraea-pink mb-6">
-              ₱{Number(bouquet.price).toFixed(2)}
-            </p>
-            
-            <div className="prose prose-pink text-astraea-darkgray/80 mb-8 max-w-none">
-              <p>{bouquet.description}</p>
-            </div>
-
+            {bouquet.category && <span className="kawaii-badge bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8] w-max mb-4">★ {bouquet.category}</span>}
+            <h1 className="section-heading text-2xl md:text-4xl mb-4">{bouquet.name}</h1>
+            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
+            <div className="prose prose-pink text-astraea-darkgray/80 mb-8 max-w-none"><p>{bouquet.description}</p></div>
             <div className="space-y-6 mb-10">
-              {/* Message Card */}
               <div>
-                <label htmlFor="message" className="block text-sm font-bold text-astraea-darkgray mb-2">
-                  Add a personal message (Optional)
-                </label>
-                <textarea 
-                  id="message" 
-                  rows="3" 
-                  value={messageCard}
-                  onChange={(e) => setMessageCard(e.target.value)}
-                  placeholder="Happy Anniversary..."
-                  className="w-full border border-astraea-rosegold/40 rounded-xl p-4 focus:ring-2 focus:ring-astraea-pink focus:border-astraea-pink outline-none transition-all resize-none bg-astraea-blush/30"
-                ></textarea>
+                <label htmlFor="message" className="block text-sm font-medium text-[#C4658A] mb-2">Add a personal message (Optional)</label>
+                <textarea id="message" rows="3" value={messageCard} onChange={(e) => setMessageCard(e.target.value)} placeholder="Happy Anniversary..." className="kawaii-input min-h-[100px] resize-none"></textarea>
               </div>
-
-              {/* Quantity */}
               <div>
-                <label className="block text-sm font-bold text-astraea-darkgray mb-2">Quantity</label>
-                <div className="flex items-center border border-astraea-rosegold/40 rounded-full w-max bg-white">
-                  <button 
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
-                  >
-                    <Minus className="w-5 h-5" />
-                  </button>
+                <label className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
+                <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
                   <span className="w-12 text-center font-bold text-lg">{quantity}</span>
-                  <button 
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
-                  >
-                    <Plus className="w-5 h-5" />
-                  </button>
+                  <button onClick={() => setQuantity(quantity + 1)} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Plus className="w-5 h-5" /></button>
                 </div>
               </div>
             </div>
-
             <div className="mt-auto">
-              <div className="flex justify-between items-center mb-6 pt-6 border-t border-astraea-rosegold/20">
-                <span className="font-heading text-xl md:text-2xl font-bold text-astraea-darkgray">Total</span>
-                <span className="font-bold text-3xl text-astraea-pink">₱{(bouquet.price * quantity).toFixed(2)}</span>
+              <div className="flex justify-between items-center mb-6 pt-6 border-t-2 border-dashed border-astraea-pink/30">
+                <span className="section-heading text-xl md:text-2xl">Total</span>
+                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{(bouquet.price * quantity).toFixed(2)}</span>
               </div>
-              <button 
-                onClick={handleAddToCart}
-                className="w-full py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                Add to Cart
-              </button>
+              <button onClick={handleAddToCart} className="kawaii-btn-primary w-full py-4 text-lg">Add to Cart</button>
             </div>
-
           </div>
         </div>
       </div>
