@@ -71,28 +71,28 @@ const Shop = () => {
   };
 
   return (
-    <div className="animate-fade-in py-12 bg-astraea-blush/30 min-h-screen">
+    <div className="animate-fade-in py-8 md:py-16 bg-astraea-blush/30 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-astraea-darkgray mb-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
             Ready-Made Bouquets
           </h1>
-          <p className="text-lg text-astraea-darkgray/70 font-light">
+          <p className="text-sm md:text-base text-astraea-darkgray/70 font-light">
             Choose from our curated collection
           </p>
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-astraea-rosegold/20 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-astraea-rosegold/20 mb-8 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <Filter className="w-5 h-5 text-astraea-pink mr-2" />
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`min-h-11 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   categoryFilter === cat 
                     ? 'bg-astraea-pink text-white' 
                     : 'bg-astraea-blush text-astraea-darkgray hover:bg-astraea-pink/20'
@@ -102,12 +102,12 @@ const Shop = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full md:w-auto">
             <span className="text-sm font-medium text-astraea-darkgray">Sort by:</span>
             <select 
               value={sortOption} 
               onChange={(e) => setSortOption(e.target.value)}
-              className="bg-astraea-blush border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-astraea-pink outline-none cursor-pointer"
+              className="w-full bg-astraea-blush border-none rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-astraea-pink outline-none cursor-pointer"
             >
               <option>Newest</option>
               <option>Price Low to High</option>
@@ -126,19 +126,19 @@ const Shop = () => {
         ) : filteredBouquets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-astraea-rosegold/20 border-dashed">
             <Flower2 className="w-16 h-16 text-astraea-pink/40 mb-4" />
-            <h3 className="font-heading text-2xl text-astraea-darkgray">No bouquets found</h3>
+            <h3 className="font-heading text-xl md:text-2xl text-astraea-darkgray">No bouquets found</h3>
             <p className="text-astraea-darkgray/60 mt-2 text-center max-w-sm">
               We couldn't find any bouquets matching your current filters. Try selecting "All" categories.
             </p>
             <button 
               onClick={() => setCategoryFilter('All')} 
-              className="mt-6 px-6 py-2 bg-astraea-pink text-white rounded-full text-sm hover:bg-astraea-pink/90"
+              className="mt-6 min-h-11 px-6 py-2 bg-astraea-pink text-white rounded-full text-sm hover:bg-astraea-pink/90"
             >
               Clear Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredBouquets.map((bouquet) => (
               <div key={bouquet.id} className="group bg-white rounded-xl border border-astraea-rosegold/20 overflow-hidden hover:-translate-y-2 hover:shadow-xl transition-all duration-300 relative flex flex-col">
                 
@@ -163,20 +163,20 @@ const Shop = () => {
                 </div>
                 
                 {/* Details */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="font-heading font-bold text-2xl text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
+                <div className="p-4 md:p-6 flex flex-col flex-grow">
+                  <h3 className="font-heading font-bold text-base md:text-lg text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
                   <p className="font-bold text-astraea-pink text-xl mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
                   
                   <div className="mt-auto flex flex-col space-y-3">
                     <Link 
                       to={`/shop/${bouquet.id}`} 
-                      className="w-full py-3 text-center border border-astraea-pink text-astraea-pink rounded-full font-medium hover:bg-astraea-pink/5 transition-colors"
+                      className="min-h-11 w-full py-3 text-center border border-astraea-pink text-astraea-pink rounded-full font-medium hover:bg-astraea-pink/5 transition-colors"
                     >
                       View Details
                     </Link>
                     <button 
                       onClick={() => handleAddToCart(bouquet)}
-                      className="w-full py-3 text-center bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90 transition-colors shadow-sm"
+                      className="min-h-11 w-full py-3 text-center bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90 transition-colors shadow-sm"
                     >
                       Add to Cart
                     </button>

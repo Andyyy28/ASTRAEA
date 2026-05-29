@@ -38,21 +38,21 @@ const PriceList = () => {
   }
 
   return (
-    <div className="animate-fade-in py-12 bg-astraea-blush/20 min-h-screen text-astraea-darkgray">
+    <div className="animate-fade-in py-8 md:py-16 bg-astraea-blush/20 min-h-screen text-astraea-darkgray">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="text-center mb-16">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">Price List</h1>
-          <p className="text-lg text-astraea-darkgray/70">All prices are per stem or per piece unless stated</p>
+        <div className="text-center mb-10 md:mb-16">
+          <h1 className="font-heading text-2xl md:text-4xl font-bold mb-4">Price List</h1>
+          <p className="text-sm md:text-base text-astraea-darkgray/70">All prices are per stem or per piece unless stated</p>
           <div className="w-24 h-1 bg-astraea-pink mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="space-y-16">
+        <div className="space-y-10 md:space-y-16">
           
           {/* SECTION 1 - FLOWERS */}
           <section>
-            <h2 className="font-heading text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Flowers</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Flowers</h2>
             <div className="bg-white rounded-xl shadow-sm border border-astraea-rosegold/20 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
@@ -100,8 +100,8 @@ const PriceList = () => {
 
           {/* SECTION 2 - FILLERS */}
           <section>
-            <h2 className="font-heading text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Fillers</h2>
-            <div className="bg-white rounded-xl shadow-sm border border-astraea-rosegold/20 overflow-hidden">
+            <h2 className="font-heading text-xl md:text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Fillers</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-astraea-rosegold/20 overflow-hidden overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-astraea-blush border-b border-astraea-rosegold/30">
@@ -129,8 +129,8 @@ const PriceList = () => {
 
           {/* SECTION 3 - WRAPPERS */}
           <section>
-            <h2 className="font-heading text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Wrappers</h2>
-            <div className="bg-white rounded-xl shadow-sm border border-astraea-rosegold/20 overflow-hidden">
+            <h2 className="font-heading text-xl md:text-3xl font-bold mb-6 text-astraea-pink border-b border-astraea-rosegold/30 pb-2">Wrappers</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-astraea-rosegold/20 overflow-hidden overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-astraea-blush border-b border-astraea-rosegold/30">
@@ -227,8 +227,8 @@ const PriceList = () => {
           </div>
 
           {/* NOTE BOX */}
-          <div className="bg-astraea-pink/10 border border-astraea-pink/30 rounded-2xl p-8 text-center mt-12">
-            <p className="text-lg text-astraea-pink font-medium leading-relaxed">
+          <div className="bg-astraea-pink/10 border border-astraea-pink/30 rounded-2xl p-4 md:p-8 text-center mt-12">
+            <p className="text-sm md:text-lg text-astraea-pink font-medium leading-relaxed">
               Prices are subject to change. Final price depends on your customization. <br className="hidden md:block" />
               Contact us for bulk or event orders.
             </p>

@@ -36,11 +36,11 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <div className="py-20 bg-astraea-blush/20 min-h-screen animate-fade-in">
+    <div className="py-8 md:py-16 bg-astraea-blush/20 min-h-screen animate-fade-in">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="text-center mb-16">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-astraea-darkgray mb-4">
+        <div className="text-center mb-10 md:mb-16">
+          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
             Frequently Asked Questions
           </h1>
           <div className="w-24 h-1 bg-astraea-pink mx-auto mt-6 rounded-full"></div>
@@ -56,9 +56,9 @@ const FAQ = () => {
             >
               <button 
                 onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
-                className="w-full text-left px-6 py-5 flex justify-between items-center focus:outline-none"
+                className="w-full min-h-12 text-left px-4 md:px-6 py-4 md:py-5 flex justify-between items-center gap-4 focus:outline-none"
               >
-                <span className={`font-bold text-lg ${openIndex === idx ? 'text-astraea-pink' : 'text-astraea-darkgray'}`}>
+                <span className={`font-bold text-base md:text-lg ${openIndex === idx ? 'text-astraea-pink' : 'text-astraea-darkgray'}`}>
                   {faq.q}
                 </span>
                 <ChevronDown className={`w-5 h-5 text-astraea-rosegold transition-transform duration-300 ${

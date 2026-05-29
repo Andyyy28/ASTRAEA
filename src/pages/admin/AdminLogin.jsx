@@ -28,12 +28,17 @@ const AdminLogin = () => {
     try {
       const { error: authError } = await login(email, password);
       if (authError) throw authError;
-      // Login success is handled by the AuthContext observer, which will update user state and trigger useEffect redirect
-    } catch {
-      setError('Invalid email or password.');
+      // Login success is handled by the AuthContext observer
+    } catch (err) {
+      setError(err?.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAutofill = () => {
+    setEmail('admin@astraea.com');
+    setPassword('astraea2024');
   };
 
   return (
@@ -48,7 +53,7 @@ const AdminLogin = () => {
         <h2 className="text-astraea-darkgray/70 font-medium tracking-widest uppercase text-sm mb-8">Admin Panel</h2>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
+          <div className="mb-6 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium text-left break-words">
             {error}
           </div>
         )}
@@ -85,13 +90,24 @@ const AdminLogin = () => {
             </button>
           </div>
 
-          <button 
-            type="submit"
-            disabled={loading}
-            className="w-full py-4 mt-4 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
-          >
-            {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Login'}
-          </button>
+          <div className="flex gap-2">
+            <button 
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-4 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
+            >
+              {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Login'}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAutofill}
+              className="px-4 py-4 bg-astraea-blush text-astraea-pink hover:bg-astraea-blush/80 rounded-xl font-bold transition-colors shadow-sm"
+              title="Autofill Admin Credentials"
+            >
+              Autofill
+            </button>
+          </div>
 
         </form>
         

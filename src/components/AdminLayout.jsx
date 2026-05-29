@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ShoppingBag, Box, Flower2, CircleDollarSign, Settings, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Box, Flower2, CircleDollarSign, Settings, LogOut, Menu, X } from 'lucide-react';
 
 const AdminLayout = () => {
   const { user, loading, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -76,11 +77,16 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Topbar (Mobile & Desktop) */}
-        <header className="h-20 bg-[#FCFAFB]/80 backdrop-blur-xl border-b border-astraea-pink/5 flex items-center justify-between px-6 sm:px-10 z-10 sticky top-0">
+        <header className="h-16 md:h-20 bg-[#FCFAFB]/80 backdrop-blur-xl border-b border-astraea-pink/5 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
           <div className="flex items-center md:hidden">
-            {/* Mobile menu toggle would go here */}
-            <Menu className="w-6 h-6 text-gray-500 mr-4" />
-            <span className="text-xl font-bold tracking-tight text-astraea-pink">Astraea Admin</span>
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="min-h-11 min-w-11 flex items-center justify-center text-gray-500 mr-2"
+              aria-label="Open admin menu"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <span className="text-lg font-bold tracking-tight text-astraea-pink">Astraea Admin</span>
           </div>
           
           <div className="hidden md:flex items-center">
@@ -101,10 +107,52 @@ const AdminLayout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 sm:p-10 lg:p-12">
+        <main className="flex-1 p-4 sm:p-8 lg:p-12 min-w-0">
           <Outlet />
         </main>
       </div>
+
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-white md:hidden">
+          <div className="h-16 px-4 flex items-center justify-between border-b border-astraea-pink/10">
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-extrabold tracking-tight text-astraea-pink flex items-center gap-2">
+              <Flower2 className="w-6 h-6" /> Astraea Admin
+            </Link>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-gray-500" aria-label="Close admin menu">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <nav className="p-4">
+            <ul className="space-y-2">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <li key={item.name}>
+                    <Link
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`min-h-12 flex items-center px-4 py-3 rounded-2xl font-semibold ${isActive ? 'bg-astraea-pink/10 text-astraea-pink' : 'text-gray-600'}`}
+                    >
+                      <item.icon className={`w-5 h-5 mr-4 ${isActive ? 'text-astraea-pink' : 'text-gray-400'}`} />
+                      {item.name}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                logout();
+              }}
+              className="mt-6 min-h-12 flex items-center w-full px-4 py-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-2xl font-semibold"
+            >
+              <LogOut className="w-5 h-5 mr-4 text-gray-400" />
+              Logout
+            </button>
+          </nav>
+        </div>
+      )}
     </div>
   );
 };

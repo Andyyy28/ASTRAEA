@@ -85,9 +85,9 @@ const AdminDashboard = () => {
     <div className="space-y-8 animate-fade-in">
       
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex items-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center mr-5 shadow-inner">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center shadow-inner">
             <ShoppingBag className="w-6 h-6 text-blue-500" />
           </div>
           <div>
@@ -96,8 +96,8 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex items-center relative">
-          <div className="w-14 h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl flex items-center justify-center mr-5 shadow-inner">
+        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3 relative">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl flex items-center justify-center shadow-inner">
             <Clock className="w-6 h-6 text-yellow-500" />
           </div>
           <div>
@@ -112,8 +112,8 @@ const AdminDashboard = () => {
           )}
         </div>
         
-        <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex items-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl flex items-center justify-center mr-5 shadow-inner">
+        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl flex items-center justify-center shadow-inner">
             <DollarSign className="w-6 h-6 text-green-500" />
           </div>
           <div>
@@ -122,13 +122,13 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex items-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl flex items-center justify-center mr-5 shadow-inner">
+        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl flex items-center justify-center shadow-inner">
             <TrendingUp className="w-6 h-6 text-purple-500" />
           </div>
           <div>
             <p className="text-sm font-medium text-gray-400 mb-1">Top Bouquet</p>
-            <h3 className="text-xl font-bold text-astraea-darkgray truncate" title={metrics.topBouquet}>{metrics.topBouquet}</h3>
+            <h3 className="text-base md:text-xl font-bold text-astraea-darkgray line-clamp-2" title={metrics.topBouquet}>{metrics.topBouquet}</h3>
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
                       <td className="px-6 py-5 font-bold text-gray-700">₱{Number(order.total_amount).toFixed(2)}</td>
                       <td className="px-6 py-5">
-                        <Link to={`/admin/orders/${order.id}`} className="px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
+                      <Link to={`/admin/orders/${order.id}`} className="min-h-11 inline-flex items-center px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                           View
                         </Link>
                       </td>
@@ -193,11 +193,11 @@ const AdminDashboard = () => {
             {lowStock.length > 0 ? (
               <ul className="divide-y divide-gray-50">
                 {lowStock.map((item, idx) => (
-                  <li key={`${item.table}-${item.id}-${idx}`} className="p-4 flex justify-between items-center hover:bg-[#FCFAFB] rounded-2xl transition-colors duration-200">
+                  <li key={`${item.table}-${item.id}-${idx}`} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:bg-[#FCFAFB] rounded-2xl transition-colors duration-200">
                     <span className="text-sm font-semibold text-gray-700">{item.name}</span>
                     <button 
                       onClick={() => handleMarkAvailable(item)}
-                      className="px-4 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-colors"
+                      className="min-h-11 px-4 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-colors"
                     >
                       Restocked
                     </button>

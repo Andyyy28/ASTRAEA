@@ -134,31 +134,31 @@ const AdminInventory = () => {
   return (
     <>
       <div className="space-y-6 animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-800">Inventory Management</h1>
+      <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Inventory Management</h1>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-200 bg-white px-2 pt-2 rounded-t-xl">
+      <div className="flex overflow-x-auto border-b border-gray-200 bg-white px-2 pt-2 rounded-t-xl">
         <button 
           onClick={() => setActiveTab('flowers')}
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'flowers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`min-h-11 whitespace-nowrap px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'flowers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
         >
           Flowers & Colors
         </button>
         <button 
           onClick={() => setActiveTab('fillers')}
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'fillers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`min-h-11 whitespace-nowrap px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'fillers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
         >
           Fillers
         </button>
         <button 
           onClick={() => setActiveTab('wrappers')}
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'wrappers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+          className={`min-h-11 whitespace-nowrap px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'wrappers' ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
         >
           Wrappers
         </button>
       </div>
 
-      <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-6 min-h-[500px]">
+      <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-4 md:p-6 min-h-[500px]">
         {loading ? (
           <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>
         ) : (
@@ -166,9 +166,9 @@ const AdminInventory = () => {
             {/* FLOWERS TAB */}
             {activeTab === 'flowers' && (
               <div>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Flower Types</h2>
-                  <button onClick={() => openModal('add_flower')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
+                  <button onClick={() => openModal('add_flower')} className="min-h-11 flex items-center justify-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Flower
                   </button>
                 </div>
@@ -193,7 +193,7 @@ const AdminInventory = () => {
                                 <button
                                   key={c.id}
                                   onClick={() => handleToggleAvailability('flower_colors', c.id, c.is_available)}
-                                  className={`relative w-8 h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${c.is_available ? 'border-gray-300' : 'border-red-400 opacity-50'}`}
+                                  className={`relative min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${c.is_available ? 'border-gray-300' : 'border-red-400 opacity-50'}`}
                                   style={{ backgroundColor: c.hex_code }}
                                   title={`${c.color_name} - ${c.is_available ? 'Available' : 'Out of Stock'}`}
                                 >
@@ -204,7 +204,7 @@ const AdminInventory = () => {
                                   )}
                                 </button>
                               ))}
-                              <button onClick={() => openModal('add_flower_color', f)} className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors">
+                              <button onClick={() => openModal('add_flower_color', f)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors">
                                 <Plus className="w-4 h-4" />
                               </button>
                             </div>
@@ -225,9 +225,9 @@ const AdminInventory = () => {
             {/* FILLERS TAB */}
             {activeTab === 'fillers' && (
               <div>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Fillers</h2>
-                  <button onClick={() => openModal('add_filler')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
+                  <button onClick={() => openModal('add_filler')} className="min-h-11 flex items-center justify-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Filler
                   </button>
                 </div>
@@ -270,9 +270,9 @@ const AdminInventory = () => {
             {/* WRAPPERS TAB */}
             {activeTab === 'wrappers' && (
               <div>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
                   <h2 className="text-lg font-bold text-gray-800">Wrappers</h2>
-                  <button onClick={() => openModal('add_wrapper')} className="flex items-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
+                  <button onClick={() => openModal('add_wrapper')} className="min-h-11 flex items-center justify-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
                     <Plus className="w-4 h-4 mr-1" /> Add Wrapper
                   </button>
                 </div>
@@ -297,7 +297,7 @@ const AdminInventory = () => {
                                 <button
                                   key={c.id}
                                   onClick={() => handleToggleAvailability('wrapper_colors', c.id, c.is_available)}
-                                  className={`relative w-8 h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${c.is_available ? 'border-gray-300' : 'border-red-400 opacity-50'}`}
+                                  className={`relative min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${c.is_available ? 'border-gray-300' : 'border-red-400 opacity-50'}`}
                                   style={{ backgroundColor: c.hex_code }}
                                   title={`${c.color_name} - ${c.is_available ? 'Available' : 'Out of Stock'}`}
                                 >
@@ -308,7 +308,7 @@ const AdminInventory = () => {
                                   )}
                                 </button>
                               ))}
-                              <button onClick={() => openModal('add_wrapper_color', w)} className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors">
+                              <button onClick={() => openModal('add_wrapper_color', w)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors">
                                 <Plus className="w-4 h-4" />
                               </button>
                             </div>
@@ -332,8 +332,8 @@ const AdminInventory = () => {
 
       {/* Modal Overlay */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md animate-fade-in shadow-xl">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 w-full h-[92vh] sm:h-auto sm:max-w-md animate-fade-in shadow-xl overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-800">
                 {modalType === 'add_flower' && 'Add New Flower'}
@@ -400,17 +400,17 @@ const AdminInventory = () => {
                 </div>
               )}
 
-              <div className="mt-6 flex justify-end gap-3">
+              <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-3">
                 <button 
                   type="button" 
                   onClick={closeModal} 
-                  className="px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
+                  className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg"
+                  className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg"
                 >
                   Save
                 </button>

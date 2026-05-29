@@ -43,6 +43,7 @@ const Customize = () => {
   const [addons, setAddons] = useState({ ribbon: false, messageCard: false });
   const [message, setMessage] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -164,13 +165,13 @@ const Customize = () => {
       case 0: // Size
         return (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">What size bouquet?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">What size bouquet?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {sizeOptions.map(size => (
                 <div 
                   key={size.id}
                   onClick={() => setSelectedSize(size)}
-                  className={`cursor-pointer rounded-2xl p-6 border-2 transition-all ${
+                  className={`cursor-pointer rounded-2xl p-4 md:p-6 border-2 transition-all ${
                     selectedSize?.id === size.id 
                       ? 'border-astraea-pink bg-astraea-pink/5 shadow-md' 
                       : 'border-astraea-rosegold/30 hover:border-astraea-pink/50'
@@ -188,7 +189,7 @@ const Customize = () => {
       case 1: // Flowers
         return (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">Pick your flowers</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your flowers</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {dbFlowers.map(f => {
                 const qty = selectedFlowers[f.id] || 0;
@@ -201,9 +202,9 @@ const Customize = () => {
                     <p className="text-astraea-pink text-sm mb-4">₱{f.price_per_stem}/stem</p>
                     
                     <div className="flex items-center justify-between border border-astraea-rosegold/40 rounded-full bg-astraea-blush/20">
-                      <button onClick={() => updateFlowerQty(f.id, -1)} className="w-8 h-8 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
+                    <button onClick={() => updateFlowerQty(f.id, -1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
                       <span className="font-bold">{qty}</span>
-                      <button onClick={() => updateFlowerQty(f.id, 1)} className="w-8 h-8 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">+</button>
+                    <button onClick={() => updateFlowerQty(f.id, 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">+</button>
                     </div>
                   </div>
                 );
@@ -223,7 +224,7 @@ const Customize = () => {
         }
         return (
           <div className="space-y-8 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">Pick your colors</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your colors</h2>
             <p className="text-astraea-darkgray/70 -mt-6">Choose one main color per flower type you selected.</p>
             
             <div className="space-y-8">
@@ -237,7 +238,7 @@ const Customize = () => {
                         <button
                           key={c.id}
                           onClick={() => setSelectedFlowerColors(prev => ({...prev, [f.id]: c.color_name}))}
-                          className={`w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
+                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
                             selectedFlowerColors[f.id] === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'
                           }`}
                           style={{ backgroundColor: c.hex_code }}
@@ -256,7 +257,7 @@ const Customize = () => {
       case 3: // Fillers
         return (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">Add some fillers</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Add some fillers</h2>
             <p className="text-astraea-darkgray/70 -mt-4">This step is completely optional.</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -292,7 +293,7 @@ const Customize = () => {
         const activeWrapperColors = selectedWrapper ? dbWrapperColors.filter(wc => wc.wrapper_id === selectedWrapper) : [];
         return (
           <div className="space-y-8 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">Pick your wrapper</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your wrapper</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {dbWrappers.map(w => (
@@ -320,7 +321,7 @@ const Customize = () => {
                     <button
                       key={c.id}
                       onClick={() => setSelectedWrapperColor(c.color_name)}
-                      className={`w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
+                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
                         selectedWrapperColor === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'
                       }`}
                       style={{ backgroundColor: c.hex_code }}
@@ -337,7 +338,7 @@ const Customize = () => {
       case 5: // Add-ons
         return (
           <div className="space-y-8 animate-fade-in">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray">Final touches</h2>
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Final touches</h2>
             
             <div className="space-y-4">
               <label className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
@@ -395,11 +396,11 @@ const Customize = () => {
   };
 
   return (
-    <div className="min-h-screen bg-astraea-blush/30 py-8">
+    <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Progress Bar */}
-        <div className="mb-12 overflow-x-auto pb-8 pt-2 px-2">
+        <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
           <div className="flex items-center min-w-max justify-center md:justify-start">
             {steps.map((step, idx) => (
               <React.Fragment key={idx}>
@@ -411,7 +412,7 @@ const Customize = () => {
                   }`}>
                     {currentStep > idx ? <Check className="w-4 h-4" /> : idx + 1}
                   </div>
-                  <span className={`absolute top-10 text-xs font-bold whitespace-nowrap ${
+                  <span className={`hidden md:block absolute top-10 text-xs font-bold whitespace-nowrap ${
                     currentStep >= idx ? 'text-astraea-darkgray' : 'text-astraea-darkgray/40'
                   }`}>{step}</span>
                 </div>
@@ -427,18 +428,18 @@ const Customize = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Builder Area */}
-          <div className="lg:w-2/3 bg-white p-6 sm:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
+          <div className="lg:w-2/3 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
             
             <div className="flex-grow">
               {renderStepContent()}
             </div>
             
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 pt-6 border-t border-astraea-rosegold/20">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-12 pt-6 border-t border-astraea-rosegold/20">
               <button 
                 onClick={handleBack}
                 disabled={currentStep === 0}
-                className={`flex items-center px-6 py-3 rounded-full font-bold transition-colors ${
+                className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${
                   currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'
                 }`}
               >
@@ -448,14 +449,14 @@ const Customize = () => {
               {currentStep < steps.length - 1 ? (
                 <button 
                   onClick={handleNext}
-                  className="flex items-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors"
+                  className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors"
                 >
                   Next <ChevronRight className="w-5 h-5 ml-1" />
                 </button>
               ) : (
                 <button 
                   onClick={handleAddToCart}
-                  className="flex items-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"
+                  className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"
                 >
                   <ShoppingBag className="w-5 h-5 mr-2" /> Add to Cart
                 </button>
@@ -464,7 +465,7 @@ const Customize = () => {
           </div>
 
           {/* Summary Panel (Sticky Desktop) */}
-          <div className="lg:w-1/3">
+          <div className="hidden lg:block lg:w-1/3">
             <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
               <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
               
@@ -536,6 +537,41 @@ const Customize = () => {
           
         </div>
       </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-white/70">Custom Bouquet</p>
+            <p className="font-bold text-xl text-astraea-pink">â‚±{calculateTotal().toFixed(2)}</p>
+          </div>
+          <button onClick={() => setIsSummaryOpen(true)} className="min-h-11 px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">
+            View Summary
+          </button>
+        </div>
+      </div>
+      {isSummaryOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 lg:hidden" onClick={() => setIsSummaryOpen(false)}>
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto bg-astraea-darkgray text-white p-6 rounded-t-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-2xl font-bold text-astraea-pink">Your Bouquet</h3>
+              <button onClick={() => setIsSummaryOpen(false)} className="min-h-11 min-w-11 text-white text-2xl">x</button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between border-b border-white/10 pb-2">
+                <span className="text-white/80">Size</span>
+                <span>{selectedSize?.name}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/10 pb-2">
+                <span className="text-white/80">Flowers</span>
+                <span>{Object.values(selectedFlowers).reduce((sum, qty) => sum + qty, 0)} stems</span>
+              </div>
+              <div className="flex justify-between pt-4">
+                <span className="text-white/80 text-lg">Total</span>
+                <span className="font-bold text-3xl text-astraea-pink">â‚±{calculateTotal().toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

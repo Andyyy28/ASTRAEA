@@ -19,23 +19,23 @@ const Contact = () => {
   };
 
   return (
-    <div className="py-20 bg-astraea-blush/10 min-h-screen animate-fade-in">
+    <div className="py-8 md:py-16 bg-astraea-blush/10 min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="text-center mb-16">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-astraea-darkgray mb-4">
+        <div className="text-center mb-10 md:mb-16">
+          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
             Get in Touch
           </h1>
-          <p className="text-lg text-astraea-darkgray/70">
+          <p className="text-sm md:text-base text-astraea-darkgray/70">
             We'd love to hear from you. Send us a message or reach out on WhatsApp.
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-12 bg-white rounded-3xl shadow-sm border border-astraea-rosegold/20 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-0 bg-white rounded-3xl shadow-sm border border-astraea-rosegold/20 overflow-hidden">
           
           {/* Left Column: Form */}
-          <div className="lg:w-1/2 p-8 md:p-12">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray mb-8">Send a Message</h2>
+          <div className="lg:w-1/2 p-4 md:p-12 order-2 lg:order-1">
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray mb-8">Send a Message</h2>
             
             {submitted ? (
               <div className="bg-green-50 border border-green-200 text-green-700 p-8 rounded-2xl text-center animate-fade-in">
@@ -98,8 +98,8 @@ const Contact = () => {
           </div>
 
           {/* Right Column: Contact Details */}
-          <div className="lg:w-1/2 p-8 md:p-12 bg-astraea-blush/30 border-l border-astraea-rosegold/20">
-            <h2 className="font-heading text-3xl font-bold text-astraea-darkgray mb-8">Contact Information</h2>
+          <div className="lg:w-1/2 p-4 md:p-12 bg-astraea-blush/30 lg:border-l border-astraea-rosegold/20 order-1 lg:order-2">
+            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray mb-8">Contact Information</h2>
             
             <div className="space-y-8">
               
@@ -111,7 +111,7 @@ const Contact = () => {
                   href="https://wa.me/639123456789" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="px-8 py-3 bg-[#25D366] text-white rounded-full font-bold hover:bg-[#1ebe5d] transition-colors mt-2"
+                  className="w-full min-h-11 px-8 py-3 bg-[#25D366] text-white rounded-full font-bold hover:bg-[#1ebe5d] transition-colors mt-2"
                 >
                   Chat with us on WhatsApp
                 </a>

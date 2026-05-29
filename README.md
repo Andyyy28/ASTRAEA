@@ -37,15 +37,27 @@ The migration enables row-level security and creates:
 
 ## Admin Setup
 
-Create an admin Auth user through Supabase Authentication, or set `ADMIN_EMAIL`
-and `ADMIN_PASSWORD` in `.env` and run:
+Create an admin Auth user through Supabase Authentication, or set these values
+in `.env`:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+ADMIN_EMAIL=admin@astraea.com
+ADMIN_PASSWORD=replace_with_a_strong_password
+```
+
+Then run:
 
 ```sh
 npm run create-admin
 ```
 
-After the Auth user exists, enroll that user's UUID as an administrator in the
-Supabase SQL editor:
+The script creates or updates the Supabase Auth user, confirms the email, and
+enrolls the user in `public.admin_users`.
+
+If you create the Auth user manually instead, confirm the email in Supabase
+Authentication and enroll that user's UUID as an administrator in the Supabase
+SQL editor:
 
 ```sql
 INSERT INTO public.admin_users (user_id)
@@ -54,4 +66,6 @@ ON CONFLICT (user_id) DO NOTHING;
 ```
 
 Only authenticated users enrolled in `public.admin_users` can use admin data
-operations. Do not store service-role keys in this frontend project.
+operations. Do not expose service-role keys in frontend code or any `VITE_`
+environment variable. Remove `SUPABASE_SERVICE_ROLE_KEY` from local `.env`
+after setup if you do not need to run the admin setup script again.

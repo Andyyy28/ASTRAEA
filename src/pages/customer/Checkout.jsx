@@ -77,14 +77,14 @@ const Checkout = () => {
   // --- Order Confirmation Screen ---
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-astraea-blush/20 py-20 flex justify-center items-center px-4 animate-fade-in">
+      <div className="min-h-screen bg-astraea-blush/20 py-8 md:py-20 flex justify-center items-center px-4 animate-fade-in">
         <div className="bg-white max-w-2xl w-full rounded-2xl shadow-xl border border-astraea-rosegold/20 p-8 md:p-12 text-center">
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
             <CheckCircle2 className="w-12 h-12 text-green-500" />
           </div>
           
-          <h1 className="font-heading text-4xl font-bold text-astraea-darkgray mb-2">Order Placed!</h1>
-          <p className="text-xl text-astraea-darkgray/80 mb-8">Thank you, {formData.customer_name}!</p>
+          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-2">Order Placed!</h1>
+          <p className="text-base md:text-xl text-astraea-darkgray/80 mb-8">Thank you, {formData.customer_name}!</p>
           
           <div className="bg-astraea-blush/40 border border-astraea-pink/20 rounded-xl p-6 mb-8">
             <p className="text-sm text-astraea-darkgray/60 uppercase tracking-widest font-bold mb-2">Your Reference Number</p>
@@ -120,7 +120,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="py-12 bg-astraea-blush/10 min-h-screen animate-fade-in">
+    <div className="py-8 md:py-16 bg-astraea-blush/10 min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <Link to="/cart" className="inline-flex items-center text-astraea-darkgray hover:text-astraea-pink transition-colors mb-8 font-medium">
@@ -128,21 +128,21 @@ const Checkout = () => {
           Back to Cart
         </Link>
         
-        <h1 className="font-heading text-4xl font-bold text-astraea-darkgray mb-10">Checkout</h1>
+        <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-8 md:mb-10">Checkout</h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-10">
+        <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-8 lg:gap-10">
           
           {/* Left Column: Form */}
-          <div className="lg:w-2/3 space-y-8">
+          <div className="lg:w-2/3 space-y-6 md:space-y-8 order-2 lg:order-1">
             
             {/* Delivery Toggle */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20">
-              <h3 className="font-heading text-2xl font-bold mb-6">Delivery Method</h3>
+            <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20">
+              <h3 className="font-heading text-xl md:text-2xl font-bold mb-6">Delivery Method</h3>
               <div className="flex bg-astraea-blush/30 rounded-full p-1 border border-astraea-rosegold/20">
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod('pickup')}
-                  className={`flex-1 flex items-center justify-center py-3 px-6 rounded-full font-bold transition-all ${
+                  className={`min-h-11 flex-1 flex items-center justify-center py-3 px-3 md:px-6 rounded-full font-bold transition-all ${
                     deliveryMethod === 'pickup' ? 'bg-white shadow-sm text-astraea-pink border border-astraea-rosegold/10' : 'text-astraea-darkgray/60 hover:text-astraea-darkgray'
                   }`}
                 >
@@ -151,7 +151,7 @@ const Checkout = () => {
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod('delivery')}
-                  className={`flex-1 flex items-center justify-center py-3 px-6 rounded-full font-bold transition-all ${
+                  className={`min-h-11 flex-1 flex items-center justify-center py-3 px-3 md:px-6 rounded-full font-bold transition-all ${
                     deliveryMethod === 'delivery' ? 'bg-white shadow-sm text-astraea-pink border border-astraea-rosegold/10' : 'text-astraea-darkgray/60 hover:text-astraea-darkgray'
                   }`}
                 >
@@ -161,8 +161,8 @@ const Checkout = () => {
             </div>
 
             {/* Contact Details */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20 space-y-6">
-              <h3 className="font-heading text-2xl font-bold mb-2">Contact Details</h3>
+            <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20 space-y-6">
+              <h3 className="font-heading text-xl md:text-2xl font-bold mb-2">Contact Details</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -206,8 +206,8 @@ const Checkout = () => {
             </div>
 
             {/* Logistics Details */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20 space-y-6 animate-fade-in">
-              <h3 className="font-heading text-2xl font-bold mb-2">
+            <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-astraea-rosegold/20 space-y-6 animate-fade-in">
+              <h3 className="font-heading text-xl md:text-2xl font-bold mb-2">
                 {deliveryMethod === 'pickup' ? 'Pickup Details' : 'Delivery Details'}
               </h3>
               
@@ -270,8 +270,8 @@ const Checkout = () => {
           </div>
 
           {/* Right Column: Order Summary */}
-          <div className="lg:w-1/3">
-            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-astraea-rosegold/20 sticky top-28">
+          <div className="lg:w-1/3 order-1 lg:order-2">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-astraea-rosegold/20 lg:sticky lg:top-28">
               <h3 className="font-heading text-2xl font-bold mb-6 border-b border-astraea-rosegold/20 pb-4">Order Summary</h3>
               
               <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
@@ -304,7 +304,7 @@ const Checkout = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-all shadow-lg hover:-translate-y-1 transform disabled:opacity-70 disabled:hover:translate-y-0"
+                className="w-full min-h-11 flex items-center justify-center py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-all shadow-lg hover:-translate-y-1 transform disabled:opacity-70 disabled:hover:translate-y-0"
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

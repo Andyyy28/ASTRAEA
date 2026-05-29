@@ -65,10 +65,10 @@ const AdminOrderDetail = () => {
       </Link>
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
         <div>
-          <div className="flex items-center gap-4 mb-2">
-            <h1 className="text-2xl font-bold text-gray-800">{order.reference_number}</h1>
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-2">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800 break-all">{order.reference_number}</h1>
             {getStatusBadge(order.status)}
             {order.is_paid ? (
               <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Paid</span>
@@ -80,7 +80,7 @@ const AdminOrderDetail = () => {
         </div>
         
         {/* Controls Panel */}
-        <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full md:w-auto">
           <select 
             value={order.status}
             onChange={(e) => handleUpdateStatus(e.target.value)}
@@ -96,7 +96,7 @@ const AdminOrderDetail = () => {
           <button
             onClick={handleTogglePaid}
             disabled={updating}
-            className={`whitespace-nowrap px-4 py-2 text-sm font-bold rounded-md text-white transition-colors disabled:opacity-50 ${order.is_paid ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'}`}
+            className={`min-h-11 whitespace-nowrap px-4 py-2 text-sm font-bold rounded-md text-white transition-colors disabled:opacity-50 ${order.is_paid ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'}`}
           >
             Mark {order.is_paid ? 'Unpaid' : 'Paid'}
           </button>
@@ -108,7 +108,7 @@ const AdminOrderDetail = () => {
         {/* Left Col: Info Cards */}
         <div className="space-y-6">
           {/* Customer Info */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+          <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center"><User className="w-5 h-5 mr-2 text-astraea-pink" /> Customer Information</h3>
             <div className="space-y-3 text-sm">
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Name</span><span className="font-medium">{order.customer_name}</span></div>
@@ -118,7 +118,7 @@ const AdminOrderDetail = () => {
           </div>
           
           {/* Logistics Info */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+          <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center"><Truck className="w-5 h-5 mr-2 text-astraea-pink" /> Delivery Information</h3>
             <div className="space-y-3 text-sm">
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Method</span><span className="font-medium capitalize">{order.delivery_method}</span></div>
@@ -157,12 +157,12 @@ const AdminOrderDetail = () => {
           
           <div className="flex-grow p-6 space-y-6 overflow-y-auto">
             {items.map(item => (
-              <div key={item.id} className="flex gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+              <div key={item.id} className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
                 <div className="w-16 h-16 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center text-astraea-pink font-bold">
                   {item.quantity}x
                 </div>
                 <div className="flex-grow">
-                  <div className="flex justify-between items-start mb-1">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
                     <h4 className="font-bold text-gray-800">
                       {item.item_type === 'custom' ? 'Custom Bouquet' : 'Ready-Made Bouquet'}
                     </h4>
@@ -205,7 +205,7 @@ const AdminOrderDetail = () => {
             ))}
           </div>
           
-          <div className="p-6 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
+          <div className="p-4 md:p-6 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
             <div className="flex justify-between items-center text-lg">
               <span className="font-bold text-gray-800">Grand Total</span>
               <span className="font-bold text-2xl text-astraea-pink">₱{Number(order.total_amount).toFixed(2)}</span>

@@ -90,10 +90,10 @@ const AdminOrders = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <h1 className="text-3xl font-extrabold text-astraea-darkgray tracking-tight">Orders Management</h1>
+      <h1 className="text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-tight">Orders Management</h1>
       
       {/* Filters Bar */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-astraea-pink/5 space-y-5">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-astraea-pink/5 space-y-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -108,7 +108,7 @@ const AdminOrders = () => {
           <select 
             value={statusFilter}
             onChange={(e) => {setStatusFilter(e.target.value); setCurrentPage(1);}}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
           >
             <option>All</option>
             <option>Pending</option>
@@ -120,41 +120,68 @@ const AdminOrders = () => {
           <select 
             value={typeFilter}
             onChange={(e) => {setTypeFilter(e.target.value); setCurrentPage(1);}}
-            className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
           >
             <option>All Types</option>
             <option>Ready-Made</option>
             <option>Custom</option>
           </select>
         </div>
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="flex flex-col md:flex-row gap-4 md:items-center">
           <span className="text-sm font-medium text-gray-600 flex items-center"><Filter className="w-4 h-4 mr-2" /> Date Range:</span>
           <input 
             type="date" 
             value={dateFrom}
             onChange={(e) => {setDateFrom(e.target.value); setCurrentPage(1);}}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
           />
-          <span className="text-gray-400">to</span>
+          <span className="text-gray-400 hidden md:inline">to</span>
           <input 
             type="date" 
             value={dateTo}
             onChange={(e) => {setDateTo(e.target.value); setCurrentPage(1);}}
-            className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
+            className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
           />
           <button 
             onClick={() => {
               setSearch(''); setStatusFilter('All'); setTypeFilter('All Types'); setDateFrom(''); setDateTo(''); setCurrentPage(1);
             }}
-            className="text-sm text-astraea-pink hover:underline font-medium ml-auto"
+            className="min-h-11 text-sm text-astraea-pink hover:underline font-medium md:ml-auto"
           >
             Clear Filters
           </button>
         </div>
       </div>
 
+      <div className="grid gap-4 md:hidden">
+        {loading ? (
+          <div className="bg-white rounded-2xl p-8 text-center border border-astraea-pink/5">Loading...</div>
+        ) : currentOrders.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center border border-astraea-pink/5 text-gray-500">No orders found.</div>
+        ) : (
+          currentOrders.map(order => (
+            <div key={order.id} className="bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold text-astraea-pink break-all">{order.reference_number}</p>
+                  <p className="text-sm font-semibold text-gray-700">{order.customer_name}</p>
+                </div>
+                {getStatusBadge(order.status)}
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="capitalize text-gray-500">{order.order_type}</span>
+                <span className="font-bold">â‚±{Number(order.total_amount).toFixed(2)}</span>
+              </div>
+              <Link to={`/admin/orders/${order.id}`} className="min-h-11 flex items-center justify-center w-full px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
+                View
+              </Link>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Table */}
-      <div className="bg-white rounded-3xl shadow-sm border border-astraea-pink/5 overflow-hidden flex flex-col">
+      <div className="hidden md:flex bg-white rounded-3xl shadow-sm border border-astraea-pink/5 overflow-hidden flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap border-collapse">
             <thead>

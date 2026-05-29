@@ -1,20 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon, Upload, Loader } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon } from 'lucide-react';
 
 // Upload image to Supabase Storage, returns the public URL
 const uploadImage = async (file) => {
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-  const filePath = `bouquet-images/${fileName}`;
-
-  const { error } = await supabase.storage.from('bouquets').upload(filePath, file);
-  if (error) {
-    console.error('Storage upload error:', error);
-    return null;
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) {
+    console.error('Auth session error:', sessionError);
+    throw sessionError;
+  }
+  if (!session?.user) {
+    throw new Error('You must be signed in with a real Supabase admin account before uploading images.');
   }
 
-  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(filePath);
+  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+
+  const { error } = await supabase.storage
+    .from('bouquets')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+  if (error) {
+    console.log(error);
+    throw error;
+  }
+
+  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
   return urlData.publicUrl;
 };
 
@@ -96,18 +108,11 @@ const AdminBouquets = () => {
     setUploading(true);
     
     try {
-      // If user selected a file, upload it to Supabase Storage
       let imageUrls = formData.images.filter(i => i.trim() !== '');
       
       if (imageFile) {
-        const publicUrl = await uploadImage(imageFile);
-        if (publicUrl) {
-          imageUrls = [publicUrl];
-        } else {
-          alert('Failed to upload image. Please try again or use an image URL instead.');
-          setUploading(false);
-          return;
-        }
+        const imageUrl = await uploadImage(imageFile);
+        imageUrls = [imageUrl];
       }
 
       const payload = {
@@ -139,6 +144,9 @@ const AdminBouquets = () => {
       }
       setIsModalOpen(false);
       setImageFile(null);
+    } catch (error) {
+      console.error('Bouquet save error:', error);
+      alert(`Save failed: ${error.message || 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
@@ -148,17 +156,59 @@ const AdminBouquets = () => {
     <>
       <div className="space-y-6 animate-fade-in">
       
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Ready-Made Bouquets</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Ready-Made Bouquets</h1>
         <button 
           onClick={() => openModal()} 
-          className="flex items-center px-5 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
+          className="min-h-11 flex items-center justify-center px-5 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
         >
           <Plus className="w-5 h-5 mr-1" /> Add Bouquet
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:hidden">
+        {loading ? (
+          <div className="bg-white rounded-xl p-8 text-center border border-gray-200">Loading...</div>
+        ) : bouquets.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No bouquets found.</div>
+        ) : (
+          bouquets.map(b => (
+            <div key={b.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
+                {b.images && b.images[0] ? (
+                  <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="w-8 h-8 text-gray-300" />
+                )}
+              </div>
+              <div className="p-4 space-y-3">
+                <div>
+                  <p className="font-bold text-gray-800 text-base">{b.name}</p>
+                  <p className="font-bold text-astraea-pink">â‚±{Number(b.price).toFixed(2)}</p>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => handleToggleVisibility(b.id, b.is_visible)}
+                    className={`min-h-11 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${b.is_visible ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                  >
+                    {b.is_visible ? 'Visible' : 'Hidden'}
+                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => openModal(b)} className="min-h-11 min-w-11 p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(b.id)} className="min-h-11 min-w-11 p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -223,8 +273,8 @@ const AdminBouquets = () => {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl animate-fade-in shadow-xl max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 w-full h-[94vh] sm:h-auto sm:max-w-2xl animate-fade-in shadow-xl sm:max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
               <h3 className="font-bold text-xl text-gray-800">
                 {editingId ? 'Edit Bouquet' : 'Add New Bouquet'}
@@ -347,7 +397,7 @@ const AdminBouquets = () => {
                 />
               </div>
               
-              <div className="flex gap-6 pt-2">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2">
                 <label className="flex items-center cursor-pointer">
                   <input 
                     type="checkbox" 
@@ -368,18 +418,18 @@ const AdminBouquets = () => {
                 </label>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end gap-3">
+              <div className="mt-8 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:justify-end gap-3">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)} 
-                  className="px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
+                  className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={uploading}
-                  className="px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center gap-2"
+                  className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <>

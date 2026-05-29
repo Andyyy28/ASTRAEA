@@ -52,7 +52,7 @@ const ShopDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen py-20 bg-astraea-blush/30 flex justify-center">
+      <div className="min-h-screen py-8 md:py-20 bg-astraea-blush/30 flex justify-center">
         <div className="w-16 h-16 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -62,9 +62,9 @@ const ShopDetail = () => {
     return (
       <div className="min-h-screen py-20 flex flex-col items-center justify-center bg-astraea-blush/30 text-center px-4">
         <Flower2 className="w-20 h-20 text-astraea-pink/50 mb-6" />
-        <h2 className="font-heading text-4xl font-bold text-astraea-darkgray mb-4">Bouquet Not Found</h2>
-        <p className="text-lg text-astraea-darkgray/70 mb-8">This bouquet might have been removed or the link is invalid.</p>
-        <Link to="/shop" className="px-8 py-3 bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90">
+        <h2 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">Bouquet Not Found</h2>
+        <p className="text-sm md:text-base text-astraea-darkgray/70 mb-8">This bouquet might have been removed or the link is invalid.</p>
+        <Link to="/shop" className="min-h-11 px-8 py-3 bg-astraea-pink text-white rounded-full font-medium hover:bg-astraea-pink/90">
           Back to Shop
         </Link>
       </div>
@@ -74,7 +74,7 @@ const ShopDetail = () => {
   const images = bouquet.images?.length ? bouquet.images : [];
 
   return (
-    <div className="animate-fade-in py-12 bg-white min-h-[80vh]">
+    <div className="animate-fade-in py-8 md:py-16 bg-white min-h-[80vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <Link to="/shop" className="inline-flex items-center text-astraea-darkgray hover:text-astraea-pink transition-colors mb-8 font-medium">
@@ -82,7 +82,7 @@ const ShopDetail = () => {
           Back to Shop
         </Link>
 
-        <div className="flex flex-col md:flex-row gap-12">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           
           {/* Left Column: Image Gallery */}
           <div className="md:w-1/2 flex flex-col gap-4">
@@ -120,11 +120,11 @@ const ShopDetail = () => {
               </span>
             )}
             
-            <h1 className="font-heading text-4xl md:text-5xl font-bold text-astraea-darkgray mb-4">
+            <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
               {bouquet.name}
             </h1>
             
-            <p className="font-bold text-astraea-pink text-3xl mb-6">
+            <p className="font-bold text-lg md:text-3xl text-astraea-pink mb-6">
               ₱{Number(bouquet.price).toFixed(2)}
             </p>
             
@@ -154,14 +154,14 @@ const ShopDetail = () => {
                 <div className="flex items-center border border-astraea-rosegold/40 rounded-full w-max bg-white">
                   <button 
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
+                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
                   >
                     <Minus className="w-5 h-5" />
                   </button>
                   <span className="w-12 text-center font-bold text-lg">{quantity}</span>
                   <button 
                     onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
+                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink transition-colors"
                   >
                     <Plus className="w-5 h-5" />
                   </button>
@@ -171,7 +171,7 @@ const ShopDetail = () => {
 
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-6 pt-6 border-t border-astraea-rosegold/20">
-                <span className="font-heading text-2xl font-bold text-astraea-darkgray">Total</span>
+                <span className="font-heading text-xl md:text-2xl font-bold text-astraea-darkgray">Total</span>
                 <span className="font-bold text-3xl text-astraea-pink">₱{(bouquet.price * quantity).toFixed(2)}</span>
               </div>
               <button 

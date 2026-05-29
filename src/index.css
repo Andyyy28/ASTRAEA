@@ -5,8 +5,28 @@
 @tailwind utilities;
 
 @layer base {
+  html, body, #root {
+    @apply w-full max-w-full overflow-x-hidden;
+  }
+
   body {
     @apply font-body text-astraea-darkgray bg-astraea-blush min-h-screen antialiased;
+  }
+
+  img, video, canvas, svg {
+    @apply max-w-full;
+  }
+
+  button, a, input, select, textarea {
+    @apply touch-manipulation;
+  }
+
+  button, [role="button"], input, select {
+    min-height: 44px;
+  }
+
+  input, select, textarea {
+    @apply text-base;
   }
   
   h1, h2, h3, h4, h5, h6 {

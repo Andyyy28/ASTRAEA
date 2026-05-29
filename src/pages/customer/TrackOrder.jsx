@@ -55,14 +55,14 @@ const TrackOrder = () => {
   };
 
   return (
-    <div className="py-20 bg-astraea-blush/20 min-h-[80vh] animate-fade-in">
+    <div className="py-8 md:py-16 bg-astraea-blush/20 min-h-[80vh] animate-fade-in">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="text-center mb-12">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-astraea-darkgray mb-4">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
             Track Your Order
           </h1>
-          <p className="text-lg text-astraea-darkgray/70">
+          <p className="text-sm md:text-base text-astraea-darkgray/70">
             Enter your reference number and your email or phone number to check its status.
           </p>
         </div>
@@ -70,7 +70,7 @@ const TrackOrder = () => {
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-16">
           <form onSubmit={handleTrack} className="space-y-4">
-            <div className="flex relative shadow-lg rounded-full overflow-hidden">
+            <div className="flex relative shadow-lg rounded-2xl md:rounded-full overflow-hidden">
               <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-astraea-darkgray/40" />
               </div>
@@ -79,7 +79,7 @@ const TrackOrder = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Reference number, e.g. AC-2026-AB12CD34"
-                className="block w-full pl-14 pr-6 py-5 border-none outline-none text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
+                className="block w-full pl-14 pr-4 md:pr-6 py-4 md:py-5 border-none outline-none text-base md:text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
                 required
               />
             </div>
@@ -88,13 +88,13 @@ const TrackOrder = () => {
               value={verification}
               onChange={(e) => setVerification(e.target.value)}
               placeholder="Email address or contact number used at checkout"
-              className="block w-full px-6 py-5 rounded-full shadow-lg border-none outline-none text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
+              className="block w-full px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-full shadow-lg border-none outline-none text-base md:text-lg text-astraea-darkgray placeholder-astraea-darkgray/30"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors disabled:opacity-70 flex justify-center"
+              className="w-full min-h-11 py-4 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors disabled:opacity-70 flex justify-center"
             >
               {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Track'}
             </button>
@@ -111,11 +111,11 @@ const TrackOrder = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-astraea-rosegold/20 overflow-hidden animate-fade-in">
             
             {/* Header Info */}
-            <div className="p-8 border-b border-astraea-rosegold/20 bg-astraea-blush/30">
+            <div className="p-4 md:p-8 border-b border-astraea-rosegold/20 bg-astraea-blush/30">
               <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
                 <div>
                   <p className="text-sm font-bold text-astraea-darkgray/50 uppercase tracking-widest mb-1">Order Reference</p>
-                  <h2 className="font-heading text-3xl font-bold text-astraea-pink">{order.reference_number}</h2>
+                  <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-pink break-words">{order.reference_number}</h2>
                 </div>
                 <div className="md:text-right">
                   <p className="font-medium text-astraea-darkgray">Ordered by {order.customer_name}</p>
@@ -125,7 +125,7 @@ const TrackOrder = () => {
             </div>
 
             {/* Timeline */}
-            <div className="p-8 md:p-12 border-b border-astraea-rosegold/20">
+            <div className="p-4 md:p-12 border-b border-astraea-rosegold/20">
               {order.status === 'cancelled' ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
@@ -168,7 +168,7 @@ const TrackOrder = () => {
             </div>
 
             {/* Order Summary & Contact */}
-            <div className="p-8 flex flex-col lg:flex-row gap-10 bg-white">
+            <div className="p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-10 bg-white">
               <div className="lg:w-2/3">
                 <h3 className="font-heading text-xl font-bold mb-6">Order Details</h3>
                 <div className="space-y-4">

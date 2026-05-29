@@ -11,11 +11,11 @@ const Cart = () => {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 bg-astraea-blush/20 text-center px-4 animate-fade-in">
         <Flower2 className="w-24 h-24 text-astraea-pink/40 mb-6" />
-        <h2 className="font-heading text-4xl font-bold text-astraea-darkgray mb-4">Your cart is empty</h2>
-        <p className="text-lg text-astraea-darkgray/70 mb-8 max-w-md">
+        <h2 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">Your cart is empty</h2>
+        <p className="text-sm md:text-base text-astraea-darkgray/70 mb-8 max-w-md">
           Looks like you haven't added any beautiful everlasting bouquets to your cart yet.
         </p>
-        <Link to="/shop" className="px-10 py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-lg hover:-translate-y-1 transform">
+        <Link to="/shop" className="min-h-11 px-10 py-4 bg-astraea-pink text-white rounded-full font-bold text-base md:text-lg hover:bg-astraea-pink/90 transition-colors shadow-lg hover:-translate-y-1 transform">
           Start Shopping
         </Link>
       </div>
@@ -23,10 +23,10 @@ const Cart = () => {
   }
 
   return (
-    <div className="py-12 bg-astraea-blush/20 min-h-screen animate-fade-in">
+    <div className="py-8 md:py-16 pb-28 lg:pb-16 bg-astraea-blush/20 min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <h1 className="font-heading text-4xl font-bold text-astraea-darkgray mb-10">Your Cart</h1>
+        <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-8 md:mb-10">Your Cart</h1>
         
         <div className="flex flex-col lg:flex-row gap-10">
           
@@ -78,14 +78,14 @@ const Cart = () => {
                     <div className="flex items-center border border-astraea-rosegold/40 rounded-full bg-white">
                       <button 
                         onClick={() => updateQuantity(item.cartId, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"
+                        className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="w-10 text-center font-bold text-sm">{item.quantity}</span>
                       <button 
                         onClick={() => updateQuantity(item.cartId, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"
+                        className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -103,7 +103,7 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div className="lg:w-1/3">
-            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-astraea-rosegold/20 sticky top-28">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-astraea-rosegold/20 lg:sticky lg:top-28">
               <h3 className="font-heading text-2xl font-bold mb-6 border-b border-astraea-rosegold/20 pb-4">Order Summary</h3>
               
               <div className="space-y-4 mb-6">
@@ -124,7 +124,7 @@ const Cart = () => {
               
               <button 
                 onClick={() => navigate('/checkout')}
-                className="w-full flex items-center justify-center py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-lg hover:-translate-y-1 transform"
+                className="w-full min-h-11 flex items-center justify-center py-4 bg-astraea-pink text-white rounded-full font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-lg hover:-translate-y-1 transform"
               >
                 Proceed to Checkout <ArrowRight className="w-5 h-5 ml-2" />
               </button>

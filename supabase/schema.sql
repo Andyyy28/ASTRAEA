@@ -133,21 +133,39 @@ CREATE TABLE settings (
 -- 3. STORAGE BUCKET FOR BOUQUET IMAGES
 -- ================================================
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('bouquets', 'bouquets', true)
+VALUES
+  ('bouquets', 'bouquets', true),
+  ('images', 'images', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 
-CREATE POLICY "Admin upload bouquet images" ON storage.objects
-  FOR INSERT WITH CHECK (
-    bucket_id = 'bouquets' AND auth.role() = 'authenticated'
-  );
+DROP POLICY IF EXISTS "Admin upload bouquet images" ON storage.objects;
+DROP POLICY IF EXISTS "Admin manage bouquet images" ON storage.objects;
+DROP POLICY IF EXISTS "Public view bouquet images" ON storage.objects;
 
-CREATE POLICY "Admin manage bouquet images" ON storage.objects
-  FOR ALL USING (
-    bucket_id = 'bouquets' AND auth.role() = 'authenticated'
-  );
+DROP POLICY IF EXISTS "Admin can upload images" ON storage.objects;
+CREATE POLICY "Admin can upload images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'bouquets');
 
-CREATE POLICY "Public view bouquet images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'bouquets');
+DROP POLICY IF EXISTS "Admin can update images" ON storage.objects;
+CREATE POLICY "Admin can update images"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (bucket_id = 'bouquets')
+WITH CHECK (bucket_id = 'bouquets');
+
+DROP POLICY IF EXISTS "Admin can delete images" ON storage.objects;
+CREATE POLICY "Admin can delete images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (bucket_id = 'bouquets');
+
+DROP POLICY IF EXISTS "Public can view images" ON storage.objects;
+CREATE POLICY "Public can view images"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'bouquets');
 
 
 -- ================================================
