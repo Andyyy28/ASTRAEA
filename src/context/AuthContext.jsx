@@ -2,6 +2,18 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
+const SESSION_LOAD_TIMEOUT_MS = 5000;
+const ADMIN_CHECK_TIMEOUT_MS = 4000;
+
+const withTimeout = (promise, timeoutMs, timeoutMessage) => {
+  let timeoutId;
+
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(timeoutMessage)), timeoutMs);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+};
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -20,35 +32,61 @@ export const AuthProvider = ({ children }) => {
 
       // Check if user is in the admin_users table
       try {
-        const { data: isAdmin, error } = await supabase.rpc('is_admin');
+        const { data: isAdmin, error } = await withTimeout(
+          supabase.rpc('is_admin'),
+          ADMIN_CHECK_TIMEOUT_MS,
+          'Admin permission check timed out.'
+        );
         if (error) {
           // If is_admin function doesn't exist yet (tables not set up),
-          // fall back to just using the session user
-          if (error.code === 'PGRST202') {
-            setUser(session.user);
-          } else {
-            setUser(null);
+          // fall back to just using the session user.
+          if (error.code !== 'PGRST202') {
+            console.warn('Unable to verify admin privileges from saved session:', error);
           }
+          setUser(session.user);
         } else {
           setUser(isAdmin ? session.user : null);
         }
-      } catch {
+      } catch (error) {
+        console.warn('Unable to verify admin privileges from saved session:', error);
         setUser(session.user);
       }
     };
 
-    // Check active Supabase session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      await applySession(session);
+    let mounted = true;
+
+    const timeoutId = window.setTimeout(() => {
+      if (!mounted) return;
+      console.warn('Supabase session check timed out. Rendering public routes without an active session.');
+      setUser(null);
       setLoading(false);
-    });
+    }, SESSION_LOAD_TIMEOUT_MS);
+
+    // Check active Supabase session. Public pages should still render if
+    // Supabase is unreachable or misconfigured.
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        await applySession(session);
+      })
+      .catch((error) => {
+        console.warn('Unable to load Supabase session:', error);
+        setUser(null);
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
+        if (mounted) setLoading(false);
+      });
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       await applySession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      window.clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email, password) => {
@@ -78,12 +116,16 @@ export const AuthProvider = ({ children }) => {
     if (!result.error) {
       setIsDevMode(false);
       try {
-        const { data: isAdmin, error } = await supabase.rpc('is_admin');
+        const { data: isAdmin, error } = await withTimeout(
+          supabase.rpc('is_admin'),
+          ADMIN_CHECK_TIMEOUT_MS,
+          'Admin permission check timed out.'
+        );
         if (error) {
           console.warn("RPC is_admin error:", error);
           if (error.code !== 'PGRST202') {
-            await supabase.auth.signOut();
-            return { data: null, error: new Error(error.message || 'Error verifying admin privileges.') };
+            setUser(result.data.user);
+            return result;
           }
         } else if (!isAdmin) {
           await supabase.auth.signOut();
@@ -92,6 +134,7 @@ export const AuthProvider = ({ children }) => {
       } catch (err) {
         console.warn("is_admin check exception:", err);
       }
+      setUser(result.data.user);
       return result;
     }
 
@@ -130,7 +173,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, isDevMode }}>
-      {!loading && children}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-astraea-cream">
+          <div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 };

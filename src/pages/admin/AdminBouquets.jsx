@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
 
 // Upload image to Supabase Storage, returns the public URL
 const uploadImage = async (file) => {
@@ -67,6 +67,21 @@ const AdminBouquets = () => {
     }
   };
 
+  const handleToggleFeatured = async (id, currentVal) => {
+    if (!currentVal) {
+      const featuredCount = bouquets.filter(b => b.is_featured && b.id !== id).length;
+      if (featuredCount >= 3) {
+        alert('You can only mark up to 3 bouquets as best sellers.');
+        return;
+      }
+    }
+
+    const { error } = await supabase.from('bouquets').update({ is_featured: !currentVal }).eq('id', id);
+    if (!error) {
+      setBouquets(prev => prev.map(b => b.id === id ? { ...b, is_featured: !currentVal } : b));
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this bouquet?')) return;
     const { error } = await supabase.from('bouquets').delete().eq('id', id);
@@ -113,6 +128,13 @@ const AdminBouquets = () => {
       if (imageFile) {
         const imageUrl = await uploadImage(imageFile);
         imageUrls = [imageUrl];
+      }
+
+      const featuredCount = bouquets.filter(b => b.is_featured && b.id !== editingId).length;
+      if (formData.is_featured && featuredCount >= 3) {
+        alert('You can only mark up to 3 bouquets as best sellers.');
+        setUploading(false);
+        return;
       }
 
       const payload = {
@@ -194,6 +216,14 @@ const AdminBouquets = () => {
                     {b.is_visible ? 'Visible' : 'Hidden'}
                   </button>
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => handleToggleFeatured(b.id, b.is_featured)}
+                      className={`min-h-11 min-w-11 p-2 rounded-lg transition-colors ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
+                      title={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
+                      aria-label={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
+                    >
+                      <Heart className={`w-4 h-4 ${b.is_featured ? 'fill-current' : ''}`} />
+                    </button>
                     <button onClick={() => openModal(b)} className="min-h-11 min-w-11 p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50">
                       <Edit2 className="w-4 h-4" />
                     </button>
@@ -254,7 +284,15 @@ const AdminBouquets = () => {
                       </button>
                     </td>
                     <td className="px-6 py-4 text-right whitespace-nowrap">
-                      <button onClick={() => openModal(b)} className="p-2 text-gray-500 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50">
+                      <button
+                        onClick={() => handleToggleFeatured(b.id, b.is_featured)}
+                        className={`p-2 transition-colors rounded-lg ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
+                        title={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
+                        aria-label={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
+                      >
+                        <Heart className={`w-4 h-4 ${b.is_featured ? 'fill-current' : ''}`} />
+                      </button>
+                      <button onClick={() => openModal(b)} className="p-2 text-gray-500 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 ml-1">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(b.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 ml-1">
@@ -411,6 +449,7 @@ const AdminBouquets = () => {
                   <input 
                     type="checkbox" 
                     checked={formData.is_featured}
+                    disabled={!formData.is_featured && bouquets.filter(b => b.is_featured && b.id !== editingId).length >= 3}
                     onChange={e => setFormData({...formData, is_featured: e.target.checked})}
                     className="w-4 h-4 text-astraea-pink focus:ring-astraea-pink border-gray-300 rounded"
                   />
