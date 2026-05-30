@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useNotifications } from '../../context/NotificationContext';
 import { Search, Filter, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+
+const statusOptions = ['pending', 'confirmed', 'being-made', 'ready', 'completed', 'cancelled'];
+const formatDelivery = (method) => method === 'pickup' ? 'Store Pickup' : 'Delivery';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+  const { showToast } = useNotifications();
   
   // Filters & Pagination
   const [search, setSearch] = useState('');
@@ -22,11 +28,52 @@ const AdminOrders = () => {
     fetchOrders();
   }, []);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-orders-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          setOrders(prev => {
+            if (payload.eventType === 'DELETE') {
+              return prev.filter(order => order.id !== payload.old?.id);
+            }
+            if (!payload.new?.id) return prev;
+            const exists = prev.some(order => order.id === payload.new.id);
+            return exists
+              ? prev.map(order => order.id === payload.new.id ? { ...order, ...payload.new } : order)
+              : [payload.new, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const fetchOrders = async () => {
     setLoading(true);
-    const { data } = await supabase.from('orders').select('*');
+    const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
     if (data) setOrders(data);
     setLoading(false);
+  };
+
+  const handleStatusChange = async (order, status) => {
+    if (status === order.status) return;
+    setUpdatingId(order.id);
+    const { data, error } = await supabase.rpc('update_order_status', {
+      p_order_id: order.id,
+      p_status: status
+    });
+    if (error) {
+      showToast({ type: 'error', title: 'Oops!', message: error.message || 'Could not update order status.' });
+    } else if (data) {
+      setOrders(prev => prev.map(item => item.id === order.id ? data : item));
+    }
+    setUpdatingId(null);
   };
 
   const handleSort = (key) => {
@@ -80,6 +127,7 @@ const AdminOrders = () => {
   const getStatusBadge = (status) => {
     switch(status) {
       case 'pending': return <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold capitalize">Pending</span>;
+      case 'confirmed': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
       case 'being-made': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
       case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
       case 'completed': return <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
@@ -112,6 +160,7 @@ const AdminOrders = () => {
           >
             <option>All</option>
             <option>Pending</option>
+            <option>Confirmed</option>
             <option>Being-Made</option>
             <option>Ready</option>
             <option>Completed</option>
@@ -212,7 +261,7 @@ const AdminOrders = () => {
                     <td className="px-6 py-5 font-bold text-astraea-pink">{order.reference_number}</td>
                     <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
                     <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
-                    <td className="px-6 py-5 capitalize text-gray-500">{order.delivery_method}</td>
+                    <td className="px-6 py-5 text-gray-500">{formatDelivery(order.delivery_method)}</td>
                     <td className="px-6 py-5 font-bold text-gray-700">₱{Number(order.total_amount).toFixed(2)}</td>
                     <td className="px-6 py-5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-5">{getStatusBadge(order.status)}</td>
@@ -223,9 +272,21 @@ const AdminOrders = () => {
                       }
                     </td>
                     <td className="px-6 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleStatusChange(order, e.target.value)}
+                          disabled={updatingId === order.id}
+                          className="border border-gray-200 bg-white rounded-xl px-3 py-2 text-xs font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-astraea-pink disabled:opacity-60"
+                        >
+                          {statusOptions.map(status => (
+                            <option key={status} value={status}>{status.replace('-', ' ')}</option>
+                          ))}
+                        </select>
                       <Link to={`/admin/orders/${order.id}`} className="px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100 inline-block">
                         View
                       </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

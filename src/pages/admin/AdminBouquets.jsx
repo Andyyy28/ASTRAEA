@@ -31,6 +31,14 @@ const uploadImage = async (file) => {
   return urlData.publicUrl;
 };
 
+const isMissingStockSchema = (error) => (
+  error?.code === 'PGRST204'
+  || error?.message?.toLowerCase().includes("'stock' column")
+  || error?.message?.toLowerCase().includes('schema cache')
+);
+
+const omitStock = ({ stock, ...payload }) => payload;
+
 const AdminBouquets = () => {
   const [bouquets, setBouquets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +51,7 @@ const AdminBouquets = () => {
     description: '',
     category: 'Romantic',
     price: '',
+    stock: 0,
     images: [''],
     is_visible: true,
     is_featured: false
@@ -53,6 +62,33 @@ const AdminBouquets = () => {
 
   useEffect(() => {
     fetchBouquets();
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-bouquets-stock')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bouquets' },
+        (payload) => {
+          setBouquets(prev => {
+            if (payload.eventType === 'DELETE') {
+              return prev.filter(b => b.id !== payload.old?.id);
+            }
+
+            if (!payload.new?.id) return prev;
+            const exists = prev.some(b => b.id === payload.new.id);
+            return exists
+              ? prev.map(b => b.id === payload.new.id ? { ...b, ...payload.new } : b)
+              : [payload.new, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchBouquets = async () => {
@@ -109,6 +145,7 @@ const AdminBouquets = () => {
         description: bouquet.description,
         category: bouquet.category,
         price: bouquet.price,
+        stock: bouquet.stock || 0,
         images: bouquet.images && bouquet.images.length > 0 ? bouquet.images : [''],
         is_visible: bouquet.is_visible,
         is_featured: bouquet.is_featured
@@ -120,6 +157,7 @@ const AdminBouquets = () => {
         description: '',
         category: 'Romantic',
         price: '',
+        stock: 0,
         images: [''],
         is_visible: true,
         is_featured: false
@@ -156,13 +194,40 @@ const AdminBouquets = () => {
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
+        stock: Math.max(0, parseInt(formData.stock, 10) || 0),
         images: imageUrls
       };
       
       if (editingId) {
-        const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
+        let { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
         if (error) {
           console.error("Error updating bouquet:", error);
+          if (isMissingStockSchema(error)) {
+            const retry = await supabase.from('bouquets').update(omitStock(payload)).eq('id', editingId).select();
+            data = retry.data;
+            error = retry.error;
+            if (!error) {
+              showToast({
+                type: 'info',
+                title: 'Bouquet saved',
+                message: 'Stock is not active yet. Run the stock migration in Supabase to enable stock counts.'
+              });
+            }
+          }
+          if (!error) {
+            setBouquets(prev => prev.map(b => b.id === editingId ? { ...data[0], stock: payload.stock } : b));
+            setIsModalOpen(false);
+            setImageFile(null);
+            return;
+          }
+          if (isMissingStockSchema(error)) {
+            showToast({
+              type: 'error',
+              title: 'Stock setup needed',
+              message: 'Run the bouquet stock migration in Supabase, then refresh this page.'
+            });
+            return;
+          }
           showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to update bouquet: ${error.message}` });
           return;
         }
@@ -170,9 +235,35 @@ const AdminBouquets = () => {
           setBouquets(prev => prev.map(b => b.id === editingId ? data[0] : b));
         }
       } else {
-        const { data, error } = await supabase.from('bouquets').insert([payload]).select();
+        let { data, error } = await supabase.from('bouquets').insert([payload]).select();
         if (error) {
           console.error("Error inserting bouquet:", error);
+          if (isMissingStockSchema(error)) {
+            const retry = await supabase.from('bouquets').insert([omitStock(payload)]).select();
+            data = retry.data;
+            error = retry.error;
+            if (!error) {
+              showToast({
+                type: 'info',
+                title: 'Bouquet saved',
+                message: 'Stock is not active yet. Run the stock migration in Supabase to enable stock counts.'
+              });
+            }
+          }
+          if (!error) {
+            setBouquets([{ ...data[0], stock: payload.stock }, ...bouquets]);
+            setIsModalOpen(false);
+            setImageFile(null);
+            return;
+          }
+          if (isMissingStockSchema(error)) {
+            showToast({
+              type: 'error',
+              title: 'Stock setup needed',
+              message: 'Run the bouquet stock migration in Supabase, then refresh this page.'
+            });
+            return;
+          }
           showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to create bouquet: ${error.message}` });
           return;
         }
@@ -226,6 +317,7 @@ const AdminBouquets = () => {
               <div className="p-4 space-y-3">
                 <div>
                   <p className="font-bold text-gray-800 text-base">{b.name}</p>
+                  <span className="inline-flex mt-1 px-2 py-0.5 bg-[#FDDDE6] text-[#C4658A] rounded text-xs font-medium">{b.stock || 0} in stock</span>
                   <p className="font-bold text-astraea-pink">â‚±{Number(b.price).toFixed(2)}</p>
                 </div>
                 <div className="flex items-center justify-between gap-2">
@@ -266,15 +358,16 @@ const AdminBouquets = () => {
                 <th className="px-6 py-4 font-medium w-24">Photo</th>
                 <th className="px-6 py-4 font-medium">Name & Category</th>
                 <th className="px-6 py-4 font-medium">Price</th>
+                <th className="px-6 py-4 font-medium text-center">Stock</th>
                 <th className="px-6 py-4 font-medium text-center">Visibility</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr><td colSpan="5" className="text-center py-10"><div className="w-6 h-6 border-2 border-astraea-pink border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
+                <tr><td colSpan="6" className="text-center py-10"><div className="w-6 h-6 border-2 border-astraea-pink border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
               ) : bouquets.length === 0 ? (
-                <tr><td colSpan="5" className="text-center py-10 text-gray-500">No bouquets found.</td></tr>
+                <tr><td colSpan="6" className="text-center py-10 text-gray-500">No bouquets found.</td></tr>
               ) : (
                 bouquets.map(b => (
                   <tr key={b.id} className="hover:bg-gray-50 transition-colors">
@@ -294,6 +387,9 @@ const AdminBouquets = () => {
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-800">
                       ₱{Number(b.price).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button 
@@ -361,6 +457,18 @@ const AdminBouquets = () => {
                     value={formData.price} 
                     onChange={e => setFormData({...formData, price: e.target.value})} 
                     className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="1"
+                    value={formData.stock}
+                    onChange={e => setFormData({...formData, stock: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none"
                   />
                 </div>
               </div>

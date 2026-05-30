@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
+import { normalizeStock } from '../../lib/bouquetStock';
 import { Flower2, Filter } from 'lucide-react';
 
 const Shop = () => {
@@ -39,6 +40,38 @@ const Shop = () => {
   }, []);
 
   useEffect(() => {
+    const channel = supabase
+      .channel('shop-bouquet-stock')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bouquets' },
+        (payload) => {
+          setBouquets(prev => {
+            if (payload.eventType === 'DELETE') {
+              return prev.filter(b => b.id !== payload.old?.id);
+            }
+
+            const nextBouquet = payload.new;
+            if (!nextBouquet?.id) return prev;
+            const exists = prev.some(b => b.id === nextBouquet.id);
+            if (!nextBouquet.is_visible) {
+              return prev.filter(b => b.id !== nextBouquet.id);
+            }
+
+            return exists
+              ? prev.map(b => b.id === nextBouquet.id ? { ...b, ...nextBouquet } : b)
+              : [nextBouquet, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
     let result = [...bouquets];
     if (categoryFilter !== 'All') {
       result = result.filter(b => b.category?.includes(categoryFilter));
@@ -53,8 +86,19 @@ const Shop = () => {
     setFilteredBouquets(result);
   }, [categoryFilter, sortOption, bouquets]);
 
-  const handleAddToCart = (bouquet) => {
-    addToCart({
+  const handleAddToCart = async (bouquet) => {
+    if (normalizeStock(bouquet.stock) === 0) {
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: 'Sorry, this bouquet just went out of stock!'
+      });
+      return;
+    }
+
+    let result;
+    try {
+      result = await addToCart({
       item_type: 'bouquet',
       bouquet_id: bouquet.id,
       name: bouquet.name,
@@ -62,7 +106,30 @@ const Shop = () => {
       image: bouquet.images?.[0],
       quantity: 1,
       subtotal: bouquet.price
-    });
+      });
+    } catch (error) {
+      console.error('Stock reservation failed:', error);
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: 'Sorry, this bouquet just went out of stock!'
+      });
+      return;
+    }
+
+    if (!result?.ok) {
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: 'Sorry, this bouquet just went out of stock!'
+      });
+      setBouquets(prev => prev.map(b => b.id === bouquet.id ? { ...b, stock: 0 } : b));
+      return;
+    }
+
+    if (result.stock !== null && result.stock !== undefined) {
+      setBouquets(prev => prev.map(b => b.id === bouquet.id ? { ...b, stock: result.stock } : b));
+    }
     showToast({
       type: 'success',
       title: 'Added to cart! ♡',
@@ -125,11 +192,16 @@ const Shop = () => {
                 key={bouquet.id}
                 className={`group scrapbook-card overflow-hidden relative flex flex-col p-2 md:p-4 ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip bg-[#FFFDFE]`}
               >
-                {bouquet.category && (
-                  <div className="absolute top-2 left-2 z-10 kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-1">
-                    {bouquet.category}
-                  </div>
-                )}
+                <div className="absolute top-2 left-2 right-2 z-10 flex flex-wrap gap-1">
+                  {bouquet.category && (
+                    <span className="kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-1">
+                      {bouquet.category}
+                    </span>
+                  )}
+                  <span className={`kawaii-badge text-xs px-2 py-1 ${normalizeStock(bouquet.stock) === 0 ? 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]' : 'bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8]'}`}>
+                    {normalizeStock(bouquet.stock) === 0 ? 'Out of Stock' : `${normalizeStock(bouquet.stock)} in stock`}
+                  </span>
+                </div>
 
                 <div className="w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-t-[12px]">
                   {bouquet.images?.[0] ? (
@@ -152,7 +224,11 @@ const Shop = () => {
                     <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 w-full py-1.5 text-center text-xs">
                       View Details
                     </Link>
-                    <button onClick={() => handleAddToCart(bouquet)} className="kawaii-btn-primary min-h-11 w-full py-1.5 text-center text-xs">
+                    <button
+                      onClick={() => handleAddToCart(bouquet)}
+                      disabled={normalizeStock(bouquet.stock) === 0}
+                      className="kawaii-btn-primary min-h-11 w-full py-1.5 text-center text-xs disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                    >
                       Add to Cart
                     </button>
                   </div>

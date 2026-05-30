@@ -27,9 +27,14 @@ const AdminOrderDetail = () => {
 
   const handleUpdateStatus = async (newStatus) => {
     setUpdating(true);
-    const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', id);
-    if (!error) {
-      setOrder(prev => ({ ...prev, status: newStatus }));
+    const { data, error } = await supabase.rpc('update_order_status', {
+      p_order_id: id,
+      p_status: newStatus
+    });
+    if (!error && data) {
+      setOrder(data);
+    } else if (error) {
+      console.error('Order status update failed:', error);
     }
     setUpdating(false);
   };
@@ -49,6 +54,7 @@ const AdminOrderDetail = () => {
   const getStatusBadge = (status) => {
     switch(status) {
       case 'pending': return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold capitalize">Pending</span>;
+      case 'confirmed': return <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold capitalize">Confirmed</span>;
       case 'being-made': return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold capitalize">Being Made</span>;
       case 'ready': return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold capitalize">Ready</span>;
       case 'completed': return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-bold capitalize">Completed</span>;
@@ -88,6 +94,7 @@ const AdminOrderDetail = () => {
             className="bg-white border border-gray-300 text-gray-700 text-sm rounded-md focus:ring-astraea-pink focus:border-astraea-pink block w-full p-2"
           >
             <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
             <option value="being-made">Being Made</option>
             <option value="ready">Ready</option>
             <option value="completed">Completed</option>
@@ -183,7 +190,7 @@ const AdminOrderDetail = () => {
                     )}
                     
                     {item.fillers && item.fillers.length > 0 && (
-                      <p><span className="font-medium text-gray-800">Fillers:</span> {item.fillers.join(', ')}</p>
+                      <p><span className="font-medium text-gray-800">Fillers:</span> {item.fillers.map(f => f.name || f).join(', ')}</p>
                     )}
                     
                     {item.wrapper && (
@@ -191,7 +198,7 @@ const AdminOrderDetail = () => {
                     )}
                     
                     {item.addons && (
-                      <p><span className="font-medium text-gray-800">Add-ons:</span> {item.addons.ribbon && 'Ribbon, '} {item.addons.messageCard && 'Message Card'}</p>
+                      <p><span className="font-medium text-gray-800">Add-ons:</span> {Object.entries(item.addons).filter(([, enabled]) => enabled).map(([key]) => key).join(', ')}</p>
                     )}
 
                     {item.message_card && (

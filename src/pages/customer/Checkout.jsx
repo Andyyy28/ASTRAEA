@@ -19,6 +19,7 @@ const Checkout = () => {
   });
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(null);
+  const [errors, setErrors] = useState({});
   const { showToast } = useNotifications();
   const deliveryFee = deliveryMethod === 'delivery' ? 80 : 0;
   const grandTotal = cartTotal + deliveryFee;
@@ -27,11 +28,34 @@ const Checkout = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
-  const handleInputChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleInputChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+    if (!formData.customer_name.trim()) nextErrors.customer_name = 'Full name is required.';
+    if (!formData.contact_number.trim()) nextErrors.contact_number = 'Contact number is required.';
+    if (!formData.email.trim()) nextErrors.email = 'Email address is required.';
+    if (!formData.preferred_date) nextErrors.preferred_date = deliveryMethod === 'pickup' ? 'Pickup date is required.' : 'Delivery date is required.';
+    if (deliveryMethod === 'pickup' && !formData.preferred_time) nextErrors.preferred_time = 'Pickup time is required.';
+    if (deliveryMethod === 'delivery' && !formData.delivery_address.trim()) nextErrors.delivery_address = 'Delivery address is required.';
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
+    if (!validateForm()) {
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: 'Please complete the required checkout details.'
+      });
+      return;
+    }
     setLoading(true);
     try {
       const orderItems = cartItems.map(item => ({
@@ -67,7 +91,7 @@ const Checkout = () => {
       showToast({
         type: 'error',
         title: 'Oops! ✦',
-        message: 'There was an error placing your order. Please try again.'
+        message: error.message || 'There was an error placing your order. Please try again.'
       });
     } finally {
       setLoading(false);
@@ -109,6 +133,7 @@ const Checkout = () => {
   }
 
   const fieldClass = 'kawaii-input';
+  const errorClass = 'mt-1 text-sm font-medium text-[#C4658A]';
 
   return (
     <div className="py-8 md:py-16 bg-astraea-cream min-h-screen animate-fade-in">
@@ -134,18 +159,18 @@ const Checkout = () => {
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">Contact Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name *</label><input type="text" name="customer_name" required value={formData.customer_name} onChange={handleInputChange} className={fieldClass} placeholder="Jane Doe" /></div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Contact Number *</label><input type="tel" name="contact_number" required value={formData.contact_number} onChange={handleInputChange} className={fieldClass} placeholder="0912 345 6789" /></div>
+                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name *</label><input type="text" name="customer_name" value={formData.customer_name} onChange={handleInputChange} className={fieldClass} placeholder="Jane Doe" />{errors.customer_name && <p className={errorClass}>{errors.customer_name}</p>}</div>
+                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Contact Number *</label><input type="tel" name="contact_number" value={formData.contact_number} onChange={handleInputChange} className={fieldClass} placeholder="0912 345 6789" />{errors.contact_number && <p className={errorClass}>{errors.contact_number}</p>}</div>
               </div>
-              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Email Address *</label><input type="email" name="email" required value={formData.email} onChange={handleInputChange} className={fieldClass} placeholder="jane@example.com" /></div>
+              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Email Address *</label><input type="email" name="email" value={formData.email} onChange={handleInputChange} className={fieldClass} placeholder="jane@example.com" />{errors.email && <p className={errorClass}>{errors.email}</p>}</div>
             </div>
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">{deliveryMethod === 'pickup' ? 'Pickup Details' : 'Delivery Details'}</h3>
-              {deliveryMethod === 'delivery' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea name="delivery_address" required rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea></div>}
+              {deliveryMethod === 'delivery' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea name="delivery_address" rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea>{errors.delivery_address && <p className={errorClass}>{errors.delivery_address}</p>}</div>}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input type="date" name="preferred_date" required value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} /></div>
-                {deliveryMethod === 'pickup' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input type="time" name="preferred_time" required value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} /></div>}
+                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
+                {deliveryMethod === 'pickup' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
               </div>
               <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Special Instructions (Optional)</label><textarea name="special_notes" rows="2" value={formData.special_notes} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Any additional notes for us..."></textarea></div>
             </div>

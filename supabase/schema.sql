@@ -11,6 +11,9 @@ DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS flower_colors CASCADE;
 DROP TABLE IF EXISTS wrapper_colors CASCADE;
+DROP TABLE IF EXISTS fuzzy_wire_colors CASCADE;
+DROP TABLE IF EXISTS bouquet_addons CASCADE;
+DROP TABLE IF EXISTS bouquet_sizes CASCADE;
 DROP TABLE IF EXISTS flowers CASCADE;
 DROP TABLE IF EXISTS fillers CASCADE;
 DROP TABLE IF EXISTS wrappers CASCADE;
@@ -31,6 +34,7 @@ CREATE TABLE bouquets (
     price DECIMAL(10, 2) NOT NULL,
     category TEXT,
     images TEXT[],
+    stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
     is_visible BOOLEAN DEFAULT true,
     is_featured BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -41,6 +45,9 @@ CREATE TABLE flowers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     price_per_stem DECIMAL(10, 2) NOT NULL,
+    image_url TEXT,
+    is_available BOOLEAN DEFAULT true,
+    stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -58,6 +65,8 @@ CREATE TABLE fillers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    image_url TEXT,
+    stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
     is_available BOOLEAN DEFAULT true
 );
 
@@ -65,7 +74,9 @@ CREATE TABLE fillers (
 CREATE TABLE wrappers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     material TEXT NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
+    price DECIMAL(10, 2) NOT NULL,
+    image_url TEXT,
+    is_available BOOLEAN DEFAULT true
 );
 
 -- wrapper_colors
@@ -75,6 +86,39 @@ CREATE TABLE wrapper_colors (
     color_name TEXT NOT NULL,
     hex_code TEXT,
     is_available BOOLEAN DEFAULT true
+);
+
+-- fuzzy_wire_colors
+CREATE TABLE fuzzy_wire_colors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    color_name TEXT NOT NULL,
+    hex_code TEXT,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- bouquet_sizes
+CREATE TABLE bouquet_sizes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    stems TEXT,
+    base_price DECIMAL(10, 2) NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- bouquet_addons
+CREATE TABLE bouquet_addons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    key TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- orders
@@ -173,12 +217,12 @@ USING (bucket_id = 'bouquets');
 -- ================================================
 
 -- Flowers
-INSERT INTO flowers (id, name, price_per_stem) VALUES
-('11111111-1111-1111-1111-111111111111', 'Rose', 50.00),
-('22222222-2222-2222-2222-222222222222', 'Tulip', 60.00),
-('33333333-3333-3333-3333-333333333333', 'Sunflower', 80.00),
-('44444444-4444-4444-4444-444444444444', 'Daisy', 40.00),
-('55555555-5555-5555-5555-555555555555', 'Lily', 70.00);
+INSERT INTO flowers (id, name, price_per_stem, stock, is_available) VALUES
+('11111111-1111-1111-1111-111111111111', 'Rose', 50.00, 20, true),
+('22222222-2222-2222-2222-222222222222', 'Tulip', 60.00, 20, true),
+('33333333-3333-3333-3333-333333333333', 'Sunflower', 80.00, 20, true),
+('44444444-4444-4444-4444-444444444444', 'Daisy', 40.00, 20, true),
+('55555555-5555-5555-5555-555555555555', 'Lily', 70.00, 20, true);
 
 -- Flower Colors
 INSERT INTO flower_colors (flower_id, color_name, hex_code, is_available) VALUES
@@ -190,16 +234,16 @@ INSERT INTO flower_colors (flower_id, color_name, hex_code, is_available) VALUES
 ('11111111-1111-1111-1111-111111111111', 'Peach', '#FFDAB9', false);
 
 -- Fillers
-INSERT INTO fillers (name, price, is_available) VALUES
-('Baby''s Breath', 30.00, true),
-('Eucalyptus Leaves', 25.00, true),
-('Fern', 20.00, true);
+INSERT INTO fillers (name, price, stock, is_available) VALUES
+('Baby''s Breath', 30.00, 20, true),
+('Eucalyptus Leaves', 25.00, 20, true),
+('Fern', 20.00, 20, true);
 
 -- Wrappers
-INSERT INTO wrappers (id, material, price) VALUES
-('66666666-6666-6666-6666-666666666666', 'Kraft Paper', 20.00),
-('77777777-7777-7777-7777-777777777777', 'Satin Ribbon Wrap', 35.00),
-('88888888-8888-8888-8888-888888888888', 'Korean Wrap', 40.00);
+INSERT INTO wrappers (id, material, price, is_available) VALUES
+('66666666-6666-6666-6666-666666666666', 'Kraft Paper', 20.00, true),
+('77777777-7777-7777-7777-777777777777', 'Satin Ribbon Wrap', 35.00, true),
+('88888888-8888-8888-8888-888888888888', 'Korean Wrap', 40.00, true);
 
 -- Wrapper Colors
 INSERT INTO wrapper_colors (wrapper_id, color_name, hex_code, is_available) VALUES
@@ -208,12 +252,31 @@ INSERT INTO wrapper_colors (wrapper_id, color_name, hex_code, is_available) VALU
 ('66666666-6666-6666-6666-666666666666', 'Nude', '#E3BC9A', true),
 ('66666666-6666-6666-6666-666666666666', 'Black', '#000000', true);
 
+-- Fuzzy Wire Colors
+INSERT INTO fuzzy_wire_colors (color_name, hex_code, display_order, is_available) VALUES
+('White', '#FFFFFF', 1, true),
+('Pink', '#FFC0CB', 2, true),
+('Red', '#FF0000', 3, true),
+('Yellow', '#FFFF00', 4, true),
+('Purple', '#800080', 5, true);
+
+-- Bouquet Sizes
+INSERT INTO bouquet_sizes (key, name, stems, base_price, display_order, is_available) VALUES
+('small', 'Small', '5-8 stems', 150.00, 1, true),
+('medium', 'Medium', '10-15 stems', 250.00, 2, true),
+('large', 'Large', '18-25 stems', 400.00, 3, true);
+
+-- Bouquet Add-ons
+INSERT INTO bouquet_addons (key, name, price, display_order, is_available) VALUES
+('ribbon', 'Premium Satin Ribbon', 20.00, 1, true),
+('messageCard', 'Message Card', 15.00, 2, true);
+
 -- Bouquets
-INSERT INTO bouquets (name, description, price, category, images, is_featured) VALUES
-('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Romantic', ARRAY['/bouquets/b1.jpg'], true),
-('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Birthday', ARRAY['/bouquets/b2.jpg'], true),
-('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Other', ARRAY['/bouquets/b3.jpg'], true),
-('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/bouquets/b4.jpg'], true);
+INSERT INTO bouquets (name, description, price, category, images, stock, is_featured) VALUES
+('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Romantic', ARRAY['/bouquets/b1.jpg'], 0, true),
+('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Birthday', ARRAY['/bouquets/b2.jpg'], 0, true),
+('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Other', ARRAY['/bouquets/b3.jpg'], 0, true),
+('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/bouquets/b4.jpg'], 0, true);
 
 -- Reviews
 INSERT INTO reviews (customer_name, message, rating) VALUES

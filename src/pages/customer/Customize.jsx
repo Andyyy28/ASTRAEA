@@ -1,51 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { Check, ChevronRight, ChevronLeft, ShoppingBag } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
-const steps = [
-  'Size',
-  'Flowers',
-  'Colors',
-  'Fillers',
-  'Wrapper',
-  'Add-ons'
-];
+const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
-const sizeOptions = [
-  { id: 'small', name: 'Small', stems: '5–8 stems', basePrice: 150 },
-  { id: 'medium', name: 'Medium', stems: '10–15 stems', basePrice: 250 },
-  { id: 'large', name: 'Large', stems: '18–25 stems', basePrice: 400 },
-];
+const money = (value) => `₱${Number(value || 0).toFixed(2)}`;
+const stockBadge = 'kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
 
 const Customize = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { showToast } = useNotifications();
-  
+
   const [currentStep, setCurrentStep] = useState(0);
-  
-  // Data from DB
   const [dbFlowers, setDbFlowers] = useState([]);
   const [dbFlowerColors, setDbFlowerColors] = useState([]);
   const [dbFillers, setDbFillers] = useState([]);
   const [dbWrappers, setDbWrappers] = useState([]);
   const [dbWrapperColors, setDbWrapperColors] = useState([]);
-  
-  // Selections
-  const [selectedSize, setSelectedSize] = useState(sizeOptions[1]); // default Medium
-  const [selectedFlowers, setSelectedFlowers] = useState({}); // { flowerId: quantity }
-  const [selectedFlowerColors, setSelectedFlowerColors] = useState({}); // { flowerId: colorName }
-  const [selectedFillers, setSelectedFillers] = useState({}); // { fillerId: true }
+  const [dbFuzzyWireColors, setDbFuzzyWireColors] = useState([]);
+  const [sizeOptions, setSizeOptions] = useState([]);
+  const [addonOptions, setAddonOptions] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedFlowers, setSelectedFlowers] = useState({});
+  const [selectedFlowerColors, setSelectedFlowerColors] = useState({});
+  const [selectedFillers, setSelectedFillers] = useState({});
   const [selectedWrapper, setSelectedWrapper] = useState(null);
   const [selectedWrapperColor, setSelectedWrapperColor] = useState(null);
-  
-  const [addons, setAddons] = useState({ ribbon: false, messageCard: false });
+  const [addons, setAddons] = useState({});
   const [message, setMessage] = useState('');
   const [instructions, setInstructions] = useState('');
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+  const selectedAddonOptions = useMemo(
+    () => addonOptions.filter(addon => addons[addon.key]),
+    [addonOptions, addons]
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -53,49 +46,52 @@ const Customize = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [fRes, fcRes, filRes, wRes, wcRes] = await Promise.all([
-        supabase.from('flowers').select('*'),
+      const [fRes, fcRes, filRes, wRes, wcRes, fuzzyRes, sizeRes, addonRes] = await Promise.all([
+        supabase.from('flowers').select('*').eq('is_available', true).gt('stock', 0),
         supabase.from('flower_colors').select('*').eq('is_available', true),
-        supabase.from('fillers').select('*').eq('is_available', true),
-        supabase.from('wrappers').select('*'),
-        supabase.from('wrapper_colors').select('*').eq('is_available', true)
+        supabase.from('fillers').select('*').eq('is_available', true).gt('stock', 0),
+        supabase.from('wrappers').select('*').eq('is_available', true),
+        supabase.from('wrapper_colors').select('*').eq('is_available', true),
+        supabase.from('fuzzy_wire_colors').select('*').eq('is_available', true).order('display_order', { ascending: true }),
+        supabase.from('bouquet_sizes').select('*').eq('is_available', true).order('display_order', { ascending: true }),
+        supabase.from('bouquet_addons').select('*').eq('is_available', true).order('display_order', { ascending: true }),
       ]);
-      
+
       if (fRes.data) setDbFlowers(fRes.data);
       if (fcRes.data) setDbFlowerColors(fcRes.data);
       if (filRes.data) setDbFillers(filRes.data);
       if (wRes.data) setDbWrappers(wRes.data);
       if (wcRes.data) setDbWrapperColors(wcRes.data);
+      if (fuzzyRes.data) setDbFuzzyWireColors(fuzzyRes.data);
+      if (sizeRes.data) {
+        setSizeOptions(sizeRes.data);
+        setSelectedSize(sizeRes.data.find(size => size.key === 'medium') || sizeRes.data[0] || null);
+      }
+      if (addonRes.data) {
+        setAddonOptions(addonRes.data);
+        setAddons(addonRes.data.reduce((acc, addon) => ({ ...acc, [addon.key]: false }), {}));
+      }
     };
     fetchData();
   }, []);
 
-  // Calculate Total
   const calculateTotal = () => {
-    let total = selectedSize?.basePrice || 0;
-    
-    // Flowers
+    let total = Number(selectedSize?.base_price || 0);
     Object.entries(selectedFlowers).forEach(([fId, qty]) => {
       const flower = dbFlowers.find(f => f.id === fId);
-      if (flower) total += flower.price_per_stem * qty;
+      if (flower) total += Number(flower.price_per_stem || 0) * qty;
     });
-    
-    // Fillers
     Object.keys(selectedFillers).forEach(filId => {
       const filler = dbFillers.find(f => f.id === filId);
-      if (filler) total += filler.price;
+      if (filler) total += Number(filler.price || 0);
     });
-    
-    // Wrapper
     if (selectedWrapper) {
       const wrapper = dbWrappers.find(w => w.id === selectedWrapper);
-      if (wrapper) total += wrapper.price;
+      if (wrapper) total += Number(wrapper.price || 0);
     }
-    
-    // Add-ons
-    if (addons.ribbon) total += 20;
-    if (addons.messageCard) total += 15;
-    
+    selectedAddonOptions.forEach(addon => {
+      total += Number(addon.price || 0);
+    });
     return total;
   };
 
@@ -107,22 +103,29 @@ const Customize = () => {
     if (currentStep > 0) setCurrentStep(c => c - 1);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    if (!selectedSize) {
+      showToast({ type: 'error', title: 'Oops!', message: 'Please choose an available bouquet size.' });
+      setCurrentStep(0);
+      return;
+    }
     if (Object.keys(selectedFlowers).length === 0) {
-      showToast({
-        type: 'error',
-        title: 'Oops! ✦',
-        message: 'Please select at least one flower before adding a custom bouquet.'
-      });
+      showToast({ type: 'error', title: 'Oops!', message: 'Please select at least one flower before adding a custom bouquet.' });
       setCurrentStep(1);
       return;
     }
 
     const buildDetails = {
-      size: selectedSize,
+      size: {
+        id: selectedSize.key,
+        key: selectedSize.key,
+        name: selectedSize.name,
+        stems: selectedSize.stems,
+        basePrice: Number(selectedSize.base_price || 0),
+      },
       flowers: Object.entries(selectedFlowers).map(([id, qty]) => {
         const f = dbFlowers.find(x => x.id === id);
-        return { id, name: f.name, quantity: qty, color: selectedFlowerColors[id] };
+        return { id, name: f?.name, quantity: qty, color: selectedFlowerColors[id] };
       }),
       fillers: Object.keys(selectedFillers).map(id => {
         const filler = dbFillers.find(x => x.id === id);
@@ -131,38 +134,37 @@ const Customize = () => {
       wrapper: selectedWrapper ? {
         id: selectedWrapper,
         material: dbWrappers.find(x => x.id === selectedWrapper)?.material,
-        color: selectedWrapperColor
+        color: selectedWrapperColor,
       } : null,
       addons,
+      addonDetails: selectedAddonOptions.map(addon => ({ key: addon.key, name: addon.name, price: Number(addon.price || 0) })),
       message,
-      instructions
+      instructions,
     };
 
-    addToCart({
+    const result = await addToCart({
       item_type: 'custom',
       name: 'Custom Bouquet',
       price: calculateTotal(),
       quantity: 1,
       custom_details: buildDetails,
-      subtotal: calculateTotal()
+      subtotal: calculateTotal(),
     });
-    showToast({
-      type: 'success',
-      title: 'Added to cart! ♡',
-      message: 'Your item has been added successfully.'
-    });
+
+    if (result?.ok === false) return;
+    showToast({ type: 'success', title: 'Added to cart!', message: 'Your item has been added successfully.' });
     navigate('/cart');
   };
 
-  // Handlers for Flowers Step
   const updateFlowerQty = (id, delta) => {
+    const flower = dbFlowers.find(f => f.id === id);
+    const maxStock = Number(flower?.stock || 0);
     setSelectedFlowers(prev => {
       const current = prev[id] || 0;
-      const next = current + delta;
+      const next = Math.min(maxStock, current + delta);
       if (next <= 0) {
         const copy = { ...prev };
         delete copy[id];
-        // also remove selected color if qty goes to 0
         setSelectedFlowerColors(cPrev => {
           const cCopy = { ...cPrev };
           delete cCopy[id];
@@ -174,33 +176,39 @@ const Customize = () => {
     });
   };
 
+  const renderImage = (item, label) => (
+    <div className="w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+      {item.image_url ? <img src={item.image_url} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
+    </div>
+  );
+
+  const colorsForFlower = (flowerId) => {
+    if (dbFuzzyWireColors.length > 0) return dbFuzzyWireColors.map(color => ({ ...color, color_name: color.color_name }));
+    return dbFlowerColors.filter(fc => fc.flower_id === flowerId);
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
-      case 0: // Size
+      case 0:
         return (
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">What size bouquet?</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {sizeOptions.map(size => (
-                <div 
+                <div
                   key={size.id}
                   onClick={() => setSelectedSize(size)}
-                  className={`cursor-pointer rounded-2xl p-4 md:p-6 border-2 transition-all ${
-                    selectedSize?.id === size.id 
-                      ? 'border-astraea-pink bg-astraea-pink/5 shadow-md' 
-                      : 'border-astraea-rosegold/30 hover:border-astraea-pink/50'
-                  }`}
+                  className={`cursor-pointer rounded-2xl p-4 md:p-6 border-2 transition-all ${selectedSize?.id === size.id ? 'border-astraea-pink bg-astraea-pink/5 shadow-md' : 'border-astraea-rosegold/30 hover:border-astraea-pink/50'}`}
                 >
                   <h3 className="font-heading text-2xl font-bold mb-2">{size.name}</h3>
                   <p className="text-astraea-darkgray/70 mb-4">{size.stems}</p>
-                  <p className="font-bold text-astraea-pink text-xl">+₱{size.basePrice} base</p>
+                  <p className="font-bold text-astraea-pink text-xl">+{money(size.base_price)} base</p>
                 </div>
               ))}
             </div>
           </div>
         );
-      
-      case 1: // Flowers
+      case 1:
         return (
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your flowers</h2>
@@ -209,16 +217,16 @@ const Customize = () => {
                 const qty = selectedFlowers[f.id] || 0;
                 return (
                   <div key={f.id} className="bg-white rounded-xl border border-astraea-rosegold/20 p-4 flex flex-col h-full shadow-sm">
-                    <div className="w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center">
-                      <span className="text-astraea-pink/30">{f.name} icon</span>
+                    {renderImage(f, f.name)}
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-bold text-astraea-darkgray flex-grow">{f.name}</h3>
+                      <span className={stockBadge}>{f.stock} left</span>
                     </div>
-                    <h3 className="font-bold text-astraea-darkgray flex-grow">{f.name}</h3>
-                    <p className="text-astraea-pink text-sm mb-4">₱{f.price_per_stem}/stem</p>
-                    
+                    <p className="text-astraea-pink text-sm mb-4">{money(f.price_per_stem)}/stem</p>
                     <div className="flex items-center justify-between border border-astraea-rosegold/40 rounded-full bg-astraea-blush/20">
-                    <button onClick={() => updateFlowerQty(f.id, -1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
+                      <button onClick={() => updateFlowerQty(f.id, -1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
                       <span className="font-bold">{qty}</span>
-                    <button onClick={() => updateFlowerQty(f.id, 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">+</button>
+                      <button onClick={() => updateFlowerQty(f.id, 1)} disabled={qty >= Number(f.stock || 0)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300">+</button>
                     </div>
                   </div>
                 );
@@ -226,38 +234,30 @@ const Customize = () => {
             </div>
           </div>
         );
-
-      case 2: { // Colors
+      case 2: {
         const selectedFlowerObjs = dbFlowers.filter(f => selectedFlowers[f.id] > 0);
         if (selectedFlowerObjs.length === 0) {
-          return (
-            <div className="py-12 text-center animate-fade-in">
-              <p className="text-astraea-darkgray/70">You didn't select any flowers. Go back to Step 2 to choose some!</p>
-            </div>
-          );
+          return <div className="py-12 text-center animate-fade-in"><p className="text-astraea-darkgray/70">You didn't select any flowers. Go back to Step 2 to choose some!</p></div>;
         }
         return (
           <div className="space-y-8 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your colors</h2>
             <p className="text-astraea-darkgray/70 -mt-6">Choose one main color per flower type you selected.</p>
-            
             <div className="space-y-8">
               {selectedFlowerObjs.map(f => {
-                const colorsForFlower = dbFlowerColors.filter(fc => fc.flower_id === f.id);
+                const availableColors = colorsForFlower(f.id);
                 return (
                   <div key={f.id} className="bg-white p-6 rounded-xl border border-astraea-rosegold/20">
                     <h3 className="font-bold text-lg mb-4">{f.name} Colors <span className="font-normal text-sm text-astraea-darkgray/50 ml-2">({selectedFlowers[f.id]} stems)</span></h3>
                     <div className="flex flex-wrap gap-4">
-                      {colorsForFlower.length > 0 ? colorsForFlower.map(c => (
+                      {availableColors.length > 0 ? availableColors.map(c => (
                         <button
                           key={c.id}
-                          onClick={() => setSelectedFlowerColors(prev => ({...prev, [f.id]: c.color_name}))}
-                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
-                            selectedFlowerColors[f.id] === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'
-                          }`}
+                          onClick={() => setSelectedFlowerColors(prev => ({ ...prev, [f.id]: c.color_name }))}
+                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedFlowerColors[f.id] === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                           style={{ backgroundColor: c.hex_code }}
                           title={c.color_name}
-                        ></button>
+                        />
                       )) : <p className="text-sm text-red-500">No colors available for this flower.</p>}
                     </div>
                   </div>
@@ -267,48 +267,48 @@ const Customize = () => {
           </div>
         );
       }
-
-      case 3: // Fillers
+      case 3:
         return (
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Add some fillers</h2>
             <p className="text-astraea-darkgray/70 -mt-4">This step is completely optional.</p>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {dbFillers.map(f => (
-                <div 
+                <div
                   key={f.id}
                   onClick={() => setSelectedFillers(prev => {
-                    const copy = {...prev};
+                    const copy = { ...prev };
                     if (copy[f.id]) delete copy[f.id];
                     else copy[f.id] = true;
                     return copy;
                   })}
-                  className={`cursor-pointer flex justify-between items-center p-4 rounded-xl border-2 transition-all ${
-                    selectedFillers[f.id] ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'
-                  }`}
+                  className={`cursor-pointer flex gap-4 p-4 rounded-xl border-2 transition-all ${selectedFillers[f.id] ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
-                  <div className="flex items-center">
-                    <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
-                      selectedFillers[f.id] ? 'border-astraea-pink bg-astraea-pink' : 'border-astraea-rosegold/40'
-                    }`}>
-                      {selectedFillers[f.id] && <Check className="w-4 h-4 text-white" />}
-                    </div>
-                    <span className="font-bold">{f.name}</span>
+                  <div className="w-20 h-20 shrink-0 overflow-hidden bg-astraea-blush rounded-lg flex items-center justify-center">
+                    {f.image_url ? <img src={f.image_url} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
                   </div>
-                  <span className="text-astraea-pink font-medium">+₱{f.price}</span>
+                  <div className="flex flex-1 items-center justify-between gap-3">
+                    <div className="flex items-center min-w-0">
+                      <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center shrink-0 ${selectedFillers[f.id] ? 'border-astraea-pink bg-astraea-pink' : 'border-astraea-rosegold/40'}`}>
+                        {selectedFillers[f.id] && <Check className="w-4 h-4 text-white" />}
+                      </div>
+                      <div>
+                        <span className="font-bold block">{f.name}</span>
+                        <span className={stockBadge}>{f.stock} left</span>
+                      </div>
+                    </div>
+                    <span className="text-astraea-pink font-medium">+{money(f.price)}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         );
-
-      case 4: { // Wrapper
+      case 4: {
         const activeWrapperColors = selectedWrapper ? dbWrapperColors.filter(wc => wc.wrapper_id === selectedWrapper) : [];
         return (
           <div className="space-y-8 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your wrapper</h2>
-            
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {dbWrappers.map(w => (
                 <div
@@ -317,16 +317,16 @@ const Customize = () => {
                     setSelectedWrapper(w.id);
                     setSelectedWrapperColor(null);
                   }}
-                  className={`cursor-pointer p-4 rounded-xl border-2 text-center transition-all ${
-                    selectedWrapper === w.id ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'
-                  }`}
+                  className={`cursor-pointer p-4 rounded-xl border-2 text-center transition-all ${selectedWrapper === w.id ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
+                  <div className="h-24 bg-astraea-blush rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                    {w.image_url ? <img src={w.image_url} alt={w.material} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-sm">{w.material}</span>}
+                  </div>
                   <h3 className="font-bold mb-2">{w.material}</h3>
-                  <span className="text-astraea-pink text-sm font-medium">+₱{w.price}</span>
+                  <span className="text-astraea-pink text-sm font-medium">+{money(w.price)}</span>
                 </div>
               ))}
             </div>
-            
             {selectedWrapper && (
               <div className="bg-white p-6 rounded-xl border border-astraea-rosegold/20 animate-fade-in">
                 <h3 className="font-bold mb-4">Wrapper Color</h3>
@@ -335,12 +335,10 @@ const Customize = () => {
                     <button
                       key={c.id}
                       onClick={() => setSelectedWrapperColor(c.color_name)}
-                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${
-                        selectedWrapperColor === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'
-                      }`}
+                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedWrapperColor === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                       style={{ backgroundColor: c.hex_code }}
                       title={c.color_name}
-                    ></button>
+                    />
                   )) : <p className="text-sm text-red-500">No colors available for this wrapper.</p>}
                 </div>
               </div>
@@ -348,62 +346,31 @@ const Customize = () => {
           </div>
         );
       }
-
-      case 5: // Add-ons
+      case 5:
         return (
           <div className="space-y-8 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Final touches</h2>
-            
             <div className="space-y-4">
-              <label className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={addons.ribbon}
-                  onChange={(e) => setAddons({...addons, ribbon: e.target.checked})}
-                  className="w-5 h-5 accent-astraea-pink mr-4"
-                />
-                <span className="font-bold flex-grow">Premium Satin Ribbon</span>
-                <span className="text-astraea-pink font-medium">+₱20</span>
-              </label>
-              
-              <label className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={addons.messageCard}
-                  onChange={(e) => setAddons({...addons, messageCard: e.target.checked})}
-                  className="w-5 h-5 accent-astraea-pink mr-4"
-                />
-                <span className="font-bold flex-grow">Message Card</span>
-                <span className="text-astraea-pink font-medium">+₱15</span>
-              </label>
+              {addonOptions.map(addon => (
+                <label key={addon.id} className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
+                  <input type="checkbox" checked={!!addons[addon.key]} onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })} className="w-5 h-5 accent-astraea-pink mr-4" />
+                  <span className="font-bold flex-grow">{addon.name}</span>
+                  <span className="text-astraea-pink font-medium">+{money(addon.price)}</span>
+                </label>
+              ))}
             </div>
-            
             {addons.messageCard && (
               <div className="animate-fade-in">
                 <label className="block text-sm font-bold text-astraea-darkgray mb-2">Message</label>
-                <textarea 
-                  rows="3" 
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full border border-astraea-rosegold/40 rounded-xl p-4 focus:ring-2 focus:ring-astraea-pink outline-none"
-                  placeholder="Type your message here..."
-                ></textarea>
+                <textarea rows="3" value={message} onChange={e => setMessage(e.target.value)} className="w-full border border-astraea-rosegold/40 rounded-xl p-4 focus:ring-2 focus:ring-astraea-pink outline-none" placeholder="Type your message here..." />
               </div>
             )}
-
             <div>
               <label className="block text-sm font-bold text-astraea-darkgray mb-2">Special Instructions (Optional)</label>
-              <textarea 
-                rows="2" 
-                value={instructions}
-                onChange={(e) => setInstructions(e.target.value)}
-                className="w-full border border-astraea-rosegold/40 rounded-xl p-4 focus:ring-2 focus:ring-astraea-pink outline-none"
-                placeholder="E.g., wrap it tight, mix the colors evenly..."
-              ></textarea>
+              <textarea rows="2" value={instructions} onChange={e => setInstructions(e.target.value)} className="w-full border border-astraea-rosegold/40 rounded-xl p-4 focus:ring-2 focus:ring-astraea-pink outline-none" placeholder="E.g., wrap it tight, mix the colors evenly..." />
             </div>
           </div>
         );
-      
       default:
         return null;
     }
@@ -412,176 +379,76 @@ const Customize = () => {
   return (
     <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Progress Bar */}
         <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
           <div className="flex items-center min-w-max justify-center md:justify-start">
             {steps.map((step, idx) => (
-              <React.Fragment key={idx}>
+              <React.Fragment key={step}>
                 <div className="flex flex-col items-center relative">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-colors duration-300 ${
-                    currentStep > idx ? 'bg-astraea-pink text-white' 
-                    : currentStep === idx ? 'bg-astraea-pink text-white ring-4 ring-astraea-pink/20'
-                    : 'bg-white border-2 border-astraea-rosegold/30 text-astraea-darkgray/50'
-                  }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-colors duration-300 ${currentStep > idx ? 'bg-astraea-pink text-white' : currentStep === idx ? 'bg-astraea-pink text-white ring-4 ring-astraea-pink/20' : 'bg-white border-2 border-astraea-rosegold/30 text-astraea-darkgray/50'}`}>
                     {currentStep > idx ? <Check className="w-4 h-4" /> : idx + 1}
                   </div>
-                  <span className={`hidden md:block absolute top-10 text-xs font-bold whitespace-nowrap ${
-                    currentStep >= idx ? 'text-astraea-darkgray' : 'text-astraea-darkgray/40'
-                  }`}>{step}</span>
+                  <span className={`hidden md:block absolute top-10 text-xs font-bold whitespace-nowrap ${currentStep >= idx ? 'text-astraea-darkgray' : 'text-astraea-darkgray/40'}`}>{step}</span>
                 </div>
-                {idx < steps.length - 1 && (
-                  <div className={`w-12 sm:w-20 h-1 mx-2 transition-colors duration-300 ${
-                    currentStep > idx ? 'bg-astraea-pink' : 'bg-astraea-rosegold/30'
-                  }`}></div>
-                )}
+                {idx < steps.length - 1 && <div className={`w-12 sm:w-20 h-1 mx-2 transition-colors duration-300 ${currentStep > idx ? 'bg-astraea-pink' : 'bg-astraea-rosegold/30'}`} />}
               </React.Fragment>
             ))}
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Builder Area */}
           <div className="lg:w-2/3 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
-            
-            <div className="flex-grow">
-              {renderStepContent()}
-            </div>
-            
-            {/* Navigation Buttons */}
+            <div className="flex-grow">{renderStepContent()}</div>
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-12 pt-6 border-t border-astraea-rosegold/20">
-              <button 
-                onClick={handleBack}
-                disabled={currentStep === 0}
-                className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${
-                  currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'
-                }`}
-              >
+              <button onClick={handleBack} disabled={currentStep === 0} className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'}`}>
                 <ChevronLeft className="w-5 h-5 mr-1" /> Back
               </button>
-              
               {currentStep < steps.length - 1 ? (
-                <button 
-                  onClick={handleNext}
-                  className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors"
-                >
-                  Next <ChevronRight className="w-5 h-5 ml-1" />
-                </button>
+                <button onClick={handleNext} className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors">Next <ChevronRight className="w-5 h-5 ml-1" /></button>
               ) : (
-                <button 
-                  onClick={handleAddToCart}
-                  className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"
-                >
-                  <ShoppingBag className="w-5 h-5 mr-2" /> Add to Cart
-                </button>
+                <button onClick={handleAddToCart} className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"><ShoppingBag className="w-5 h-5 mr-2" /> Add to Cart</button>
               )}
             </div>
           </div>
 
-          {/* Summary Panel (Sticky Desktop) */}
           <div className="hidden lg:block lg:w-1/3">
-            <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
-              <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
-              
-              <div className="space-y-4 text-sm font-medium">
-                {selectedSize && (
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/80">Size</span>
-                    <span>{selectedSize.name} (₱{selectedSize.basePrice})</span>
-                  </div>
-                )}
-                
-                {Object.keys(selectedFlowers).length > 0 && (
-                  <div className="border-b border-white/10 pb-2">
-                    <span className="text-white/80 block mb-2">Flowers</span>
-                    {Object.entries(selectedFlowers).map(([fId, qty]) => {
-                      const f = dbFlowers.find(x => x.id === fId);
-                      const color = selectedFlowerColors[fId] ? ` - ${selectedFlowerColors[fId]}` : '';
-                      return f ? (
-                        <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1">
-                          <span>{qty}x {f.name}{color}</span>
-                          <span>₱{f.price_per_stem * qty}</span>
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-                
-                {Object.keys(selectedFillers).length > 0 && (
-                  <div className="border-b border-white/10 pb-2">
-                    <span className="text-white/80 block mb-2">Fillers</span>
-                    {Object.keys(selectedFillers).map(fId => {
-                      const f = dbFillers.find(x => x.id === fId);
-                      return f ? (
-                        <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1">
-                          <span>{f.name}</span>
-                          <span>₱{f.price}</span>
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                )}
-                
-                {selectedWrapper && (
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span className="text-white/80">Wrapper</span>
-                    <span>
-                      {dbWrappers.find(w => w.id === selectedWrapper)?.material} 
-                      {selectedWrapperColor ? ` (${selectedWrapperColor})` : ''} 
-                      (₱{dbWrappers.find(w => w.id === selectedWrapper)?.price})
-                    </span>
-                  </div>
-                )}
-                
-                {(addons.ribbon || addons.messageCard) && (
-                  <div className="border-b border-white/10 pb-2">
-                    <span className="text-white/80 block mb-2">Add-ons</span>
-                    {addons.ribbon && <div className="flex justify-between text-white/90 ml-2 mb-1"><span>Ribbon</span><span>₱20</span></div>}
-                    {addons.messageCard && <div className="flex justify-between text-white/90 ml-2 mb-1"><span>Message Card</span><span>₱15</span></div>}
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-end">
-                <span className="text-white/80 text-lg">Total</span>
-                <span className="font-bold text-3xl text-astraea-pink">₱{calculateTotal().toFixed(2)}</span>
-              </div>
-            </div>
+            <SummaryPanel
+              selectedSize={selectedSize}
+              selectedFlowers={selectedFlowers}
+              selectedFlowerColors={selectedFlowerColors}
+              dbFlowers={dbFlowers}
+              selectedFillers={selectedFillers}
+              dbFillers={dbFillers}
+              selectedWrapper={selectedWrapper}
+              selectedWrapperColor={selectedWrapperColor}
+              dbWrappers={dbWrappers}
+              selectedAddonOptions={selectedAddonOptions}
+              calculateTotal={calculateTotal}
+            />
           </div>
-          
         </div>
       </div>
+
       <div className="fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div>
             <p className="text-xs text-white/70">Custom Bouquet</p>
-            <p className="font-bold text-xl text-astraea-pink">â‚±{calculateTotal().toFixed(2)}</p>
+            <p className="font-bold text-xl text-astraea-pink">{money(calculateTotal())}</p>
           </div>
-          <button onClick={() => setIsSummaryOpen(true)} className="min-h-11 px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">
-            View Summary
-          </button>
+          <button onClick={() => setIsSummaryOpen(true)} className="min-h-11 px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">View Summary</button>
         </div>
       </div>
+
       {isSummaryOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 lg:hidden" onClick={() => setIsSummaryOpen(false)}>
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto bg-astraea-darkgray text-white p-6 rounded-t-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto bg-astraea-darkgray text-white p-6 rounded-t-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-2xl font-bold text-astraea-pink">Your Bouquet</h3>
               <button onClick={() => setIsSummaryOpen(false)} className="min-h-11 min-w-11 text-white text-2xl">x</button>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span className="text-white/80">Size</span>
-                <span>{selectedSize?.name}</span>
-              </div>
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span className="text-white/80">Flowers</span>
-                <span>{Object.values(selectedFlowers).reduce((sum, qty) => sum + qty, 0)} stems</span>
-              </div>
-              <div className="flex justify-between pt-4">
-                <span className="text-white/80 text-lg">Total</span>
-                <span className="font-bold text-3xl text-astraea-pink">â‚±{calculateTotal().toFixed(2)}</span>
-              </div>
+              <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize?.name}</span></div>
+              <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Flowers</span><span>{Object.values(selectedFlowers).reduce((sum, qty) => sum + qty, 0)} stems</span></div>
+              <div className="flex justify-between pt-4"><span className="text-white/80 text-lg">Total</span><span className="font-bold text-3xl text-astraea-pink">{money(calculateTotal())}</span></div>
             </div>
           </div>
         </div>
@@ -589,5 +456,49 @@ const Customize = () => {
     </div>
   );
 };
+
+const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowers, selectedFillers, dbFillers, selectedWrapper, selectedWrapperColor, dbWrappers, selectedAddonOptions, calculateTotal }) => (
+  <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
+    <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
+    <div className="space-y-4 text-sm font-medium">
+      {selectedSize && <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize.name} ({money(selectedSize.base_price)})</span></div>}
+      {Object.keys(selectedFlowers).length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Flowers</span>
+          {Object.entries(selectedFlowers).map(([fId, qty]) => {
+            const f = dbFlowers.find(x => x.id === fId);
+            const color = selectedFlowerColors[fId] ? ` - ${selectedFlowerColors[fId]}` : '';
+            return f ? <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span>{money(Number(f.price_per_stem || 0) * qty)}</span></div> : null;
+          })}
+        </div>
+      )}
+      {Object.keys(selectedFillers).length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Fillers</span>
+          {Object.keys(selectedFillers).map(fId => {
+            const f = dbFillers.find(x => x.id === fId);
+            return f ? <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1"><span>{f.name}</span><span>{money(f.price)}</span></div> : null;
+          })}
+        </div>
+      )}
+      {selectedWrapper && (
+        <div className="flex justify-between border-b border-white/10 pb-2">
+          <span className="text-white/80">Wrapper</span>
+          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColor ? ` (${selectedWrapperColor})` : ''} ({money(dbWrappers.find(w => w.id === selectedWrapper)?.price)})</span>
+        </div>
+      )}
+      {selectedAddonOptions.length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Add-ons</span>
+          {selectedAddonOptions.map(addon => <div key={addon.key} className="flex justify-between text-white/90 ml-2 mb-1"><span>{addon.name}</span><span>{money(addon.price)}</span></div>)}
+        </div>
+      )}
+    </div>
+    <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-end">
+      <span className="text-white/80 text-lg">Total</span>
+      <span className="font-bold text-3xl text-astraea-pink">{money(calculateTotal())}</span>
+    </div>
+  </div>
+);
 
 export default Customize;

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search, Clock, Scissors, CheckCircle, Package, MessageCircle } from 'lucide-react';
 
 const statuses = [
   { id: 'pending', label: 'Pending', icon: Clock },
+  { id: 'confirmed', label: 'Confirmed', icon: CheckCircle },
   { id: 'being-made', label: 'Being Made', icon: Scissors },
   { id: 'ready', label: 'Ready', icon: CheckCircle },
   { id: 'completed', label: 'Completed', icon: Package }
@@ -24,11 +25,23 @@ const TrackOrder = () => {
   const handleTrack = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim() || !verification.trim()) return;
-    setLoading(true); setError(''); setOrder(null); setOrderItems([]);
+    setLoading(true);
+    setError('');
+    setOrder(null);
+    setOrderItems([]);
+
     try {
-      const { data, error: orderError } = await supabase.rpc('track_order', { p_reference: searchQuery, p_verification: verification });
+      const { data, error: orderError } = await supabase.rpc('track_order', {
+        p_reference: searchQuery,
+        p_verification: verification
+      });
       if (orderError) throw orderError;
-      if (data) { setOrder(data.order); setOrderItems(data.items || []); } else { setError('No order found. Please check your reference number and contact detail.'); }
+      if (data?.order) {
+        setOrder(data.order);
+        setOrderItems(data.items || []);
+      } else {
+        setError('No order found. Please check your reference number and contact detail.');
+      }
     } catch (err) {
       console.error(err);
       setError('No order found. Please check your reference number and contact detail.');
@@ -99,11 +112,11 @@ const TrackOrder = () => {
                         <p className="font-bold text-astraea-darkgray">{item.quantity}x {item.item_type === 'custom' ? 'Custom Bouquet' : 'Ready-Made Bouquet'}</p>
                         {item.size && <p className="text-sm text-astraea-darkgray/70">Size: {item.size}</p>}
                       </div>
-                      <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914]">₱{item.subtotal.toFixed(2)}</span>
+                      <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914]">₱{Number(item.subtotal).toFixed(2)}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between text-astraea-darkgray/80 pt-2"><span>Delivery Method</span><span className="capitalize font-medium">{order.delivery_method}</span></div>
-                  <div className="flex justify-between items-end pt-4 border-t border-dashed border-astraea-pink/30"><span className="font-bold text-lg">Total</span><span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{order.total_amount.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-astraea-darkgray/80 pt-2"><span>Delivery Method</span><span className="font-medium">{order.delivery_method === 'pickup' ? 'Store Pickup' : 'Delivery'}</span></div>
+                  <div className="flex justify-between items-end pt-4 border-t border-dashed border-astraea-pink/30"><span className="font-bold text-lg">Total</span><span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{Number(order.total_amount).toFixed(2)}</span></div>
                 </div>
               </div>
               <div className="lg:w-1/3 scrapbook-card washi-strip bg-astraea-blush/20 flex flex-col justify-center text-center">

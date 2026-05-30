@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ShoppingBag, Clock, DollarSign, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -14,39 +14,49 @@ const AdminDashboard = () => {
   const [lowStock, setLowStock] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
-    
-    // In a real production app, these would be robust server-side queries or RPC functions.
-    // For now, we do a basic client-side fetch.
-    
+
     const today = new Date();
     today.setHours(0,0,0,0);
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    // 1. Fetch Orders (Pending & Revenue & Today)
     const { data: ordersData } = await supabase
       .from('orders')
-      .select('*');
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (ordersData) {
       const todayOrders = ordersData.filter(o => new Date(o.created_at) >= today).length;
       const pend = ordersData.filter(o => o.status === 'pending');
+      const monthOrders = ordersData.filter(o => new Date(o.created_at) >= startOfMonth && o.status !== 'cancelled');
       const monthRev = ordersData
         .filter(o => new Date(o.created_at) >= startOfMonth && o.status !== 'cancelled')
         .reduce((sum, o) => sum + Number(o.total_amount), 0);
-      
+
+      let topBouquet = '-';
+      const monthOrderIds = monthOrders.map(order => order.id);
+      if (monthOrderIds.length > 0) {
+        const { data: itemData } = await supabase
+          .from('order_items')
+          .select('bouquet_id, quantity, bouquets(name)')
+          .in('order_id', monthOrderIds);
+
+        const counts = new Map();
+        itemData?.forEach(item => {
+          const name = item.bouquets?.name || (item.bouquet_id ? 'Ready-Made Bouquet' : 'Custom Bouquet');
+          counts.set(name, (counts.get(name) || 0) + (Number(item.quantity) || 1));
+        });
+        topBouquet = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+      }
+
       setPendingOrders(pend);
-      
+
       setMetrics({
         ordersToday: todayOrders,
         pendingOrders: pend.length,
         revenueMonth: monthRev,
-        topBouquet: 'Sweet Blush Rose' // Hardcoded demo value for most ordered
+        topBouquet
       });
     }
 
@@ -70,7 +80,35 @@ const AdminDashboard = () => {
     
     setLowStock(outOfStock);
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-dashboard-orders-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          window.setTimeout(fetchDashboardData, 150);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'order_items' },
+        () => {
+          window.setTimeout(fetchDashboardData, 150);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchDashboardData]);
 
   const handleMarkAvailable = async (item) => {
     await supabase.from(item.table).update({ is_available: true }).eq('id', item.id);
