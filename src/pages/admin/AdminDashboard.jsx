@@ -197,7 +197,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-5 font-bold text-astraea-pink">{order.reference_number}</td>
                       <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
                       <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
-                      <td className="px-6 py-5 font-bold text-gray-700">₱{Number(order.total_amount).toFixed(2)}</td>
+                      <td className="px-6 py-5 font-bold text-gray-700">?{Number(order.total_amount).toFixed(2)}</td>
                       <td className="px-6 py-5">
                       <Link to={`/admin/orders/${order.id}`} className="min-h-11 inline-flex items-center px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                           View
@@ -259,3 +259,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

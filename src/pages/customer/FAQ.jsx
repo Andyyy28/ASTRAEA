@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Can I request a custom design not shown on the website?",
-    a: "Absolutely! Use our Customize page to build your own, or message us directly on WhatsApp for special requests."
+    a: "Absolutely! Use our Customize page to build your own, or message us directly on Messenger for special requests."
   },
   {
     q: "How do I pay?",

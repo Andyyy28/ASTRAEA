@@ -11,7 +11,8 @@ import Home from './pages/customer/Home';
 import Shop from './pages/customer/Shop';
 import ShopDetail from './pages/customer/ShopDetail';
 import Customize from './pages/customer/Customize';
-import PriceList from './pages/customer/PriceList';
+import OtherProducts from './pages/customer/OtherProducts';
+import OtherProductDetail from './pages/customer/OtherProductDetail';
 import Cart from './pages/customer/Cart';
 import Checkout from './pages/customer/Checkout';
 import TrackOrder from './pages/customer/TrackOrder';
@@ -26,7 +27,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminInventory from './pages/admin/AdminInventory';
 import AdminBouquets from './pages/admin/AdminBouquets';
-import AdminPrices from './pages/admin/AdminPrices';
+import AdminOtherProducts from './pages/admin/AdminOtherProducts';
 import AdminSettings from './pages/admin/AdminSettings';
 
 const CustomerLayout = () => (
@@ -52,7 +53,8 @@ function App() {
               <Route path="/shop" element={<Shop />} />
               <Route path="/shop/:id" element={<ShopDetail />} />
               <Route path="/customize" element={<Customize />} />
-              <Route path="/price-list" element={<PriceList />} />
+              <Route path="/other-products" element={<OtherProducts />} />
+              <Route path="/other-products/:id" element={<OtherProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/track-order" element={<TrackOrder />} />
@@ -69,7 +71,7 @@ function App() {
               <Route path="/admin/orders/:id" element={<AdminOrderDetail />} />
               <Route path="/admin/inventory" element={<AdminInventory />} />
               <Route path="/admin/bouquets" element={<AdminBouquets />} />
-              <Route path="/admin/prices" element={<AdminPrices />} />
+              <Route path="/admin/other-products" element={<AdminOtherProducts />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
             </Routes>

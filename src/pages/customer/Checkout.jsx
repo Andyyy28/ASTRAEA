@@ -3,7 +3,26 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
 import { useNotifications } from '../../context/NotificationContext';
-import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store } from 'lucide-react';
+import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
+
+// Upload proof of payment to Supabase Storage, returns the public URL
+const uploadPaymentProof = async (file) => {
+  const fileName = `payment-proofs/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+
+  const { error } = await supabase.storage
+    .from('bouquets')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false
+    });
+  if (error) {
+    console.log(error);
+    throw error;
+  }
+
+  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
+  return urlData.publicUrl;
+};
 
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -11,12 +30,15 @@ const Checkout = () => {
   const [formData, setFormData] = useState({
     customer_name: '',
     contact_number: '',
-    email: '',
+    facebook_account: '',
+    payment_method: '',
     delivery_address: '',
     preferred_date: '',
     preferred_time: '',
     special_notes: ''
   });
+  const [paymentProofFile, setPaymentProofFile] = useState(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(null);
   const [errors, setErrors] = useState({});
@@ -28,16 +50,33 @@ const Checkout = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (paymentProofPreview?.startsWith('blob:')) {
+        URL.revokeObjectURL(paymentProofPreview);
+      }
+    };
+  }, [paymentProofPreview]);
+
   const handleInputChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
     setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+  };
+
+  const handlePaymentProofChange = (e) => {
+    const file = e.target.files?.[0] || null;
+    setPaymentProofFile(file);
+    setErrors(prev => ({ ...prev, payment_proof: '' }));
+    setPaymentProofPreview(file ? URL.createObjectURL(file) : '');
   };
 
   const validateForm = () => {
     const nextErrors = {};
     if (!formData.customer_name.trim()) nextErrors.customer_name = 'Full name is required.';
     if (!formData.contact_number.trim()) nextErrors.contact_number = 'Contact number is required.';
-    if (!formData.email.trim()) nextErrors.email = 'Email address is required.';
+    if (!formData.facebook_account.trim()) nextErrors.facebook_account = 'Facebook account is required.';
+    if (!formData.payment_method) nextErrors.payment_method = 'Payment method is required.';
+    if (formData.payment_method === 'gcash' && !paymentProofFile) nextErrors.payment_proof = 'Proof of payment is required for GCash.';
     if (!formData.preferred_date) nextErrors.preferred_date = deliveryMethod === 'pickup' ? 'Pickup date is required.' : 'Delivery date is required.';
     if (deliveryMethod === 'pickup' && !formData.preferred_time) nextErrors.preferred_time = 'Pickup time is required.';
     if (deliveryMethod === 'delivery' && !formData.delivery_address.trim()) nextErrors.delivery_address = 'Delivery address is required.';
@@ -58,9 +97,15 @@ const Checkout = () => {
     }
     setLoading(true);
     try {
+      let paymentProofUrl = null;
+      if (formData.payment_method === 'gcash') {
+        paymentProofUrl = await uploadPaymentProof(paymentProofFile);
+      }
+
       const orderItems = cartItems.map(item => ({
         item_type: item.item_type,
         bouquet_id: item.bouquet_id || null,
+        other_product_id: item.other_product_id || null,
         size: item.custom_details?.size?.id || null,
         flowers: item.custom_details?.flowers || null,
         fillers: item.custom_details?.fillers || null,
@@ -74,7 +119,9 @@ const Checkout = () => {
         p_order: {
           customer_name: formData.customer_name,
           contact_number: formData.contact_number,
-          email: formData.email,
+          facebook_account: formData.facebook_account,
+          payment_method: formData.payment_method,
+          payment_proof_url: paymentProofUrl,
           delivery_method: deliveryMethod,
           delivery_address: deliveryMethod === 'delivery' ? formData.delivery_address : null,
           preferred_date: formData.preferred_date || null,
@@ -162,7 +209,66 @@ const Checkout = () => {
                 <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name *</label><input type="text" name="customer_name" value={formData.customer_name} onChange={handleInputChange} className={fieldClass} placeholder="Jane Doe" />{errors.customer_name && <p className={errorClass}>{errors.customer_name}</p>}</div>
                 <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Contact Number *</label><input type="tel" name="contact_number" value={formData.contact_number} onChange={handleInputChange} className={fieldClass} placeholder="0912 345 6789" />{errors.contact_number && <p className={errorClass}>{errors.contact_number}</p>}</div>
               </div>
-              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Email Address *</label><input type="email" name="email" value={formData.email} onChange={handleInputChange} className={fieldClass} placeholder="jane@example.com" />{errors.email && <p className={errorClass}>{errors.email}</p>}</div>
+              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Facebook Account *</label><input type="text" name="facebook_account" value={formData.facebook_account} onChange={handleInputChange} className={fieldClass} placeholder="Paste your Facebook profile link or name" />{errors.facebook_account && <p className={errorClass}>{errors.facebook_account}</p>}</div>
+            </div>
+
+            <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
+              <h3 className="section-heading text-xl md:text-2xl mb-2">Payment Method</h3>
+              <div className="flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, payment_method: 'gcash' }));
+                    setErrors(prev => ({ ...prev, payment_method: '' }));
+                  }}
+                  className={`kawaii-btn flex-1 ${formData.payment_method === 'gcash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
+                >
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Pay Online (GCash)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, payment_method: 'cash' }));
+                    setErrors(prev => ({ ...prev, payment_method: '' , payment_proof: '' }));
+                  }}
+                  className={`kawaii-btn flex-1 ${formData.payment_method === 'cash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
+                >
+                  <Banknote className="w-5 h-5 mr-2" />
+                  Pay with Cash
+                </button>
+              </div>
+              {errors.payment_method && <p className={errorClass}>{errors.payment_method}</p>}
+              {formData.payment_method === 'gcash' ? (
+                <div className="space-y-4">
+                  <div className="rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
+                    {/* TODO: Replace with actual GCash QR code image path so it is easy to swap in the real QR image. */}
+                    <img src="/gcash.jpeg" alt="GCash QR code" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#C4658A] mb-2">Upload Proof of Payment *</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePaymentProofChange}
+                      className="kawaii-input file:mr-4 file:rounded-full file:border-0 file:bg-astraea-pink file:px-4 file:py-2 file:font-bold file:text-white file:transition-colors file:hover:bg-astraea-rosegold"
+                    />
+                    {errors.payment_proof && <p className={errorClass}>{errors.payment_proof}</p>}
+                  </div>
+                  {paymentProofPreview && (
+                    <div className="rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
+                      <img src={paymentProofPreview} alt="Proof of payment preview" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
+                    </div>
+                  )}
+                  <p className="text-sm text-astraea-darkgray/70 leading-relaxed">
+                    Please screenshot this QR code and pay before your pickup/delivery date. Upload your proof of payment here.
+                  </p>
+                </div>
+              ) : formData.payment_method === 'cash' ? (
+                <p className="text-sm text-astraea-darkgray/70 leading-relaxed">
+                  Payment will be collected upon pickup or delivery.
+                </p>
+              ) : null}
             </div>
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">

@@ -21,6 +21,7 @@ const buildItemSignature = (item) => {
   return JSON.stringify({
     item_type: item.item_type,
     bouquet_id: item.bouquet_id || null,
+    other_product_id: item.other_product_id || null,
     name: item.name,
     price: item.price,
     image: item.image || null,

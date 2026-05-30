@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ShoppingBag, Box, Flower2, CircleDollarSign, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, Settings, LogOut, Menu, X } from 'lucide-react';
 
 const AdminLayout = () => {
   const { user, loading, logout } = useAuth();
@@ -26,7 +26,7 @@ const AdminLayout = () => {
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { name: 'Inventory', path: '/admin/inventory', icon: Box },
     { name: 'Bouquets', path: '/admin/bouquets', icon: Flower2 },
-    { name: 'Price List', path: '/admin/prices', icon: CircleDollarSign },
+    { name: 'Other Products', path: '/admin/other-products', icon: Gift },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

@@ -123,7 +123,7 @@ const TrackOrder = () => {
                 <MessageCircle className="w-10 h-10 text-astraea-pink mx-auto mb-4" />
                 <h3 className="font-bold mb-2">Have a question?</h3>
                 <p className="text-sm text-astraea-darkgray/70 mb-6">Need to update your order or ask about the status?</p>
-                <a href="https://wa.me/639123456789" target="_blank" rel="noreferrer" className="kawaii-btn-primary justify-center">Message on WhatsApp</a>
+                <a href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="kawaii-btn-primary justify-center">Chat on Messenger</a>
               </div>
             </div>
           </div>

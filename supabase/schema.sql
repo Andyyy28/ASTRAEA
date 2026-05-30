@@ -40,6 +40,19 @@ CREATE TABLE bouquets (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- other_products
+CREATE TABLE other_products (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    category TEXT CHECK (category IN ('keychain', 'hair accessories', 'ornaments', 'other')),
+    images TEXT[],
+    is_visible BOOLEAN DEFAULT true,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- flowers
 CREATE TABLE flowers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -128,6 +141,9 @@ CREATE TABLE orders (
     customer_name TEXT NOT NULL,
     contact_number TEXT NOT NULL,
     email TEXT,
+    facebook_account TEXT,
+    payment_method TEXT,
+    payment_proof_url TEXT,
     order_type TEXT NOT NULL,
     delivery_method TEXT NOT NULL,
     delivery_address TEXT,
@@ -146,6 +162,7 @@ CREATE TABLE order_items (
     order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
     item_type TEXT NOT NULL,
     bouquet_id UUID REFERENCES bouquets(id),
+    other_product_id UUID REFERENCES other_products(id),
     size TEXT,
     flowers JSONB,
     fillers JSONB,
@@ -179,6 +196,7 @@ CREATE TABLE settings (
 INSERT INTO storage.buckets (id, name, public)
 VALUES
   ('bouquets', 'bouquets', true),
+  ('other-products', 'other-products', true),
   ('images', 'images', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 

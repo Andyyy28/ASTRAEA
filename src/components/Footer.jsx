@@ -36,13 +36,20 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="section-heading text-lg">{heartIcon} Quick Links</h4>
             <ul className="space-y-2">
-              {['Home', 'Shop', 'Customize', 'Price List', 'FAQ', 'Contact'].map((item) => (
-                <li key={item} className="rounded-full">
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Shop', path: '/shop' },
+                { name: 'Customize', path: '/customize' },
+                { name: 'Other Products', path: '/other-products' },
+                { name: 'FAQ', path: '/faq' },
+                { name: 'Contact', path: '/contact' }
+              ].map((item) => (
+                <li key={item.name} className="rounded-full">
                   <Link
-                    to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`}
+                    to={item.path}
                     className="inline-flex rounded-full px-3 py-1 text-sm font-semibold hover:bg-white/80 hover:text-astraea-pink transition-colors"
                   >
-                    {item}
+                    {item.name}
                   </Link>
                 </li>
               ))}

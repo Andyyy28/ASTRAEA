@@ -16,7 +16,10 @@ const AdminOrderDetail = () => {
       const { data: orderData } = await supabase.from('orders').select('*').eq('id', id).single();
       if (orderData) {
         setOrder(orderData);
-        const { data: itemsData } = await supabase.from('order_items').select('*').eq('order_id', id);
+        const { data: itemsData } = await supabase
+          .from('order_items')
+          .select('*, bouquets(name, images), other_products(name, images)')
+          .eq('order_id', id);
         if (itemsData) setItems(itemsData);
       }
       setLoading(false);
@@ -61,6 +64,23 @@ const AdminOrderDetail = () => {
       case 'cancelled': return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold capitalize">Cancelled</span>;
       default: return null;
     }
+  };
+
+  const getBouquetName = (item) => item.bouquets?.name || 'Ready-Made Bouquet';
+  const getBouquetImage = (item) => item.bouquets?.image_url || item.bouquets?.images?.[0] || null;
+  const getItemName = (item) => {
+    if (item.item_type === 'custom') return 'Custom Bouquet';
+    if (item.item_type === 'other_product') return item.other_products?.name || 'Other Product';
+    return getBouquetName(item);
+  };
+  const getItemImage = (item) => {
+    if (item.item_type === 'other_product') return item.other_products?.images?.[0] || null;
+    return getBouquetImage(item);
+  };
+  const getPaymentMethodLabel = (method) => {
+    if (method === 'gcash') return 'Pay Online (GCash)';
+    if (method === 'cash') return 'Pay with Cash';
+    return 'N/A';
   };
 
   return (
@@ -120,7 +140,22 @@ const AdminOrderDetail = () => {
             <div className="space-y-3 text-sm">
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Name</span><span className="font-medium">{order.customer_name}</span></div>
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Contact</span><span className="font-medium">{order.contact_number}</span></div>
-              <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Email</span><span className="font-medium">{order.email}</span></div>
+              <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Facebook Account</span><span className="font-medium">{order.facebook_account || order.email || 'N/A'}</span></div>
+              <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Payment Method</span><span className="font-medium">{getPaymentMethodLabel(order.payment_method)}</span></div>
+              {order.payment_method === 'gcash' && (
+                <div className="pt-2">
+                  <span className="text-gray-500 block text-xs uppercase tracking-wider mb-2">Proof of Payment</span>
+                  {order.payment_proof_url ? (
+                    <img
+                      src={order.payment_proof_url}
+                      alt="GCash proof of payment"
+                      className="w-full max-w-xs rounded-xl border border-gray-200 bg-white object-contain"
+                    />
+                  ) : (
+                    <p className="font-medium text-gray-500">No proof uploaded.</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           
@@ -165,13 +200,28 @@ const AdminOrderDetail = () => {
           <div className="flex-grow p-6 space-y-6 overflow-y-auto">
             {items.map(item => (
               <div key={item.id} className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
-                <div className="w-16 h-16 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center text-astraea-pink font-bold">
-                  {item.quantity}x
+                <div className="w-16 h-16 bg-astraea-blush rounded-xl flex-shrink-0 overflow-hidden relative">
+                  {item.item_type !== 'custom' && getItemImage(item) ? (
+                    <img
+                      src={getItemImage(item)}
+                      alt={getItemName(item)}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-astraea-pink font-bold">
+                      {item.quantity}x
+                    </div>
+                  )}
+                  {item.item_type !== 'custom' && (
+                    <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-white/90 text-[10px] font-bold text-astraea-pink shadow-sm">
+                      {item.quantity}x
+                    </div>
+                  )}
                 </div>
                 <div className="flex-grow">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-1">
                     <h4 className="font-bold text-gray-800">
-                      {item.item_type === 'custom' ? 'Custom Bouquet' : 'Ready-Made Bouquet'}
+                      {getItemName(item)}
                     </h4>
                     <span className="font-bold text-astraea-pink">₱{Number(item.subtotal).toFixed(2)}</span>
                   </div>
