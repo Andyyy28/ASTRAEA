@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { Globe, AtSign, Video, Mail, Phone, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
+  const flowerIcon = String.fromCodePoint(10047);
+  const heartIcon = String.fromCodePoint(9825);
+  const starIcon = String.fromCodePoint(9733);
+
   return (
     <footer className="bg-astraea-cream text-astraea-darkgray pt-16 pb-8 border-t-2 border-dashed border-astraea-pink mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -10,15 +14,15 @@ const Footer = () => {
           
           {/* Brand & Tagline */}
           <div className="space-y-4">
-            <h3 className="font-heading text-2xl font-extrabold text-astraea-pink">✿ Astraea Collection</h3>
+            <h3 className="font-heading text-2xl font-extrabold text-astraea-pink">{flowerIcon} Astraea Collection</h3>
             <p className="text-sm leading-relaxed max-w-sm">
               Handcrafted fuzzy wire flowers that last forever. Perfect for any occasion, our everlasting bouquets bring timeless joy and beauty to your space.
             </p>
             <div className="flex space-x-4 pt-2">
-              <a href="#" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
+              <a href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
                 <Globe className="h-5 w-5" />
               </a>
-              <a href="#" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
+              <a href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
                 <AtSign className="h-5 w-5" />
               </a>
               {/* TikTok placeholder icon */}
@@ -30,7 +34,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h4 className="section-heading text-lg">♡ Quick Links</h4>
+            <h4 className="section-heading text-lg">{heartIcon} Quick Links</h4>
             <ul className="space-y-2">
               {['Home', 'Shop', 'Customize', 'Price List', 'FAQ', 'Contact'].map((item) => (
                 <li key={item} className="rounded-full">
@@ -47,24 +51,26 @@ const Footer = () => {
 
           {/* Contact */}
           <div className="space-y-4">
-            <h4 className="section-heading text-lg">★ Get In Touch</h4>
+            <h4 className="section-heading text-lg">{starIcon} Get In Touch</h4>
             <ul className="space-y-3">
               <li className="flex items-center text-sm">
                 <Phone className="h-4 w-4 mr-3 text-astraea-rosegold" />
-                +63 912 345 6789
+                09071757540
               </li>
               <li className="flex items-center text-sm">
                 <Mail className="h-4 w-4 mr-3 text-astraea-rosegold" />
-                hello@astraea.com
+                rjean4393@gmail.com
               </li>
             </ul>
             <div className="pt-4">
               <a
-                href="#"
-                className="kawaii-btn bg-[#D5F0E8] text-astraea-darkgray border-[#A7DCC8]"
+                href="https://www.facebook.com/share/18yY1YAP5n/"
+                target="_blank"
+                rel="noreferrer"
+                className="kawaii-btn bg-[#E8F0FE] text-[#1A56DB] border-[#A8C0F8]"
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Chat on WhatsApp
+                Chat on Messenger
               </a>
             </div>
           </div>
@@ -72,7 +78,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-dashed border-astraea-pink/40 text-center flex flex-col md:flex-row justify-between items-center text-xs text-astraea-darkgray/70">
-          <p>&copy; 2024 Astraea Collection. All rights reserved.</p>
+          <p>&copy; 2026 Astraea Collection. All rights reserved.</p>
           <div className="mt-4 md:mt-0 space-x-4">
             <Link to="/privacy" className="hover:text-astraea-pink">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-astraea-pink">Terms of Service</Link>
