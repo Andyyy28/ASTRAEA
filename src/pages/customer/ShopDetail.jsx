@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../context/CartContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { ArrowLeft, Flower2, Plus, Minus } from 'lucide-react';
 
 const ShopDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { showToast } = useNotifications();
   const [bouquet, setBouquet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [messageCard, setMessageCard] = useState('');
   const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   useEffect(() => {
     const fetchBouquet = async () => {
@@ -24,9 +29,21 @@ const ShopDetail = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    addToCart({ item_type: 'bouquet', bouquet_id: bouquet.id, name: bouquet.name, price: bouquet.price, image: bouquet.images?.[0], quantity, message_card: messageCard, subtotal: bouquet.price * quantity });
-    alert('Added to cart!');
-    navigate('/cart');
+    addToCart({
+      item_type: 'bouquet',
+      bouquet_id: bouquet.id,
+      name: bouquet.name,
+      price: bouquet.price,
+      image: bouquet.images?.[0],
+      quantity,
+      message_card: messageCard,
+      subtotal: bouquet.price * quantity
+    });
+    showToast({
+      type: 'success',
+      title: 'Added to cart! ♡',
+      message: 'Your item has been added successfully.'
+    });
   };
 
   if (loading) return <div className="min-h-screen py-8 md:py-20 bg-astraea-cream flex justify-center"><div className="w-16 h-16 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;

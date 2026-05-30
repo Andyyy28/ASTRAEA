@@ -10,6 +10,10 @@ const PriceList = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       const [fRes, fcRes, filRes, wRes, wcRes] = await Promise.all([
         supabase.from('flowers').select('*'),

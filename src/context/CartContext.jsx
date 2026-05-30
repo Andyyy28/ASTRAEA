@@ -4,6 +4,29 @@ const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
 
+const buildItemSignature = (item) => {
+  if (item.item_type === 'custom') {
+    return JSON.stringify({
+      item_type: item.item_type,
+      name: item.name,
+      price: item.price,
+      bouquet_id: item.bouquet_id || null,
+      image: item.image || null,
+      message_card: item.message_card || null,
+      custom_details: item.custom_details || null,
+    });
+  }
+
+  return JSON.stringify({
+    item_type: item.item_type,
+    bouquet_id: item.bouquet_id || null,
+    name: item.name,
+    price: item.price,
+    image: item.image || null,
+    message_card: item.message_card || null,
+  });
+};
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     try {
@@ -21,8 +44,22 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (item) => {
-    // Basic implementation - we can add item merging logic later if needed
-    setCartItems(prev => [...prev, { ...item, cartId: Date.now().toString() }]);
+    const incoming = { ...item, quantity: 1 };
+    const incomingSignature = buildItemSignature(incoming);
+
+    setCartItems(prev => {
+      const existingIndex = prev.findIndex(current => buildItemSignature(current) === incomingSignature);
+
+      if (existingIndex !== -1) {
+        return prev.map((current, index) => (
+          index === existingIndex
+            ? { ...current, quantity: (current.quantity || 1) + 1 }
+            : current
+        ));
+      }
+
+      return [...prev, { ...incoming, cartId: Date.now().toString() }];
+    });
   };
 
   const removeFromCart = (cartId) => {
@@ -30,8 +67,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = (cartId, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems(prev => 
+    if (newQuantity < 1) {
+      setCartItems(prev => prev.filter(item => item.cartId !== cartId));
+      return;
+    }
+
+    setCartItems(prev =>
       prev.map(item => item.cartId === cartId ? { ...item, quantity: newQuantity } : item)
     );
   };

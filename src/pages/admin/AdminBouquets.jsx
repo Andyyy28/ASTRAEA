@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
 
 // Upload image to Supabase Storage, returns the public URL
@@ -48,6 +49,7 @@ const AdminBouquets = () => {
   });
   
   const [editingId, setEditingId] = useState(null);
+  const { showToast, showConfirm } = useNotifications();
 
   useEffect(() => {
     fetchBouquets();
@@ -71,7 +73,11 @@ const AdminBouquets = () => {
     if (!currentVal) {
       const featuredCount = bouquets.filter(b => b.is_featured && b.id !== id).length;
       if (featuredCount >= 3) {
-        alert('You can only mark up to 3 bouquets as best sellers.');
+        showToast({
+          type: 'error',
+          title: 'Oops! ✦',
+          message: 'You can only mark up to 3 bouquets as best sellers.'
+        });
         return;
       }
     }
@@ -83,7 +89,13 @@ const AdminBouquets = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this bouquet?')) return;
+    const confirmed = await showConfirm({
+      title: 'Delete bouquet? ✦',
+      message: 'This will permanently remove this bouquet from your store.',
+      confirmText: 'Yes, delete',
+      cancelText: 'Keep it ♡'
+    });
+    if (!confirmed) return;
     const { error } = await supabase.from('bouquets').delete().eq('id', id);
     if (!error) {
       setBouquets(prev => prev.filter(b => b.id !== id));
@@ -132,7 +144,11 @@ const AdminBouquets = () => {
 
       const featuredCount = bouquets.filter(b => b.is_featured && b.id !== editingId).length;
       if (formData.is_featured && featuredCount >= 3) {
-        alert('You can only mark up to 3 bouquets as best sellers.');
+        showToast({
+          type: 'error',
+          title: 'Oops! ✦',
+          message: 'You can only mark up to 3 bouquets as best sellers.'
+        });
         setUploading(false);
         return;
       }
@@ -147,7 +163,7 @@ const AdminBouquets = () => {
         const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
         if (error) {
           console.error("Error updating bouquet:", error);
-          alert("Failed to update bouquet: " + error.message);
+          showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to update bouquet: ${error.message}` });
           return;
         }
         if (data) {
@@ -157,7 +173,7 @@ const AdminBouquets = () => {
         const { data, error } = await supabase.from('bouquets').insert([payload]).select();
         if (error) {
           console.error("Error inserting bouquet:", error);
-          alert("Failed to create bouquet: " + error.message);
+          showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to create bouquet: ${error.message}` });
           return;
         }
         if (data) {
@@ -168,7 +184,11 @@ const AdminBouquets = () => {
       setImageFile(null);
     } catch (error) {
       console.error('Bouquet save error:', error);
-      alert(`Save failed: ${error.message || 'Unknown error'}`);
+      showToast({
+        type: 'error',
+        title: 'Oops! ✦',
+        message: `Save failed: ${error.message || 'Unknown error'}`
+      });
     } finally {
       setUploading(false);
     }

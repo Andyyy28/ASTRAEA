@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../context/CartContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { Flower2, Filter } from 'lucide-react';
 
 const Shop = () => {
@@ -11,8 +12,13 @@ const Shop = () => {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [sortOption, setSortOption] = useState('Newest');
   const { addToCart } = useCart();
+  const { showToast } = useNotifications();
 
   const categories = ['All', 'Romantic', 'Birthday', 'Graduation', 'Sympathy', 'Other'];
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   useEffect(() => {
     const fetchBouquets = async () => {
@@ -57,7 +63,11 @@ const Shop = () => {
       quantity: 1,
       subtotal: bouquet.price
     });
-    alert('Added to cart!');
+    showToast({
+      type: 'success',
+      title: 'Added to cart! ♡',
+      message: 'Your item has been added successfully.'
+    });
   };
 
   return (
@@ -92,7 +102,7 @@ const Shop = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="h-96 bg-white animate-pulse rounded-xl border-2 border-dashed border-astraea-pink shadow-[4px_4px_0px_#F9A8C9]"></div>
             ))}
@@ -109,27 +119,42 @@ const Shop = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredBouquets.map((bouquet) => (
-              <div key={bouquet.id} className={`group scrapbook-card overflow-hidden relative flex flex-col ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip bg-[#FFFDFE]`}>
+              <div
+                key={bouquet.id}
+                className={`group scrapbook-card overflow-hidden relative flex flex-col p-2 md:p-4 ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip bg-[#FFFDFE]`}
+              >
                 {bouquet.category && (
-                  <div className="absolute top-4 left-4 z-10 kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]">
+                  <div className="absolute top-2 left-2 z-10 kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-1">
                     {bouquet.category}
                   </div>
                 )}
-                <div className="aspect-[4/5] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-[16px]">
+
+                <div className="w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-t-[12px]">
                   {bouquet.images?.[0] ? (
-                    <img src={bouquet.images[0]} alt={bouquet.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-[16px]" />
+                    <img
+                      src={bouquet.images[0]}
+                      alt={bouquet.name}
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    />
                   ) : (
                     <Flower2 className="w-12 h-12 text-astraea-pink/30" />
                   )}
                 </div>
-                <div className="p-4 md:p-6 flex flex-col flex-grow">
-                  <h3 className="font-heading font-bold text-base md:text-lg text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
-                  <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914] mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
-                  <div className="mt-auto flex flex-col space-y-3">
-                    <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 w-full py-3 text-center">View Details</Link>
-                    <button onClick={() => handleAddToCart(bouquet)} className="kawaii-btn-primary min-h-11 w-full py-3 text-center">Add to Cart</button>
+
+                <div className="p-2 md:p-4 flex flex-col flex-grow">
+                  <h3 className="font-heading font-bold text-sm text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
+                  <p className="inline-flex w-fit px-2 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-sm text-[#8B6914] mb-3">
+                    ₱{Number(bouquet.price).toFixed(2)}
+                  </p>
+                  <div className="mt-auto flex flex-col space-y-2">
+                    <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 w-full py-1.5 text-center text-xs">
+                      View Details
+                    </Link>
+                    <button onClick={() => handleAddToCart(bouquet)} className="kawaii-btn-primary min-h-11 w-full py-1.5 text-center text-xs">
+                      Add to Cart
+                    </button>
                   </div>
                 </div>
               </div>

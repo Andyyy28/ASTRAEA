@@ -17,6 +17,10 @@ const TrackOrder = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   const handleTrack = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim() || !verification.trim()) return;

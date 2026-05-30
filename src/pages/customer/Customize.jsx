@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useCart } from '../../context/CartContext';
+import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronRight, ChevronLeft, ShoppingBag } from 'lucide-react';
 
 const steps = [
@@ -22,6 +23,7 @@ const sizeOptions = [
 const Customize = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { showToast } = useNotifications();
   
   const [currentStep, setCurrentStep] = useState(0);
   
@@ -44,6 +46,10 @@ const Customize = () => {
   const [message, setMessage] = useState('');
   const [instructions, setInstructions] = useState('');
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,7 +109,11 @@ const Customize = () => {
 
   const handleAddToCart = () => {
     if (Object.keys(selectedFlowers).length === 0) {
-      alert('Please select at least one flower before adding a custom bouquet.');
+      showToast({
+        type: 'error',
+        title: 'Oops! ✦',
+        message: 'Please select at least one flower before adding a custom bouquet.'
+      });
       setCurrentStep(1);
       return;
     }
@@ -136,7 +146,11 @@ const Customize = () => {
       custom_details: buildDetails,
       subtotal: calculateTotal()
     });
-    alert('Custom bouquet added to cart!');
+    showToast({
+      type: 'success',
+      title: 'Added to cart! ♡',
+      message: 'Your item has been added successfully.'
+    });
     navigate('/cart');
   };
 

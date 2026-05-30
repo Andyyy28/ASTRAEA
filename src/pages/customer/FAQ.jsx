@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 const faqs = [
@@ -34,6 +34,10 @@ const faqs = [
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(0);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   return (
     <div className="py-8 md:py-16 bg-astraea-blush/20 min-h-screen animate-fade-in">

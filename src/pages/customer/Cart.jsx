@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { Flower2, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
@@ -6,6 +6,10 @@ import { Flower2, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 const Cart = () => {
   const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   if (cartItems.length === 0) {
     return (
@@ -27,8 +31,8 @@ const Cart = () => {
             {cartItems.map((item) => (
               <div key={item.cartId} className="scrapbook-card washi-strip bg-[#FFFDFE] flex flex-col sm:flex-row gap-6 relative group transition-all">
                 <button onClick={() => removeFromCart(item.cartId)} className="absolute top-4 right-4 text-astraea-darkgray/40 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5" /></button>
-                <div className="w-full sm:w-32 h-32 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-dashed border-astraea-pink/30">
-                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" /> : <Flower2 className="w-12 h-12 text-astraea-pink/40" />}
+                <div className="w-full sm:w-32 aspect-[4/3] sm:aspect-auto sm:h-32 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-dashed border-astraea-pink/30">
+                  {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center rounded-xl" /> : <Flower2 className="w-12 h-12 text-astraea-pink/40" />}
                 </div>
                 <div className="flex-grow flex flex-col justify-between">
                   <div>

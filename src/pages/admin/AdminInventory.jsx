@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Trash2, X } from 'lucide-react';
 
 const AdminInventory = () => {
@@ -14,6 +15,7 @@ const AdminInventory = () => {
   const [wrapperColors, setWrapperColors] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const { showToast, showConfirm } = useNotifications();
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,14 +56,24 @@ const AdminInventory = () => {
   };
 
   const handleDelete = async (table, id) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    const confirmed = await showConfirm({
+      title: 'Delete item? ✦',
+      message: 'This action cannot be undone.',
+      confirmText: 'Yes, delete',
+      cancelText: 'Keep it ♡'
+    });
+    if (!confirmed) return;
     const { error } = await supabase.from(table).delete().eq('id', id);
     if (!error) {
       if (table === 'flowers') setFlowers(prev => prev.filter(i => i.id !== id));
       if (table === 'fillers') setFillers(prev => prev.filter(i => i.id !== id));
       if (table === 'wrappers') setWrappers(prev => prev.filter(i => i.id !== id));
     } else {
-      alert('Error deleting item. It might be referenced in an order.');
+      showToast({
+        type: 'error',
+        title: 'Oops! ✦',
+        message: 'Error deleting item. It might be referenced in an order.'
+      });
     }
   };
 
@@ -86,7 +98,7 @@ const AdminInventory = () => {
       const { data, error } = await supabase.from('flowers').insert([{ name: formData.name, price_per_stem: parseFloat(formData.price) }]).select();
       if (error) {
         console.error("Error adding flower:", error);
-        alert("Failed to add flower: " + error.message);
+        showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to add flower: ${error.message}` });
         return;
       }
       if (data) setFlowers([...flowers, data[0]]);
@@ -95,7 +107,7 @@ const AdminInventory = () => {
       const { data, error } = await supabase.from('flower_colors').insert([{ flower_id: activeItem.id, color_name: formData.name, hex_code: formData.hex, is_available: true }]).select();
       if (error) {
         console.error("Error adding flower color:", error);
-        alert("Failed to add color: " + error.message);
+        showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to add color: ${error.message}` });
         return;
       }
       if (data) setFlowerColors([...flowerColors, data[0]]);
@@ -104,7 +116,7 @@ const AdminInventory = () => {
       const { data, error } = await supabase.from('fillers').insert([{ name: formData.name, price: parseFloat(formData.price), is_available: true }]).select();
       if (error) {
         console.error("Error adding filler:", error);
-        alert("Failed to add filler: " + error.message);
+        showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to add filler: ${error.message}` });
         return;
       }
       if (data) setFillers([...fillers, data[0]]);
@@ -113,7 +125,7 @@ const AdminInventory = () => {
       const { data, error } = await supabase.from('wrappers').insert([{ material: formData.name, price: parseFloat(formData.price) }]).select();
       if (error) {
         console.error("Error adding wrapper:", error);
-        alert("Failed to add wrapper: " + error.message);
+        showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to add wrapper: ${error.message}` });
         return;
       }
       if (data) setWrappers([...wrappers, data[0]]);
@@ -122,7 +134,7 @@ const AdminInventory = () => {
       const { data, error } = await supabase.from('wrapper_colors').insert([{ wrapper_id: activeItem.id, color_name: formData.name, hex_code: formData.hex, is_available: true }]).select();
       if (error) {
         console.error("Error adding wrapper color:", error);
-        alert("Failed to add wrapper color: " + error.message);
+        showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to add wrapper color: ${error.message}` });
         return;
       }
       if (data) setWrapperColors([...wrapperColors, data[0]]);

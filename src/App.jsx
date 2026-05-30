@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Customer Pages
 import Home from './pages/customer/Home';
@@ -42,8 +43,9 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <Routes>
+        <NotificationProvider>
+          <Router>
+            <Routes>
             {/* Customer Routes */}
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<Home />} />
@@ -70,8 +72,9 @@ function App() {
               <Route path="/admin/prices" element={<AdminPrices />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
-          </Routes>
-        </Router>
+            </Routes>
+          </Router>
+        </NotificationProvider>
       </CartProvider>
     </AuthProvider>
   );
