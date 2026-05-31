@@ -181,7 +181,7 @@ const OtherProductDetail = () => {
                 <span className="section-heading text-xl md:text-2xl">Total</span>
                 <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(product.price * quantity)}</span>
               </div>
-              <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary w-full py-4 text-lg disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
+              <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary transform-gpu w-full py-4 text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
             </div>
           </div>
         </div>

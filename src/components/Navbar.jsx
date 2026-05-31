@@ -41,26 +41,35 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-30 bg-astraea-blush/95 backdrop-blur-md border-b-2 border-dashed border-astraea-pink shadow-[0_2px_0px_#F9A8C9] animate-fade-in transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-30 border-b-2 border-dashed border-[#F58AB6]/70 bg-[#FFE5EE]/90 shadow-[0_10px_30px_rgba(249,168,201,0.22)] backdrop-blur-xl animate-fade-in transition-all">
+      <div className="pointer-events-none absolute inset-x-0 bottom-[-18px] hidden h-8 items-center justify-center md:flex">
+        <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
+        <span className="relative mx-5 h-8 w-12">
+          <span className="absolute left-1 top-2 h-5 w-5 rotate-45 rounded-br-full rounded-tl-full border-2 border-[#F58AB6]"></span>
+          <span className="absolute right-1 top-2 h-5 w-5 -rotate-45 rounded-bl-full rounded-tr-full border-2 border-[#F58AB6]"></span>
+          <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F58AB6]"></span>
+        </span>
+        <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
+      </div>
+      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
           <div className="flex-shrink-0 flex items-center">
             <Link
               to="/"
               className="font-heading text-xl sm:text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-wide flex items-center gap-2 rounded-full px-3 py-2 hover:bg-white/70"
             >
-              <span className="text-astraea-pink">{flowerIcon}</span>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F58AB6] text-lg text-white shadow-[2px_2px_0px_#FDDDE6]">{flowerIcon}</span>
               Astraea Collection
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center gap-5">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all hover:bg-white/80 hover:text-astraea-pink
-                  ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray'}`}
+                className={`whitespace-nowrap px-5 py-3 rounded-full text-sm font-extrabold transition-all hover:bg-white/80 hover:text-astraea-pink
+                  ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[0_2px_0px_#F9A8C9,0_12px_24px_rgba(249,168,201,0.2)] ring-1 ring-[#F4BFCF]' : 'text-astraea-darkgray'}`}
               >
                 {link.name}
               </Link>
@@ -70,7 +79,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             <Link
               to="/cart"
-              className="relative min-h-11 min-w-11 p-2 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink transition-colors rounded-full bg-white/70 border border-dashed border-astraea-pink"
+              className="relative min-h-12 min-w-12 p-2 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink transition-colors rounded-full bg-white/75 border-2 border-dashed border-astraea-pink shadow-[2px_2px_0px_#F9A8C9]"
             >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (

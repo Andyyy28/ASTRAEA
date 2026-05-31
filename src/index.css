@@ -11,9 +11,12 @@
 
   body {
     @apply font-body text-astraea-darkgray min-h-screen antialiased;
-    background-color: #fff5f7;
-    background-image: radial-gradient(#f9a8c940 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-color: #ffe7ef;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.82), transparent 22rem),
+      radial-gradient(circle at 84% 6%, rgba(255, 255, 255, 0.58), transparent 20rem),
+      radial-gradient(#f9a8c940 1px, transparent 1px);
+    background-size: auto, auto, 20px 20px;
   }
 
   img, video, canvas, svg {
@@ -39,7 +42,7 @@
 
 @layer components {
   .scrapbook-card {
-    @apply relative bg-[#FFFDFE] border-2 border-dashed border-[#F4BFCF] rounded-[20px] p-5 shadow-[4px_4px_0px_#F9A8C9] transition-all duration-300;
+    @apply relative bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px] p-5 shadow-[4px_4px_0px_#F9A8C9] transition-all duration-300;
   }
 
   .scrapbook-card:hover {
@@ -64,26 +67,52 @@
   .kawaii-btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200;
     box-shadow: 3px 3px 0px #e891b8;
+    will-change: transform, box-shadow, filter;
   }
 
   .kawaii-btn:hover {
-    transform: translate(-1px, -1px) scale(1.01);
-    box-shadow: 4px 4px 0px #e891b8;
+    transform: translate(-1px, -2px) scale(1.015);
+    box-shadow: 5px 6px 0px #e891b8;
+    filter: brightness(1.02);
   }
 
   .kawaii-btn:active {
-    transform: translate(2px, 2px);
+    transform: translate(2px, 3px) scale(0.99);
     box-shadow: 1px 1px 0px #e891b8;
   }
 
   .kawaii-btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200 bg-astraea-pink text-white border-astraea-rosegold;
-    box-shadow: 3px 3px 0px #e891b8;
+    box-shadow: 0 6px 0px #e891b8, 0 16px 28px rgba(249, 168, 201, 0.35);
+    will-change: transform, box-shadow, filter;
+  }
+
+  .kawaii-btn-primary:hover {
+    transform: translate(-1px, -2px) scale(1.015);
+    box-shadow: 0 8px 0px #e891b8, 0 20px 34px rgba(249, 168, 201, 0.42);
+    filter: brightness(1.03);
+  }
+
+  .kawaii-btn-primary:active {
+    transform: translate(2px, 3px) scale(0.99);
+    box-shadow: 0 2px 0px #e891b8, 0 10px 18px rgba(249, 168, 201, 0.24);
   }
 
   .kawaii-btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200 bg-white text-astraea-rosegold border-astraea-pink;
-    box-shadow: 3px 3px 0px #f9a8c9;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 px-5 py-3 font-bold transition-all duration-200 bg-white/90 text-astraea-rosegold border-astraea-pink;
+    box-shadow: 0 5px 0px #f9a8c9, 0 14px 24px rgba(249, 168, 201, 0.24);
+    will-change: transform, box-shadow, filter;
+  }
+
+  .kawaii-btn-outline:hover {
+    transform: translate(-1px, -2px) scale(1.015);
+    box-shadow: 0 7px 0px #f9a8c9, 0 18px 30px rgba(249, 168, 201, 0.3);
+    filter: brightness(1.02);
+  }
+
+  .kawaii-btn-outline:active {
+    transform: translate(2px, 3px) scale(0.99);
+    box-shadow: 0 2px 0px #f9a8c9, 0 9px 16px rgba(249, 168, 201, 0.18);
   }
 
   .kawaii-badge {
@@ -97,6 +126,7 @@
 
   .section-heading {
     @apply inline-block border-b-[3px] border-astraea-pink pb-1 font-heading font-extrabold text-astraea-darkgray;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -119,6 +149,10 @@
 
   .animate-float {
     animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-float-up-down {
+    animation: floatUpDown 4s ease-in-out infinite;
   }
 
   .animate-pulse-ring {
@@ -170,6 +204,18 @@
   }
   50% {
     transform: translateY(-6px);
+  }
+}
+
+@keyframes floatUpDown {
+  0% {
+    transform: translateY(0px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(1deg);
   }
 }
 

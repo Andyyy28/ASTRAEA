@@ -237,11 +237,11 @@ const OtherProducts = () => {
                     <button
                       onClick={() => handleAddToCart(product)}
                       disabled={isOutOfStock}
-                      className="kawaii-btn-primary min-h-11 w-full py-1.5 text-center text-xs disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                      className="kawaii-btn-primary transform-gpu min-h-11 w-full py-1.5 text-center text-xs hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
                       Add to Cart
                     </button>
-                    <Link to={`/other-products/${product.id}`} className="kawaii-btn-outline min-h-11 w-full py-1.5 text-center text-xs">
+                    <Link to={`/other-products/${product.id}`} className="kawaii-btn-outline transform-gpu min-h-11 w-full py-1.5 text-center text-xs hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98]">
                       View Details
                     </Link>
                   </div>
