@@ -1,14 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
 const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
-const money = (value) => `₱${Number(value || 0).toFixed(2)}`;
+const money = formatPrice;
 const stockBadge = 'kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
+const getColorName = (color) => color?.color_name || color?.name || '';
+const getSelectedColorName = (selectedColor, colors, flowerId, flowerName) => {
+  const selectedColorId = typeof selectedColor === 'object' ? selectedColor?.id : selectedColor;
+  const colorRow = colors.find(c => String(c.id) === String(selectedColorId) && String(c.flower_id) === String(flowerId));
+  const candidates = [
+    getColorName(colorRow),
+    typeof selectedColor === 'object' ? selectedColor?.colorName : '',
+    typeof selectedColor === 'string' ? selectedColor : '',
+  ];
+  return candidates.find(name => name && name !== flowerName) || candidates.find(Boolean) || '';
+};
 
 const Customize = () => {
   const navigate = useNavigate();
@@ -21,7 +33,6 @@ const Customize = () => {
   const [dbFillers, setDbFillers] = useState([]);
   const [dbWrappers, setDbWrappers] = useState([]);
   const [dbWrapperColors, setDbWrapperColors] = useState([]);
-  const [dbFuzzyWireColors, setDbFuzzyWireColors] = useState([]);
   const [sizeOptions, setSizeOptions] = useState([]);
   const [addonOptions, setAddonOptions] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
@@ -46,13 +57,12 @@ const Customize = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [fRes, fcRes, filRes, wRes, wcRes, fuzzyRes, sizeRes, addonRes] = await Promise.all([
+      const [fRes, fcRes, filRes, wRes, wcRes, sizeRes, addonRes] = await Promise.all([
         supabase.from('flowers').select('*').eq('is_available', true).gt('stock', 0),
         supabase.from('flower_colors').select('*').eq('is_available', true),
         supabase.from('fillers').select('*').eq('is_available', true).gt('stock', 0),
         supabase.from('wrappers').select('*').eq('is_available', true),
         supabase.from('wrapper_colors').select('*').eq('is_available', true),
-        supabase.from('fuzzy_wire_colors').select('*').eq('is_available', true).order('display_order', { ascending: true }),
         supabase.from('bouquet_sizes').select('*').eq('is_available', true).order('display_order', { ascending: true }),
         supabase.from('bouquet_addons').select('*').eq('is_available', true).order('display_order', { ascending: true }),
       ]);
@@ -62,7 +72,6 @@ const Customize = () => {
       if (filRes.data) setDbFillers(filRes.data);
       if (wRes.data) setDbWrappers(wRes.data);
       if (wcRes.data) setDbWrapperColors(wcRes.data);
-      if (fuzzyRes.data) setDbFuzzyWireColors(fuzzyRes.data);
       if (sizeRes.data) {
         setSizeOptions(sizeRes.data);
         setSelectedSize(sizeRes.data.find(size => size.key === 'medium') || sizeRes.data[0] || null);
@@ -73,6 +82,38 @@ const Customize = () => {
       }
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('customize-flower-colors-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'flower_colors' },
+        (payload) => {
+          setDbFlowerColors(prev => {
+            if (payload.eventType === 'DELETE') {
+              return prev.filter(color => color.id !== payload.old?.id);
+            }
+
+            const nextColor = payload.new;
+            if (!nextColor?.id) return prev;
+            const exists = prev.some(color => color.id === nextColor.id);
+            if (!nextColor.is_available) {
+              return prev.filter(color => color.id !== nextColor.id);
+            }
+
+            return exists
+              ? prev.map(color => color.id === nextColor.id ? { ...color, ...nextColor } : color)
+              : [nextColor, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const calculateTotal = () => {
@@ -96,6 +137,17 @@ const Customize = () => {
   };
 
   const handleNext = () => {
+    if (currentStep === 2) {
+      const missingColor = Object.keys(selectedFlowers).some(fId => !selectedFlowerColors[fId]);
+      if (missingColor) {
+        showToast({
+          type: 'error',
+          title: 'Almost there!',
+          message: 'Please select a color for each flower before continuing.'
+        });
+        return;
+      }
+    }
     if (currentStep < steps.length - 1) setCurrentStep(c => c + 1);
   };
 
@@ -125,7 +177,8 @@ const Customize = () => {
       },
       flowers: Object.entries(selectedFlowers).map(([id, qty]) => {
         const f = dbFlowers.find(x => x.id === id);
-        return { id, name: f?.name, quantity: qty, color: selectedFlowerColors[id] };
+        const colorName = getSelectedColorName(selectedFlowerColors[id], dbFlowerColors, id, f?.name) || null;
+        return { id, name: f?.name, quantity: qty, color: colorName };
       }),
       fillers: Object.keys(selectedFillers).map(id => {
         const filler = dbFillers.find(x => x.id === id);
@@ -183,7 +236,6 @@ const Customize = () => {
   );
 
   const colorsForFlower = (flowerId) => {
-    if (dbFuzzyWireColors.length > 0) return dbFuzzyWireColors.map(color => ({ ...color, color_name: color.color_name }));
     return dbFlowerColors.filter(fc => fc.flower_id === flowerId);
   };
 
@@ -253,10 +305,10 @@ const Customize = () => {
                       {availableColors.length > 0 ? availableColors.map(c => (
                         <button
                           key={c.id}
-                          onClick={() => setSelectedFlowerColors(prev => ({ ...prev, [f.id]: c.color_name }))}
-                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedFlowerColors[f.id] === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
+                          onClick={() => setSelectedFlowerColors(prev => ({ ...prev, [f.id]: { id: c.id, colorName: getColorName(c) } }))}
+                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedFlowerColors[f.id]?.id === c.id ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                           style={{ backgroundColor: c.hex_code }}
-                          title={c.color_name}
+                          title={getColorName(c)}
                         />
                       )) : <p className="text-sm text-red-500">No colors available for this flower.</p>}
                     </div>
@@ -309,7 +361,7 @@ const Customize = () => {
         return (
           <div className="space-y-8 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your wrapper</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               {dbWrappers.map(w => (
                 <div
                   key={w.id}
@@ -317,13 +369,26 @@ const Customize = () => {
                     setSelectedWrapper(w.id);
                     setSelectedWrapperColor(null);
                   }}
-                  className={`cursor-pointer p-4 rounded-xl border-2 text-center transition-all ${selectedWrapper === w.id ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
+                  className={`cursor-pointer overflow-hidden rounded-[12px] border-2 bg-white text-center transition-all ${selectedWrapper === w.id ? 'border-dashed border-[#F9A8C9] shadow-[3px_3px_0px_#F9A8C9]' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
-                  <div className="h-24 bg-astraea-blush rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-                    {w.image_url ? <img src={w.image_url} alt={w.material} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-sm">{w.material}</span>}
+                  <div className="relative w-full aspect-square overflow-hidden rounded-t-[12px] bg-astraea-blush">
+                    {w.image_url ? (
+                      <img
+                        src={w.image_url}
+                        alt={w.material}
+                        className="h-full w-full object-cover object-center"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center px-2 text-center text-astraea-pink/30 text-sm">{w.material}</span>
+                    )}
+                    {selectedWrapper === w.id && (
+                      <span className="absolute right-1 top-1 inline-flex items-center rounded-full border border-[#F9A8C9] bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#C4658A] shadow-[1px_1px_0px_#F9A8C9]">
+                        ✓ Selected
+                      </span>
+                    )}
                   </div>
-                  <h3 className="font-bold mb-2">{w.material}</h3>
-                  <span className="text-astraea-pink text-sm font-medium">+{money(w.price)}</span>
+                  <h3 className="px-1 py-1 pb-0.5 text-center text-xs font-bold font-heading truncate">{w.material}</h3>
+                  <span className="block px-1 pb-1.5 text-center text-xs font-accent text-[#8B6914]">+{money(w.price)}</span>
                 </div>
               ))}
             </div>
@@ -415,6 +480,7 @@ const Customize = () => {
               selectedSize={selectedSize}
               selectedFlowers={selectedFlowers}
               selectedFlowerColors={selectedFlowerColors}
+              dbFlowerColors={dbFlowerColors}
               dbFlowers={dbFlowers}
               selectedFillers={selectedFillers}
               dbFillers={dbFillers}
@@ -457,7 +523,7 @@ const Customize = () => {
   );
 };
 
-const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowers, selectedFillers, dbFillers, selectedWrapper, selectedWrapperColor, dbWrappers, selectedAddonOptions, calculateTotal }) => (
+const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, dbFillers, selectedWrapper, selectedWrapperColor, dbWrappers, selectedAddonOptions, calculateTotal }) => (
   <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
     <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
     <div className="space-y-4 text-sm font-medium">
@@ -467,7 +533,8 @@ const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbF
           <span className="text-white/80 block mb-2">Flowers</span>
           {Object.entries(selectedFlowers).map(([fId, qty]) => {
             const f = dbFlowers.find(x => x.id === fId);
-            const color = selectedFlowerColors[fId] ? ` - ${selectedFlowerColors[fId]}` : '';
+            const colorName = getSelectedColorName(selectedFlowerColors[fId], dbFlowerColors, fId, f?.name);
+            const color = colorName ? ` - ${colorName}` : '';
             return f ? <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span>{money(Number(f.price_per_stem || 0) * qty)}</span></div> : null;
           })}
         </div>

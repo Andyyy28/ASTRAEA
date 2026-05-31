@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { Star, CheckCircle, Package, Truck, Heart } from 'lucide-react';
 import astraeaLogo from '../../assets/astraea-logo.jpg';
 
@@ -126,7 +127,7 @@ const Home = () => {
                   </div>
                   <div className="p-4 md:p-6 space-y-4">
                     <h3 className="font-heading font-bold text-base md:text-lg text-astraea-darkgray line-clamp-1">{bouquet.name}</h3>
-                    <p className="inline-flex items-center px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914]">₱{bouquet.price}</p>
+                    <p className="inline-flex items-center px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914]">{formatPrice(bouquet.price)}</p>
                     <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 flex items-center justify-center w-full py-2 text-center">
                       View
                     </Link>

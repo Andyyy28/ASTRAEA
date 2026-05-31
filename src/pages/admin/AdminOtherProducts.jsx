@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Gift } from 'lucide-react';
 
@@ -299,7 +300,7 @@ const AdminOtherProducts = () => {
               </div>
               <div className="p-3 flex flex-col flex-grow">
                 <h3 className="font-heading font-bold text-sm text-[#3D2C35] line-clamp-1">{product.name}</h3>
-                <p className="inline-block w-fit px-2 py-0.5 mt-2 rounded-lg bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-lg leading-tight text-[#8B6914]">₱{Number(product.price).toFixed(2)}</p>
+                <p className="inline-block w-fit px-2 py-0.5 mt-2 rounded-lg bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-lg leading-tight text-[#8B6914]">{formatPrice(product.price)}</p>
                 <div className="mt-2">{stockBadge(product.stock)}</div>
                 <div className="flex flex-wrap gap-1 mt-2">
                   <span className="px-2 py-0.5 rounded-full text-xs font-heading border bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8]">
@@ -363,7 +364,7 @@ const AdminOtherProducts = () => {
                   <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Price ₱</label>
+                  <label className={labelClass}>Price {"\u20B1"}</label>
                   <input type="number" required min="0" step="0.01" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} />
                 </div>
                 <div>

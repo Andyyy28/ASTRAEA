@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { ArrowLeft, User, Truck, Receipt, CheckCircle2, Clock } from 'lucide-react';
 
 const AdminOrderDetail = () => {
@@ -223,7 +224,7 @@ const AdminOrderDetail = () => {
                     <h4 className="font-bold text-gray-800">
                       {getItemName(item)}
                     </h4>
-                    <span className="font-bold text-astraea-pink">₱{Number(item.subtotal).toFixed(2)}</span>
+                    <span className="font-bold text-astraea-pink">{formatPrice(item.subtotal)}</span>
                   </div>
                   
                   {/* Detailed Breakdown for Custom Items */}
@@ -265,7 +266,7 @@ const AdminOrderDetail = () => {
           <div className="p-4 md:p-6 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
             <div className="flex justify-between items-center text-lg">
               <span className="font-bold text-gray-800">Grand Total</span>
-              <span className="font-bold text-2xl text-astraea-pink">₱{Number(order.total_amount).toFixed(2)}</span>
+              <span className="font-bold text-2xl text-astraea-pink">{formatPrice(order.total_amount)}</span>
             </div>
             <p className="text-right text-sm text-gray-500 mt-1">(Includes delivery fee if applicable)</p>
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
 
@@ -318,7 +319,7 @@ const AdminBouquets = () => {
                 <div>
                   <p className="font-bold text-gray-800 text-base">{b.name}</p>
                   <span className="inline-flex mt-1 px-2 py-0.5 bg-[#FDDDE6] text-[#C4658A] rounded text-xs font-medium">{b.stock || 0} in stock</span>
-                  <p className="font-bold text-astraea-pink">₱{Number(b.price).toFixed(2)}</p>
+                  <p className="font-bold text-astraea-pink">{formatPrice(b.price)}</p>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <button
@@ -386,7 +387,7 @@ const AdminBouquets = () => {
                       {b.is_featured && <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Featured</span>}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-800">
-                      ?{Number(b.price).toFixed(2)}
+                      {formatPrice(b.price)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>

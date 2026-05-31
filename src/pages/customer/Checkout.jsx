@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
 import { useNotifications } from '../../context/NotificationContext';
+import { formatPrice } from '../../lib/formatPrice';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
 
 // Upload proof of payment to Supabase Storage, returns the public URL
@@ -298,17 +299,17 @@ const Checkout = () => {
                     <div className="flex-grow pr-4">
                       <span className="font-bold text-astraea-darkgray">{item.quantity}x</span> {item.name}
                     </div>
-                    <span className="font-accent text-2xl text-[#8B6914]">₱{(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-accent text-2xl text-[#8B6914]">{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
               <div className="space-y-4 mb-6 border-t border-dashed border-astraea-pink/30 pt-4">
-                <div className="flex justify-between text-astraea-darkgray/80"><span>Items Subtotal</span><span className="font-medium">₱{cartTotal.toFixed(2)}</span></div>
-                <div className="flex justify-between text-astraea-darkgray/80"><span>Delivery Fee</span><span className="font-medium">₱{deliveryFee.toFixed(2)}</span></div>
+                <div className="flex justify-between text-astraea-darkgray/80"><span>Items Subtotal</span><span className="font-medium">{formatPrice(cartTotal)}</span></div>
+                <div className="flex justify-between text-astraea-darkgray/80"><span>Delivery Fee</span><span className="font-medium">{formatPrice(deliveryFee)}</span></div>
               </div>
               <div className="border-t border-dashed border-astraea-pink/30 pt-4 mb-8 flex justify-between items-end">
                 <span className="font-bold text-xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{grandTotal.toFixed(2)}</span>
+                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(grandTotal)}</span>
               </div>
               <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
                 {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><ShoppingBag className="w-5 h-5 mr-2" />Place Order</>}

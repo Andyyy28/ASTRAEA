@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Image as ImageIcon, Minus, Plus, Trash2, X } from 'lucide-react';
 
@@ -374,7 +375,7 @@ const AdminInventory = () => {
                     <tr key={f.id}>
                       <td className="px-4 py-4">{imagePreview(f, f.name)}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{f.name}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">₱{f.price_per_stem}</td>
+                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(f.price_per_stem)}</td>
                       <td className="px-4 py-4">{stockControls('flowers', f)}</td>
                       <td className="px-4 py-4">{f.stock <= 0 ? <span className={`${softBadge} bg-[#FDDDE6] text-[#C4658A]`}>Out of Stock</span> : availabilityButton('flowers', f)}</td>
                       <td className="px-4 py-4">
@@ -395,7 +396,7 @@ const AdminInventory = () => {
                     <tr key={f.id}>
                       <td className="px-4 py-4">{imagePreview(f, f.name)}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{f.name}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">₱{f.price}</td>
+                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(f.price)}</td>
                       <td className="px-4 py-4">{stockControls('fillers', f)}</td>
                       <td className="px-4 py-4">{f.stock <= 0 ? <span className={`${softBadge} bg-[#FDDDE6] text-[#C4658A]`}>Out of Stock</span> : availabilityButton('fillers', f)}</td>
                       <td className="px-4 py-4 text-right">{actions('edit_filler', 'fillers', f)}</td>
@@ -410,7 +411,7 @@ const AdminInventory = () => {
                     <tr key={w.id}>
                       <td className="px-4 py-4">{imagePreview(w, w.material)}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{w.material}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">₱{w.price}</td>
+                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(w.price)}</td>
                       <td className="px-4 py-4">{availabilityButton('wrappers', w)}</td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
@@ -445,7 +446,7 @@ const AdminInventory = () => {
                       <td className="px-4 py-4 font-mono text-xs text-gray-600">{size.key}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{size.name}</td>
                       <td className="px-4 py-4 text-gray-600">{size.stems}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">₱{size.base_price}</td>
+                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(size.base_price)}</td>
                       <td className="px-4 py-4 text-gray-600">{size.display_order || 0}</td>
                       <td className="px-4 py-4">{availabilityButton('bouquet_sizes', size)}</td>
                       <td className="px-4 py-4 text-right">{actions('edit_size', 'bouquet_sizes', size)}</td>
@@ -460,7 +461,7 @@ const AdminInventory = () => {
                     <tr key={addon.id}>
                       <td className="px-4 py-4 font-mono text-xs text-gray-600">{addon.key}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{addon.name}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">₱{addon.price}</td>
+                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(addon.price)}</td>
                       <td className="px-4 py-4 text-gray-600">{addon.display_order || 0}</td>
                       <td className="px-4 py-4">{availabilityButton('bouquet_addons', addon)}</td>
                       <td className="px-4 py-4 text-right">{actions('edit_addon', 'bouquet_addons', addon)}</td>

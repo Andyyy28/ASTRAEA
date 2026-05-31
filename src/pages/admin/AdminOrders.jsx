@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Search, Filter, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
 
@@ -219,7 +220,7 @@ const AdminOrders = () => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="capitalize text-gray-500">{order.order_type}</span>
-                <span className="font-bold">₱{Number(order.total_amount).toFixed(2)}</span>
+                <span className="font-bold">{formatPrice(order.total_amount)}</span>
               </div>
               <Link to={`/admin/orders/${order.id}`} className="min-h-11 flex items-center justify-center w-full px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                 View
@@ -262,7 +263,7 @@ const AdminOrders = () => {
                     <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
                     <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
                     <td className="px-6 py-5 text-gray-500">{formatDelivery(order.delivery_method)}</td>
-                    <td className="px-6 py-5 font-bold text-gray-700">?{Number(order.total_amount).toFixed(2)}</td>
+                    <td className="px-6 py-5 font-bold text-gray-700">{formatPrice(order.total_amount)}</td>
                     <td className="px-6 py-5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
                     <td className="px-6 py-5">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-5">

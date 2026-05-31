@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { normalizeStock } from '../../lib/bouquetStock';
@@ -140,7 +141,7 @@ const ShopDetail = () => {
               {isOutOfStock ? 'Out of Stock' : `${stock} in stock`}
             </span>
             <h1 className="section-heading text-2xl md:text-4xl mb-4">{bouquet.name}</h1>
-            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">₱{Number(bouquet.price).toFixed(2)}</p>
+            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(bouquet.price)}</p>
             <div className="prose prose-pink text-astraea-darkgray/80 mb-8 max-w-none"><p>{bouquet.description}</p></div>
             <div className="space-y-6 mb-10">
               <div>
@@ -159,7 +160,7 @@ const ShopDetail = () => {
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-6 pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <span className="section-heading text-xl md:text-2xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{(bouquet.price * quantity).toFixed(2)}</span>
+                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(bouquet.price * quantity)}</span>
               </div>
               <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary w-full py-4 text-lg disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
             </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { Search, Clock, Scissors, CheckCircle, Package, MessageCircle } from 'lucide-react';
 
 const statuses = [
@@ -112,11 +113,11 @@ const TrackOrder = () => {
                         <p className="font-bold text-astraea-darkgray">{item.quantity}x {item.item_type === 'custom' ? 'Custom Bouquet' : 'Ready-Made Bouquet'}</p>
                         {item.size && <p className="text-sm text-astraea-darkgray/70">Size: {item.size}</p>}
                       </div>
-                      <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914]">₱{Number(item.subtotal).toFixed(2)}</span>
+                      <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914]">{formatPrice(item.subtotal)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between text-astraea-darkgray/80 pt-2"><span>Delivery Method</span><span className="font-medium">{order.delivery_method === 'pickup' ? 'Store Pickup' : 'Delivery'}</span></div>
-                  <div className="flex justify-between items-end pt-4 border-t border-dashed border-astraea-pink/30"><span className="font-bold text-lg">Total</span><span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{Number(order.total_amount).toFixed(2)}</span></div>
+                  <div className="flex justify-between items-end pt-4 border-t border-dashed border-astraea-pink/30"><span className="font-bold text-lg">Total</span><span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(order.total_amount)}</span></div>
                 </div>
               </div>
               <div className="lg:w-1/3 scrapbook-card washi-strip bg-astraea-blush/20 flex flex-col justify-center text-center">

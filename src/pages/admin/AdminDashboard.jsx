@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { ShoppingBag, Clock, DollarSign, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -174,7 +175,7 @@ const AdminDashboard = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-400 mb-1">Revenue This Month</p>
-            <h3 className="text-3xl font-extrabold text-astraea-darkgray">₱{metrics.revenueMonth.toLocaleString()}</h3>
+            <h3 className="text-3xl font-extrabold text-astraea-darkgray">{formatPrice(metrics.revenueMonth).replace('.00', '')}</h3>
           </div>
         </div>
         
@@ -215,7 +216,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-5 font-bold text-astraea-pink">{order.reference_number}</td>
                       <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
                       <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
-                      <td className="px-6 py-5 font-bold text-gray-700">?{Number(order.total_amount).toFixed(2)}</td>
+                      <td className="px-6 py-5 font-bold text-gray-700">{formatPrice(order.total_amount)}</td>
                       <td className="px-6 py-5">
                       <Link to={`/admin/orders/${order.id}`} className="min-h-11 inline-flex items-center px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                           View

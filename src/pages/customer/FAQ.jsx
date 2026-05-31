@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: "Do you offer delivery?",
-    a: "Yes! We offer both pickup and delivery. Delivery fee is ₱80. Coverage area may vary — contact us to confirm."
+    a: "Yes! We offer both pickup and delivery. Delivery fee is \u20B180. Coverage area may vary — contact us to confirm."
   },
   {
     q: "Can I request a custom design not shown on the website?",

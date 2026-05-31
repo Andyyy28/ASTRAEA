@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { ArrowLeft, Flower2, Plus, Minus } from 'lucide-react';
@@ -145,7 +146,7 @@ const OtherProductDetail = () => {
               {categoryLabels[product.category] || 'Other'}
             </span>
             <h1 className="font-heading font-bold text-2xl md:text-4xl text-astraea-darkgray mb-4">{product.name}</h1>
-            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">₱{Number(product.price).toFixed(2)}</p>
+            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(product.price)}</p>
             <div className="mb-6"><StockStatusBadge stock={stock} /></div>
             <div className="prose prose-pink text-astraea-darkgray/80 mb-6 max-w-none"><p>{product.description}</p></div>
             <span className={`kawaii-badge w-max mb-6 ${isOutOfStock ? 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]' : 'bg-[#D5F0E8] border-[#A8DFC9] text-[#1F5D46] shadow-[2px_2px_0px_#A8DFC9]'}`}>
@@ -178,7 +179,7 @@ const OtherProductDetail = () => {
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-6 pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <span className="section-heading text-xl md:text-2xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">₱{(product.price * quantity).toFixed(2)}</span>
+                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(product.price * quantity)}</span>
               </div>
               <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary w-full py-4 text-lg disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
             </div>

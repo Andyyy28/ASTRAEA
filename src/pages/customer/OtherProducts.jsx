@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Flower2, Filter } from 'lucide-react';
@@ -243,7 +244,7 @@ const OtherProducts = () => {
                 <div className="p-2 md:p-4 flex flex-col flex-grow">
                   <h3 className="font-heading font-bold text-sm text-astraea-darkgray mb-2 line-clamp-1">{product.name}</h3>
                   <p className="inline-flex w-fit px-2 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-sm text-[#8B6914] mb-3">
-                    ₱{Number(product.price).toFixed(2)}
+                    {formatPrice(product.price)}
                   </p>
                   <div className="mt-auto flex flex-col space-y-2">
                     <button

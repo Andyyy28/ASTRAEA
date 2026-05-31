@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { normalizeStock } from '../../lib/bouquetStock';
@@ -218,7 +219,7 @@ const Shop = () => {
                 <div className="p-2 md:p-4 flex flex-col flex-grow">
                   <h3 className="font-heading font-bold text-sm text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
                   <p className="inline-flex w-fit px-2 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-sm text-[#8B6914] mb-3">
-                    ₱{Number(bouquet.price).toFixed(2)}
+                    {formatPrice(bouquet.price)}
                   </p>
                   <div className="mt-auto flex flex-col space-y-2">
                     <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 w-full py-1.5 text-center text-xs">
