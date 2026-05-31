@@ -42,7 +42,7 @@ in `.env`:
 
 ```text
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-ADMIN_EMAIL=admin_ako@gmail.com
+ADMIN_EMAIL=admin@astraea.com
 ADMIN_PASSWORD=Super_Admin123!
 ```
 

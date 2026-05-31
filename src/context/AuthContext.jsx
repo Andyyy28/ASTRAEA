@@ -4,6 +4,8 @@ import { supabase, supabaseConfigReady } from '../lib/supabase';
 const AuthContext = createContext();
 const SESSION_LOAD_TIMEOUT_MS = 5000;
 const ADMIN_CHECK_TIMEOUT_MS = 4000;
+const DEFAULT_ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@astraea.com';
+const DEFAULT_ADMIN_PASSWORD = 'Super_Admin123!';
 
 const withTimeout = (promise, timeoutMs, timeoutMessage) => {
   let timeoutId;
@@ -101,7 +103,7 @@ export const AuthProvider = ({ children }) => {
     let result = await supabase.auth.signInWithPassword({ email, password });
 
     // Step 2: If sign-in fails, try sign-up for the default admin account
-    if (result.error && email === 'admin_ako@gmail.com' && password === 'Super_Admin123!') {
+    if (result.error && email === DEFAULT_ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
       const errMsg = result.error.message?.toLowerCase() || '';
       const isRateLimit = errMsg.includes('rate limit') || errMsg.includes('too many');
 
@@ -149,17 +151,17 @@ export const AuthProvider = ({ children }) => {
     // Auth session, so keep this disabled unless explicitly enabled for UI work.
     if (
       import.meta.env.VITE_ENABLE_DEV_ADMIN_BYPASS === 'true' &&
-      email === 'admin@astraea.com' &&
-      password === 'Super_Admin123!'
+      email === DEFAULT_ADMIN_EMAIL &&
+      password === DEFAULT_ADMIN_PASSWORD
     ) {
       console.warn("Real Supabase auth failed, using dev bypass. Storage uploads will NOT work.", result.error.message);
-      const mockUser = { id: 'dev-admin-id', email: 'admin_ako@gmail.com', role: 'authenticated' };
+      const mockUser = { id: 'dev-admin-id', email: DEFAULT_ADMIN_EMAIL, role: 'authenticated' };
       setUser(mockUser);
       setIsDevMode(true);
       return { data: { user: mockUser }, error: null };
     }
 
-    if (email === 'admin_ako@gmail.com' && password === 'Super_Admin123!') {
+    if (email === DEFAULT_ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
       if (!supabaseConfigReady) {
         return {
           data: null,

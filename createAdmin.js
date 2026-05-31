@@ -20,6 +20,13 @@ const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
   }
 });
 
+const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
 const findUserByEmail = async (email) => {
   const perPage = 1000;
   let page = 1;
@@ -34,6 +41,20 @@ const findUserByEmail = async (email) => {
 
     page += 1;
   }
+};
+
+const verifyAdminLogin = async () => {
+  const { error: signInError } = await authClient.auth.signInWithPassword({
+    email: adminEmail,
+    password: adminPassword
+  });
+
+  if (signInError) return false;
+
+  const { data: isAdmin, error: rpcError } = await authClient.rpc('is_admin');
+  await authClient.auth.signOut();
+
+  return !rpcError && isAdmin === true;
 };
 
 async function createAdmin() {
@@ -74,6 +95,12 @@ async function createAdmin() {
       console.warn("Admin Auth user is ready, but public.admin_users does not exist yet.");
       console.warn("Run supabase/migrations/20260529_admin_permissions_fix.sql in the Supabase SQL Editor, then run this command again.");
       console.warn(`Admin user id: ${adminUser.id}`);
+      return;
+    }
+
+    if (await verifyAdminLogin()) {
+      console.log("Could not upsert public.admin_users directly, but the configured admin login is already enrolled.");
+      console.log("Done. You can now sign in with the configured ADMIN_EMAIL and ADMIN_PASSWORD.");
       return;
     }
 
