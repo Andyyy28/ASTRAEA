@@ -226,19 +226,6 @@ const OtherProducts = () => {
                   ) : (
                     <Flower2 className="w-12 h-12 text-astraea-pink/30" />
                   )}
-                  {stock > 0 && stock <= 10 && (
-                    <span className="absolute top-2 right-2 rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-2 py-1 text-xs font-bold text-[#8B6914]">
-                      Only {stock} left! ✦
-                    </span>
-                  )}
-                  {isOutOfStock && (
-                    <>
-                      <div className="absolute inset-0 bg-[rgba(253,222,230,0.5)]"></div>
-                      <span className="absolute top-2 right-2 rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-2 py-1 text-xs font-bold text-[#C4658A]">
-                        Out of Stock ✦
-                      </span>
-                    </>
-                  )}
                 </div>
 
                 <div className="p-2 md:p-4 flex flex-col flex-grow">
