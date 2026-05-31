@@ -20,10 +20,13 @@ const categoryLabels = {
   other: 'Other'
 };
 
+const getStock = (product) => Number(product.stock) || 0;
+
 const OtherProducts = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const { addToCart } = useCart();
   const { showToast } = useNotifications();
@@ -34,11 +37,22 @@ const OtherProducts = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await supabase
+      setLoading(true);
+      setError('');
+
+      const { data, error } = await supabase
         .from('other_products')
         .select('*')
         .eq('is_visible', true)
         .order('created_at', { ascending: false });
+
+      if (error) {
+        setError(error.message || 'Unable to load products right now.');
+        setProducts([]);
+        setFilteredProducts([]);
+        setLoading(false);
+        return;
+      }
 
       if (data) {
         setProducts(data);
@@ -90,11 +104,11 @@ const OtherProducts = () => {
   }, [categoryFilter, products]);
 
   const handleAddToCart = async (product) => {
-    if (!product.is_available) {
+    if (!product.is_available || getStock(product) === 0) {
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this product is out of stock.'
+        message: 'Out of stock ✦'
       });
       return;
     }
@@ -114,6 +128,18 @@ const OtherProducts = () => {
         type: 'success',
         title: 'Added to cart! ♡',
         message: 'Your item has been added successfully.'
+      });
+    } else if (result?.reason === 'limit-reached') {
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: `Only ${result.stock} items available ✦`
+      });
+    } else if (result?.reason === 'out-of-stock') {
+      showToast({
+        type: 'error',
+        title: 'Oops!',
+        message: 'Out of stock ✦'
       });
     }
   };
@@ -147,6 +173,15 @@ const OtherProducts = () => {
               <div key={i} className="h-96 bg-white animate-pulse rounded-xl border-2 border-dashed border-astraea-pink shadow-[4px_4px_0px_#F9A8C9]"></div>
             ))}
           </div>
+        ) : error ? (
+          <div className="scrapbook-card flex flex-col items-center justify-center py-20 bg-[#FFFDFE]">
+            <Flower2 className="w-16 h-16 text-astraea-pink/40 mb-4" />
+            <h3 className="font-heading text-xl md:text-2xl text-astraea-darkgray">Products couldn't load</h3>
+            <p className="text-astraea-darkgray/60 mt-2 text-center max-w-sm">{error}</p>
+            <button onClick={() => window.location.reload()} className="kawaii-btn-primary mt-6 min-h-11 px-6 py-2 text-sm">
+              Try Again
+            </button>
+          </div>
         ) : filteredProducts.length === 0 ? (
           <div className="scrapbook-card flex flex-col items-center justify-center py-20 bg-[#FFFDFE]">
             <Flower2 className="w-16 h-16 text-astraea-pink/40 mb-4" />
@@ -160,7 +195,11 @@ const OtherProducts = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredProducts.map((product, index) => (
+            {filteredProducts.map((product, index) => {
+              const stock = getStock(product);
+              const isOutOfStock = stock === 0 || product.is_available === false;
+
+              return (
               <div
                 key={product.id}
                 className={`group scrapbook-card overflow-hidden relative flex flex-col p-2 md:p-4 ${index % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip bg-[#FFFDFE]`}
@@ -169,20 +208,35 @@ const OtherProducts = () => {
                   <span className="kawaii-badge bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8] text-xs px-2 py-1">
                     {categoryLabels[product.category] || 'Other'}
                   </span>
-                  <span className={`kawaii-badge text-xs px-2 py-1 ${product.is_available ? 'bg-astraea-mint/40 border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]'}`}>
-                    {product.is_available ? 'Available ✿' : 'Out of Stock ✦'}
-                  </span>
+                  {!isOutOfStock && (
+                    <span className="kawaii-badge text-xs px-2 py-1 bg-[#D5F0E8] border-[#A8DFC9] text-[#1F5D46] shadow-[2px_2px_0px_#A8DFC9]">
+                      Available ✿
+                    </span>
+                  )}
                 </div>
 
-                <div className="w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-t-[12px]">
+                <div className="w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-[16px] relative">
                   {product.images?.[0] ? (
                     <img
                       src={product.images[0]}
                       alt={product.name}
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover object-top rounded-[16px] transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <Flower2 className="w-12 h-12 text-astraea-pink/30" />
+                  )}
+                  {stock > 0 && stock <= 10 && (
+                    <span className="absolute top-2 right-2 rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-2 py-1 text-xs font-bold text-[#8B6914]">
+                      Only {stock} left! ✦
+                    </span>
+                  )}
+                  {isOutOfStock && (
+                    <>
+                      <div className="absolute inset-0 bg-[rgba(253,222,230,0.5)]"></div>
+                      <span className="absolute top-2 right-2 rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-2 py-1 text-xs font-bold text-[#C4658A]">
+                        Out of Stock ✦
+                      </span>
+                    </>
                   )}
                 </div>
 
@@ -194,7 +248,7 @@ const OtherProducts = () => {
                   <div className="mt-auto flex flex-col space-y-2">
                     <button
                       onClick={() => handleAddToCart(product)}
-                      disabled={!product.is_available}
+                      disabled={isOutOfStock}
                       className="kawaii-btn-primary min-h-11 w-full py-1.5 text-center text-xs disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
                       Add to Cart
@@ -205,7 +259,8 @@ const OtherProducts = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

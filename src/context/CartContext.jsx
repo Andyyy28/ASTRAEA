@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { reserveBouquetStock, releaseBouquetStock } from '../lib/bouquetStock';
+import { supabase } from '../lib/supabase';
 
 const CartContext = createContext();
 
@@ -62,6 +63,27 @@ export const CartProvider = ({ children }) => {
       }
     }
 
+    if (incoming.item_type === 'other_product' && incoming.other_product_id) {
+      const { data, error } = await supabase
+        .from('other_products')
+        .select('stock, is_available')
+        .eq('id', incoming.other_product_id)
+        .single();
+
+      const availableStock = Number(data?.stock) || 0;
+      if (error || !data || !data.is_available || availableStock <= 0) {
+        return { ok: false, reason: 'out-of-stock', stock: availableStock };
+      }
+
+      const alreadyInCart = cartItems
+        .filter(current => current.item_type === 'other_product' && current.other_product_id === incoming.other_product_id)
+        .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
+
+      if (alreadyInCart + quantity > availableStock) {
+        return { ok: false, reason: 'limit-reached', stock: availableStock };
+      }
+    }
+
     setCartItems(prev => {
       const existingIndex = prev.findIndex(current => buildItemSignature(current) === incomingSignature);
 
@@ -102,6 +124,27 @@ export const CartProvider = ({ children }) => {
       }
       setCartItems(prev => prev.filter(item => item.cartId !== cartId));
       return { ok: true };
+    }
+
+    if (item.item_type === 'other_product' && item.other_product_id) {
+      const { data, error } = await supabase
+        .from('other_products')
+        .select('stock, is_available')
+        .eq('id', item.other_product_id)
+        .single();
+
+      const availableStock = Number(data?.stock) || 0;
+      if (error || !data || !data.is_available || availableStock <= 0) {
+        return { ok: false, reason: 'out-of-stock', stock: availableStock };
+      }
+
+      const otherCartQuantity = cartItems
+        .filter(current => current.cartId !== cartId && current.item_type === 'other_product' && current.other_product_id === item.other_product_id)
+        .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
+
+      if (otherCartQuantity + newQuantity > availableStock) {
+        return { ok: false, reason: 'limit-reached', stock: availableStock };
+      }
     }
 
     const currentQuantity = item.quantity || 1;

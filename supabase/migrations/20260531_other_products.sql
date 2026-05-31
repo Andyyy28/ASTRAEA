@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.other_products (
     name TEXT NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0,
     category TEXT CHECK (category IN ('keychain', 'hair accessories', 'ornaments', 'other')),
     images TEXT[],
     is_visible BOOLEAN DEFAULT true,
@@ -13,6 +14,9 @@ CREATE TABLE IF NOT EXISTS public.other_products (
 ALTER TABLE public.order_items
 ADD COLUMN IF NOT EXISTS other_product_id UUID REFERENCES public.other_products(id);
 
+ALTER TABLE public.other_products
+ADD COLUMN IF NOT EXISTS stock INTEGER NOT NULL DEFAULT 0;
+
 ALTER TABLE public.other_products ENABLE ROW LEVEL SECURITY;
 
 GRANT SELECT ON public.other_products TO anon, authenticated;
@@ -22,7 +26,7 @@ DROP POLICY IF EXISTS other_products_public_read ON public.other_products;
 CREATE POLICY other_products_public_read ON public.other_products
 FOR SELECT
 TO anon, authenticated
-USING (is_visible = true OR public.is_admin());
+USING (is_visible = true);
 
 DROP POLICY IF EXISTS other_products_admin_manage ON public.other_products;
 CREATE POLICY other_products_admin_manage ON public.other_products
@@ -132,11 +136,24 @@ BEGIN
             FROM public.other_products
             WHERE id = v_other_product_id
               AND is_visible = true
-              AND is_available = true;
+              AND is_available = true
+              AND stock >= v_quantity;
 
             IF v_subtotal IS NULL THEN
                 RAISE EXCEPTION 'Product is not available';
             END IF;
+
+            UPDATE public.other_products
+            SET stock = stock - v_quantity,
+                is_available = (stock - v_quantity) > 0
+            WHERE id = v_other_product_id
+              AND stock >= v_quantity
+            RETURNING stock INTO v_updated_stock;
+
+            IF v_updated_stock IS NULL THEN
+                RAISE EXCEPTION 'Not enough product stock';
+            END IF;
+            v_updated_stock := NULL;
         ELSIF v_item->>'item_type' = 'custom' THEN
             v_subtotal := public.calculate_custom_subtotal(v_item) * v_quantity;
 

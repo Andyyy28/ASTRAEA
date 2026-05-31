@@ -12,6 +12,14 @@ const categoryLabels = {
   other: 'Other'
 };
 
+const getStock = (product) => Number(product?.stock) || 0;
+
+const StockStatusBadge = ({ stock }) => {
+  if (stock > 10) return <span className="inline-flex w-fit rounded-full border border-[#A8DFC9] bg-[#D5F0E8] px-3 py-1 text-sm font-bold text-[#2D7A5F]">✿ In Stock</span>;
+  if (stock > 0) return <span className="inline-flex w-fit rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-3 py-1 text-sm font-bold text-[#8B6914]">⚠ Only {stock} left!</span>;
+  return <span className="inline-flex w-fit rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-3 py-1 text-sm font-bold text-[#C4658A]">✦ Out of Stock</span>;
+};
+
 const OtherProductDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
@@ -67,12 +75,18 @@ const OtherProductDetail = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!product.is_available) {
+    const stock = getStock(product);
+    if (!product.is_available || stock === 0) {
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this product is out of stock.'
+        message: 'Out of stock ✦'
       });
+      return;
+    }
+
+    if (quantity > stock) {
+      showToast({ type: 'error', title: 'Oops!', message: `Only ${stock} items available ✦` });
       return;
     }
 
@@ -93,6 +107,10 @@ const OtherProductDetail = () => {
         title: 'Added to cart! ♡',
         message: 'Your item has been added successfully.'
       });
+    } else if (result?.reason === 'limit-reached') {
+      showToast({ type: 'error', title: 'Oops!', message: `Only ${result.stock} items available ✦` });
+    } else if (result?.reason === 'out-of-stock') {
+      showToast({ type: 'error', title: 'Oops!', message: 'Out of stock ✦' });
     }
   };
 
@@ -100,7 +118,8 @@ const OtherProductDetail = () => {
   if (!product) return <div className="min-h-screen py-20 flex flex-col items-center justify-center bg-astraea-cream text-center px-4"><Flower2 className="w-20 h-20 text-astraea-pink/50 mb-6" /><h2 className="section-heading text-2xl md:text-4xl mb-4">Product Not Found</h2><p className="text-sm md:text-base text-astraea-darkgray/70 mb-8">This product might have been removed or the link is invalid.</p><Link to="/other-products" className="kawaii-btn-primary min-h-11 px-8 py-3">Back to Other Products</Link></div>;
 
   const images = product.images?.length ? product.images : [];
-  const isOutOfStock = !product.is_available;
+  const stock = getStock(product);
+  const isOutOfStock = !product.is_available || stock === 0;
 
   return (
     <div className="animate-fade-in py-8 md:py-16 bg-astraea-cream min-h-[80vh]">
@@ -127,8 +146,9 @@ const OtherProductDetail = () => {
             </span>
             <h1 className="font-heading font-bold text-2xl md:text-4xl text-astraea-darkgray mb-4">{product.name}</h1>
             <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">₱{Number(product.price).toFixed(2)}</p>
+            <div className="mb-6"><StockStatusBadge stock={stock} /></div>
             <div className="prose prose-pink text-astraea-darkgray/80 mb-6 max-w-none"><p>{product.description}</p></div>
-            <span className={`kawaii-badge w-max mb-6 ${isOutOfStock ? 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]' : 'bg-astraea-mint/40 border-[#A8DFC9] text-[#2D7A5F]'}`}>
+            <span className={`kawaii-badge w-max mb-6 ${isOutOfStock ? 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]' : 'bg-[#D5F0E8] border-[#A8DFC9] text-[#1F5D46] shadow-[2px_2px_0px_#A8DFC9]'}`}>
               {isOutOfStock ? 'Out of Stock ✦' : 'Available ✿'}
             </span>
             <div className="space-y-6 mb-10">
@@ -141,7 +161,17 @@ const OtherProductDetail = () => {
                 <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
                   <span className="w-12 text-center font-bold text-lg">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} disabled={isOutOfStock} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"><Plus className="w-5 h-5" /></button>
+                  <button
+                    onClick={() => {
+                      if (quantity >= stock) {
+                        showToast({ type: 'error', title: 'Oops!', message: `Only ${stock} items available ✦` });
+                        return;
+                      }
+                      setQuantity(quantity + 1);
+                    }}
+                    disabled={isOutOfStock || quantity >= stock}
+                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"
+                  ><Plus className="w-5 h-5" /></button>
                 </div>
               </div>
             </div>

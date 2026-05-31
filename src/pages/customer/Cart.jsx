@@ -40,7 +40,13 @@ const Cart = () => {
         showToast({
           type: 'error',
           title: 'Oops!',
-          message: 'Sorry, this bouquet just went out of stock!'
+          message: itemMessage(cartItems.find(item => item.cartId === cartId), result.stock)
+        });
+      } else if (result?.reason === 'limit-reached') {
+        showToast({
+          type: 'error',
+          title: 'Oops!',
+          message: `Only ${result.stock} items available ✦`
         });
       }
     } catch (error) {
@@ -117,5 +123,11 @@ const Cart = () => {
     </div>
   );
 };
+
+const itemMessage = (item, stock) => (
+  item?.item_type === 'other_product'
+    ? (stock > 0 ? `Only ${stock} items available ✦` : 'Out of stock ✦')
+    : 'Sorry, this bouquet just went out of stock!'
+);
 
 export default Cart;

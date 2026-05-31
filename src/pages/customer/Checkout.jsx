@@ -51,6 +51,12 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
+    if (orderPlaced) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [orderPlaced]);
+
+  useEffect(() => {
     return () => {
       if (paymentProofPreview?.startsWith('blob:')) {
         URL.revokeObjectURL(paymentProofPreview);
@@ -131,6 +137,7 @@ const Checkout = () => {
         p_items: orderItems
       });
       if (error) throw error;
+
       clearCart();
       setOrderPlaced(data.reference_number);
     } catch (error) {

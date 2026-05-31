@@ -61,10 +61,11 @@ const AdminDashboard = () => {
     }
 
     // 2. Fetch Low Stock
-    const [fcRes, filRes, wcRes] = await Promise.all([
+    const [fcRes, filRes, wcRes, otherProductsRes] = await Promise.all([
       supabase.from('flower_colors').select('id, color_name, flowers(name)').eq('is_available', false),
       supabase.from('fillers').select('id, name').eq('is_available', false),
-      supabase.from('wrapper_colors').select('id, color_name, wrappers(material)').eq('is_available', false)
+      supabase.from('wrapper_colors').select('id, color_name, wrappers(material)').eq('is_available', false),
+      supabase.from('other_products').select('id, name, stock').lte('stock', 10).eq('is_visible', true)
     ]);
 
     const outOfStock = [];
@@ -76,6 +77,15 @@ const AdminDashboard = () => {
     }
     if (wcRes.data) {
       wcRes.data.forEach(item => outOfStock.push({ id: item.id, table: 'wrapper_colors', name: `${item.wrappers.material} (${item.color_name})` }));
+    }
+    if (otherProductsRes.data) {
+      otherProductsRes.data.forEach(item => outOfStock.push({
+        id: item.id,
+        table: 'other_products',
+        name: item.name,
+        stock: Number(item.stock) || 0,
+        label: 'Other Product'
+      }));
     }
     
     setLowStock(outOfStock);
@@ -103,6 +113,13 @@ const AdminDashboard = () => {
           window.setTimeout(fetchDashboardData, 150);
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'other_products' },
+        () => {
+          window.setTimeout(fetchDashboardData, 150);
+        }
+      )
       .subscribe();
 
     return () => {
@@ -111,6 +128,7 @@ const AdminDashboard = () => {
   }, [fetchDashboardData]);
 
   const handleMarkAvailable = async (item) => {
+    if (item.table === 'other_products') return;
     await supabase.from(item.table).update({ is_available: true }).eq('id', item.id);
     setLowStock(prev => prev.filter(i => i.id !== item.id));
   };
@@ -232,13 +250,27 @@ const AdminDashboard = () => {
               <ul className="divide-y divide-gray-50">
                 {lowStock.map((item, idx) => (
                   <li key={`${item.table}-${item.id}-${idx}`} className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 hover:bg-[#FCFAFB] rounded-2xl transition-colors duration-200">
-                    <span className="text-sm font-semibold text-gray-700">{item.name}</span>
-                    <button 
-                      onClick={() => handleMarkAvailable(item)}
-                      className="min-h-11 px-4 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-colors"
-                    >
-                      Restocked
-                    </button>
+                    <div>
+                      <span className="text-sm font-semibold text-gray-700">{item.name}</span>
+                      {item.label && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-[#E8D5F5] px-2 py-0.5 text-xs font-bold text-[#7B4FA8]">{item.label}</span>
+                          <span className="text-xs font-bold text-[#C4658A]">{item.stock} left</span>
+                        </div>
+                      )}
+                    </div>
+                    {item.table === 'other_products' ? (
+                      <Link to="/admin/other-products" className="min-h-11 px-4 py-2 bg-[#FFF5F7] text-[#C4658A] text-xs font-bold rounded-xl hover:bg-[#FDDDE6] transition-colors">
+                        Manage
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => handleMarkAvailable(item)}
+                        className="min-h-11 px-4 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-colors"
+                      >
+                        Restocked
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
