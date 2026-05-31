@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { Star, CheckCircle, Package, Truck, Heart, Flower2, Gift, Leaf } from 'lucide-react';
 import astraeaLogo from '../../assets/astraea-logo.jpg';
+import violetBouquetFeature from '../../assets/violet-bouquet-feature.jpeg';
 
 const Home = () => {
   const [featuredBouquets, setFeaturedBouquets] = useState([]);
@@ -116,19 +117,56 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-8 md:py-16 bg-astraea-blush/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="md:w-1/2 text-center md:text-left space-y-6">
-              <h2 className="section-heading text-xl md:text-3xl">✿ Flowers That Never Wilt</h2>
-              <p className="text-sm md:text-base leading-relaxed text-astraea-darkgray/80 font-body">
-                Fuzzy wire flowers are meticulously handcrafted from soft chenille stems, creating a beautiful, velvet-like texture. Unlike fresh flowers, they are completely hypoallergenic, require zero maintenance, and will stay beautiful forever. They make the perfect everlasting gift for anniversaries, graduations, or simply to brighten someone's day.
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,#FFFFFFD9_0,#FFFFFF00_24%),radial-gradient(circle_at_84%_18%,#FFFFFFB8_0,#FFFFFF00_22%),linear-gradient(135deg,#FFE7EF_0%,#FFF5F8_48%,#FAD8E9_100%)] py-12 md:py-20">
+        <div className="pointer-events-none absolute inset-0">
+          <span className="absolute left-[3%] top-[18%] text-4xl text-astraea-pink/35 animate-float">♡</span>
+          <span className="absolute left-[8%] bottom-[16%] text-4xl text-astraea-pink/40 animate-float" style={{ animationDelay: '0.8s' }}>✿</span>
+          <span className="absolute right-[7%] top-[20%] text-3xl text-astraea-pink/35 animate-float" style={{ animationDelay: '1.1s' }}>♡</span>
+          <span className="absolute right-[4%] bottom-[16%] text-4xl text-white animate-float" style={{ animationDelay: '1.5s' }}>✦</span>
+          <span className="absolute left-[42%] top-[10%] text-3xl text-white animate-float" style={{ animationDelay: '1.8s' }}>✦</span>
+          <span className="absolute right-[14%] bottom-[34%] text-3xl text-astraea-pink/30 animate-float" style={{ animationDelay: '2s' }}>❀</span>
+        </div>
+
+        <div className="relative z-10 mx-auto grid max-w-[1180px] items-center gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+          <div className="relative space-y-8 text-center lg:text-left">
+            <div>
+              <h2 className="section-heading text-3xl md:text-4xl">
+                ✿ Flowers That Never Wilt
+              </h2>
+              <div className="mt-6 space-y-5 text-sm leading-7 text-astraea-darkgray/85 md:text-base">
+                <p>
+                  Fuzzy wire flowers are meticulously handcrafted from soft chenille stems, creating a beautiful, velvet-like texture. Unlike fresh flowers, they are completely hypoallergenic, require zero maintenance, and will stay beautiful forever.
+                </p>
+                <p>
+                  They make the perfect everlasting gift for anniversaries, graduations, or simply to brighten someone's day.
+                </p>
+              </div>
+            </div>
+
+            <div className="mx-auto w-fit rotate-[-3deg] rounded-[18px] border-2 border-dashed border-astraea-pink/45 bg-white/75 px-8 py-4 font-accent text-3xl font-bold leading-tight text-astraea-rosegold shadow-[5px_5px_0px_rgba(249,168,201,0.35)] lg:mx-0">
+              ♡ Made with love,
+              <span className="block">just for you</span>
+            </div>
+
+            <div className="pointer-events-none absolute right-[-5rem] top-[42%] hidden h-36 w-28 rounded-full border-r-2 border-dashed border-astraea-pink/70 lg:block">
+              <span className="absolute bottom-2 right-[-5px] h-3 w-3 rotate-45 border-b-2 border-r-2 border-astraea-pink/70"></span>
+              <span className="absolute right-[-1rem] top-2 font-accent text-2xl text-astraea-rosegold">♡</span>
+            </div>
+          </div>
+
+          <div className="animate-float-up-down relative mx-auto w-full max-w-[560px]">
+            <div className="absolute left-[30%] top-[-16px] z-20 h-12 w-44 rotate-[1deg] rounded-sm bg-[#FFE1A8]/90 shadow-[0_4px_16px_rgba(232,145,184,0.18)] before:absolute before:inset-0 before:bg-[radial-gradient(#fff_1.2px,transparent_1.2px)] before:bg-[length:16px_12px] before:opacity-70"></div>
+            <div className="absolute -right-3 bottom-0 h-[88%] w-[82%] rotate-[4deg] rounded-[22px] bg-[#F8AEBE]/65 shadow-[8px_14px_22px_rgba(232,145,184,0.25)]"></div>
+            <div className="relative rotate-[1deg] rounded-[24px] bg-white p-4 pb-16 shadow-[0_24px_45px_rgba(96,53,70,0.18)] ring-2 ring-astraea-pink/15">
+              <div className="aspect-[4/3.7] overflow-hidden rounded-[14px] bg-astraea-blush">
+                <img src={violetBouquetFeature} alt="Violet fuzzy wire bouquet" className="h-full w-full object-cover object-center" />
+              </div>
+              <p className="absolute bottom-5 left-0 right-0 text-center font-accent text-3xl font-bold text-astraea-rosegold">
+                ♡
               </p>
             </div>
-            <div className="md:w-1/2 w-full">
-              <div className="scrapbook-card aspect-[4/3] bg-[#FFFDFE] flex items-center justify-center border-dashed rotate-[1deg]">
-                <span className="font-accent text-3xl text-astraea-rosegold">♡ handmade & hypoallergenic</span>
-              </div>
+            <div className="absolute -bottom-4 right-2 z-20 grid h-20 w-20 place-items-center rounded-full border-4 border-white bg-[#F9A8C9] text-4xl text-white shadow-[3px_5px_0px_rgba(232,145,184,0.45)]">
+              ✿
             </div>
           </div>
         </div>
