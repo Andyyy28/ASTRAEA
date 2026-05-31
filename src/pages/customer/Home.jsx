@@ -20,7 +20,12 @@ const Home = () => {
           .eq('is_featured', true)
           .order('created_at', { ascending: false })
           .limit(4),
-        supabase.from('reviews').select('*').order('rating', { ascending: false }).limit(3)
+        supabase
+          .from('reviews')
+          .select('id, name, message, rating, admin_reply, created_at')
+          .eq('is_displayed', true)
+          .order('created_at', { ascending: false })
+          .limit(3)
       ]);
 
       if (bouquetsRes.data) setFeaturedBouquets(bouquetsRes.data);
@@ -187,7 +192,13 @@ const Home = () => {
                 <p className="font-accent italic text-xl text-astraea-darkgray/90 mb-6">
                   "{review.message}"
                 </p>
-                <p className="font-bold text-sm tracking-wide">♡ {review.customer_name}</p>
+                {review.admin_reply && (
+                  <div className="mb-5 rounded-2xl border-2 border-dashed border-astraea-pink/30 bg-astraea-blush/30 p-4 text-sm text-astraea-darkgray/80">
+                    <p className="font-bold text-[#C4658A] mb-1">Astraea replied:</p>
+                    <p>{review.admin_reply}</p>
+                  </div>
+                )}
+                <p className="font-bold text-sm tracking-wide">♡ {review.name}</p>
               </div>
             ))}
           </div>

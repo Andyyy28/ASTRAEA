@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+GRANT SELECT ON public.admin_users TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.admin_users TO service_role;
+
 INSERT INTO public.flower_colors (flower_id, color_name, hex_code, is_available)
 SELECT seed.flower_id::UUID, seed.color_name, seed.hex_code, seed.is_available
 FROM (VALUES
@@ -110,7 +113,18 @@ USING (true);
 DROP POLICY IF EXISTS reviews_public_read ON public.reviews;
 CREATE POLICY reviews_public_read ON public.reviews
 FOR SELECT TO anon, authenticated
-USING (true);
+USING (is_displayed = true OR public.is_admin());
+
+DROP POLICY IF EXISTS reviews_customer_insert ON public.reviews;
+CREATE POLICY reviews_customer_insert ON public.reviews
+FOR INSERT TO anon, authenticated
+WITH CHECK (
+  trim(name) <> ''
+  AND trim(message) <> ''
+  AND rating BETWEEN 1 AND 5
+  AND COALESCE(is_displayed, false) = false
+  AND admin_reply IS NULL
+);
 
 DROP POLICY IF EXISTS bouquets_admin_manage ON public.bouquets;
 CREATE POLICY bouquets_admin_manage ON public.bouquets

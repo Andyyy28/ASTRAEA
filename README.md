@@ -42,8 +42,8 @@ in `.env`:
 
 ```text
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-ADMIN_EMAIL=admin@astraea.com
-ADMIN_PASSWORD=replace_with_a_strong_password
+ADMIN_EMAIL=admin_ako@gmail.com
+ADMIN_PASSWORD=Super_Admin123!
 ```
 
 Then run:

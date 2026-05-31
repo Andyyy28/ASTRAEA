@@ -12,13 +12,14 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
 INSERT INTO public.admin_users (user_id)
 SELECT id
 FROM auth.users
-WHERE lower(email) = lower('admin@astraea.com')
+WHERE lower(email) = lower('admin_ako@gmail.com')
 ON CONFLICT (user_id) DO NOTHING;
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.bouquets TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.bouquets TO authenticated;
 GRANT SELECT ON public.admin_users TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.admin_users TO service_role;
 
 ALTER TABLE public.bouquets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;

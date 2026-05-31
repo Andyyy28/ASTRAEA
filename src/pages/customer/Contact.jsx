@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, MessageCircle, Clock, Globe, AtSign, Check, Phone } from 'lucide-react';
+import { Mail, MessageCircle, Clock, Globe, AtSign, Check, Phone, Star } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', message: '', rating: 5 });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const heartIcon = String.fromCodePoint(9825);
   const flowerIcon = String.fromCodePoint(10047);
   const starIcon = String.fromCodePoint(9733);
@@ -13,15 +15,50 @@ const Contact = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setTimeout(() => {
+
+    const { error: submitError } = await supabase
+      .from('reviews')
+      .insert({
+        name: formData.name.trim(),
+        message: formData.message.trim(),
+        rating: Number(formData.rating),
+        is_displayed: false,
+        admin_reply: null
+      });
+
+    if (submitError) {
+      setError(submitError.message || 'Could not submit your review. Please try again.');
       setLoading(false);
-      setSubmitted(true);
-      setFormData({ name: '', email: '', message: '' });
-    }, 1000);
+      return;
+    }
+
+    setLoading(false);
+    setSubmitted(true);
+    setFormData({ name: '', message: '', rating: 5 });
   };
+
+  const renderRatingInput = () => (
+    <div>
+      <label className="block text-sm font-medium text-[#C4658A] mb-2">Star Rating</label>
+      <div className="flex gap-2">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button
+            key={rating}
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, rating }))}
+            className="min-h-11 min-w-11 rounded-full bg-white border-2 border-dashed border-astraea-pink/40 flex items-center justify-center text-astraea-rosegold hover:bg-astraea-blush/40 transition-colors"
+            aria-label={`${rating} star${rating === 1 ? '' : 's'}`}
+          >
+            <Star className={`w-5 h-5 ${rating <= formData.rating ? 'fill-current' : 'opacity-30'}`} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="py-8 md:py-16 bg-astraea-cream min-h-screen animate-fade-in">
@@ -33,20 +70,25 @@ const Contact = () => {
 
         <div className="flex flex-col lg:flex-row gap-0 bg-[#FFFDFE] rounded-3xl shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink overflow-hidden">
           <div className="lg:w-1/2 p-4 md:p-12 order-2 lg:order-1">
-            <h2 className="section-heading text-xl md:text-3xl mb-8">{flowerIcon} Send a Message</h2>
+            <h2 className="section-heading text-xl md:text-3xl mb-8">{flowerIcon} Customer Reviews & Feedback</h2>
             {submitted ? (
               <div className="scrapbook-card bg-astraea-mint/30 text-[#2D7A5F] text-center animate-fade-in">
                 <div className="w-16 h-16 bg-astraea-mint rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-[#A8DFC9]"><Check className="w-8 h-8 text-[#2D7A5F]" /></div>
-                <h3 className="font-bold text-xl mb-2">Message Sent!</h3>
-                <p>Thank you for reaching out. We will get back to you as soon as possible.</p>
-                <button onClick={() => setSubmitted(false)} className="kawaii-btn-outline mt-6">Send Another</button>
+                <h3 className="font-bold text-xl mb-2">Review Submitted!</h3>
+                <p>Thank you for sharing your feedback. It will appear on the Home page after admin approval.</p>
+                <button onClick={() => setSubmitted(false)} className="kawaii-btn-outline mt-6">Leave Another Review</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
+                    {error}
+                  </div>
+                )}
                 <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="kawaii-input" placeholder="Jane Doe" /></div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Email Address</label><input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="kawaii-input" placeholder="jane@example.com" /></div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Message</label><textarea rows="5" required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="kawaii-input min-h-[100px] resize-none" placeholder="How can we help you?"></textarea></div>
-                <button type="submit" disabled={loading} className="kawaii-btn-primary w-full py-4 text-lg">{loading ? 'Sending...' : 'Send Message'}</button>
+                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Review / Feedback</label><textarea rows="5" required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="kawaii-input min-h-[100px] resize-none" placeholder="Tell us about your Astraea experience."></textarea></div>
+                {renderRatingInput()}
+                <button type="submit" disabled={loading} className="kawaii-btn-primary w-full py-4 text-lg">{loading ? 'Submitting...' : 'Submit Review'}</button>
               </form>
             )}
           </div>

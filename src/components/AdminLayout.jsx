@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, MessageSquareText, Settings, LogOut, Menu, X } from 'lucide-react';
 
 const AdminLayout = () => {
   const { user, loading, logout } = useAuth();
@@ -27,14 +27,15 @@ const AdminLayout = () => {
     { name: 'Inventory', path: '/admin/inventory', icon: Box },
     { name: 'Bouquets', path: '/admin/bouquets', icon: Flower2 },
     { name: 'Other Products', path: '/admin/other-products', icon: Gift },
+    { name: 'Reviews', path: '/admin/reviews', icon: MessageSquareText },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   return (
-    <div className="min-h-screen bg-astraea-cream flex flex-col md:flex-row text-astraea-darkgray">
+    <div className="min-h-screen md:h-screen bg-astraea-cream flex flex-col md:flex-row text-astraea-darkgray md:overflow-hidden">
       
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-72 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink sticky top-0 h-screen">
+      <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
         <div className="h-20 flex items-center px-8 border-b border-dashed border-astraea-pink/30">
           <Link to="/" className="text-2xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-2 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
             <Flower2 className="w-6 h-6 text-astraea-pink" /> Astraea Admin
@@ -74,7 +75,7 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:h-screen md:min-h-0 md:overflow-hidden">
         
         {/* Topbar (Mobile & Desktop) */}
         <header className="h-16 md:h-20 bg-astraea-cream/85 backdrop-blur-xl border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
@@ -107,7 +108,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-8 lg:p-12 min-w-0">
+        <main className="flex-1 p-4 sm:p-8 lg:p-12 min-w-0 md:min-h-0 md:overflow-y-auto">
           <Outlet />
         </main>
       </div>

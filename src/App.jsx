@@ -28,6 +28,7 @@ import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminInventory from './pages/admin/AdminInventory';
 import AdminBouquets from './pages/admin/AdminBouquets';
 import AdminOtherProducts from './pages/admin/AdminOtherProducts';
+import AdminReviews from './pages/admin/AdminReviews';
 import AdminSettings from './pages/admin/AdminSettings';
 
 const CustomerLayout = () => (
@@ -72,6 +73,7 @@ function App() {
               <Route path="/admin/inventory" element={<AdminInventory />} />
               <Route path="/admin/bouquets" element={<AdminBouquets />} />
               <Route path="/admin/other-products" element={<AdminOtherProducts />} />
+              <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
             </Routes>

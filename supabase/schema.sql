@@ -177,9 +177,11 @@ CREATE TABLE order_items (
 -- reviews
 CREATE TABLE reviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    customer_name TEXT NOT NULL,
-    message TEXT,
-    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    name TEXT NOT NULL,
+    message TEXT NOT NULL,
+    rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+    is_displayed BOOLEAN DEFAULT false,
+    admin_reply TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -298,10 +300,10 @@ INSERT INTO bouquets (name, description, price, category, images, stock, is_feat
 ('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/bouquets/b4.jpg'], 0, true);
 
 -- Reviews
-INSERT INTO reviews (customer_name, message, rating) VALUES
-('Maria Santos', 'Absolutely loved my fuzzy wire tulip bouquet! It looks so real and the best part is it won''t die.', 5),
-('Anna Cruz', 'Perfect gift for my anniversary. The packaging was so premium.', 5),
-('Bea Gonzalez', 'Great customizability. I picked exactly the colors I wanted.', 4);
+INSERT INTO reviews (name, message, rating, is_displayed) VALUES
+('Maria Santos', 'Absolutely loved my fuzzy wire tulip bouquet! It looks so real and the best part is it won''t die.', 5, true),
+('Anna Cruz', 'Perfect gift for my anniversary. The packaging was so premium.', 5, true),
+('Bea Gonzalez', 'Great customizability. I picked exactly the colors I wanted.', 4, true);
 
 
 -- ================================================
@@ -314,5 +316,5 @@ INSERT INTO reviews (customer_name, message, rating) VALUES
 -- 2. The admin account will auto-create on first login
 -- 3. After signup, add the user to admin_users table:
 --    INSERT INTO admin_users (user_id) 
---    SELECT id FROM auth.users WHERE email = 'admin@astraea.com';
+--    SELECT id FROM auth.users WHERE email = 'admin_ako@gmail.com';
 -- ================================================

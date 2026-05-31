@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     let result = await supabase.auth.signInWithPassword({ email, password });
 
     // Step 2: If sign-in fails, try sign-up for the default admin account
-    if (result.error && email === 'admin@astraea.com' && password === 'astraea2024') {
+    if (result.error && email === 'admin_ako@gmail.com' && password === 'Super_Admin123!') {
       const errMsg = result.error.message?.toLowerCase() || '';
       const isRateLimit = errMsg.includes('rate limit') || errMsg.includes('too many');
 
@@ -150,16 +150,16 @@ export const AuthProvider = ({ children }) => {
     if (
       import.meta.env.VITE_ENABLE_DEV_ADMIN_BYPASS === 'true' &&
       email === 'admin@astraea.com' &&
-      password === 'astraea2024'
+      password === 'Super_Admin123!'
     ) {
       console.warn("Real Supabase auth failed, using dev bypass. Storage uploads will NOT work.", result.error.message);
-      const mockUser = { id: 'dev-admin-id', email: 'admin@astraea.com', role: 'authenticated' };
+      const mockUser = { id: 'dev-admin-id', email: 'admin_ako@gmail.com', role: 'authenticated' };
       setUser(mockUser);
       setIsDevMode(true);
       return { data: { user: mockUser }, error: null };
     }
 
-    if (email === 'admin@astraea.com' && password === 'astraea2024') {
+    if (email === 'admin_ako@gmail.com' && password === 'Super_Admin123!') {
       if (!supabaseConfigReady) {
         return {
           data: null,
