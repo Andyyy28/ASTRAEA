@@ -25,9 +25,13 @@ const Navbar = () => {
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
+    document.body.style.position = isOpen ? 'fixed' : '';
+    document.body.style.width = isOpen ? '100%' : '';
 
     return () => {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [isOpen]);
 

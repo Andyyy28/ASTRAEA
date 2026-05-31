@@ -11,9 +11,13 @@ const AdminLayout = () => {
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    document.body.style.position = isMobileMenuOpen ? 'fixed' : '';
+    document.body.style.width = isMobileMenuOpen ? '100%' : '';
 
     return () => {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, [isMobileMenuOpen]);
 
@@ -131,7 +135,7 @@ const AdminLayout = () => {
               <X className="w-6 h-6" />
             </button>
           </div>
-          <nav className="p-4">
+          <nav className="h-[calc(100vh-4rem)] overflow-y-auto p-4">
             <ul className="space-y-2">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
