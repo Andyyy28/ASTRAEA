@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useNotifications } from '../../context/NotificationContext';
 import { formatPrice } from '../../lib/formatPrice';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 // Upload proof of payment to Supabase Storage, returns the public URL
 const uploadPaymentProof = async (file) => {
@@ -312,7 +313,7 @@ const Checkout = () => {
                 <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(grandTotal)}</span>
               </div>
               <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
-                {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><ShoppingBag className="w-5 h-5 mr-2" />Place Order</>}
+                {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />Place Order</>}
               </button>
               <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">By placing this order, you agree to our Terms of Service and Privacy Policy. Payment details will be sent after confirmation.</p>
             </div>

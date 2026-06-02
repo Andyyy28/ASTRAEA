@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Gift } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const categories = [
   { value: 'keychain', label: 'Keychain' },
@@ -284,7 +285,22 @@ const AdminOtherProducts = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div key={item} className="bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] overflow-hidden flex flex-col">
+              <Skeleton className="aspect-[3/4] w-full rounded-none" />
+              <div className="p-3 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <div className="flex gap-2 pt-1">
+                  <Skeleton className="h-9 flex-1 rounded-full" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : products.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No other products found.</div>
       ) : (

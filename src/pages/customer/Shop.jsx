@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { normalizeStock } from '../../lib/bouquetStock';
 import { Flower2, Filter } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const Shop = () => {
   const [bouquets, setBouquets] = useState([]);
@@ -172,7 +173,15 @@ const Shop = () => {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-96 bg-white animate-pulse rounded-xl border-2 border-dashed border-astraea-pink shadow-[4px_4px_0px_#F9A8C9]"></div>
+              <div key={i} className="scrapbook-card overflow-hidden relative flex flex-col p-2 md:p-4 bg-[#FFFDFE] border-2 border-dashed border-astraea-pink shadow-[4px_4px_0px_#F9A8C9] space-y-3">
+                <Skeleton className="w-full aspect-[3/4] rounded-[12px]" />
+                <Skeleton className="w-3/4 h-5" />
+                <Skeleton className="w-1/3 h-6 rounded-xl" />
+                <div className="mt-auto space-y-2">
+                  <Skeleton className="w-full h-9 rounded-full" />
+                  <Skeleton className="w-full h-9 rounded-full" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredBouquets.length === 0 ? (
@@ -187,7 +196,7 @@ const Shop = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 fade-in-content">
             {filteredBouquets.map((bouquet) => (
               <div
                 key={bouquet.id}

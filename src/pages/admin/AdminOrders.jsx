@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Search, Filter, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const statusOptions = ['pending', 'confirmed', 'being-made', 'ready', 'completed', 'cancelled'];
 const formatDelivery = (method) => method === 'pickup' ? 'Store Pickup' : 'Delivery';
@@ -131,6 +132,7 @@ const AdminOrders = () => {
       case 'confirmed': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
       case 'being-made': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
       case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
+      case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
       case 'completed': return <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
       case 'cancelled': return <span className="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold capitalize">Cancelled</span>;
       default: return null;
@@ -138,7 +140,7 @@ const AdminOrders = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in fade-in-content">
       <h1 className="text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-tight">Orders Management</h1>
       
       {/* Filters Bar */}
@@ -205,7 +207,22 @@ const AdminOrders = () => {
 
       <div className="grid gap-4 md:hidden">
         {loading ? (
-          <div className="bg-white rounded-2xl p-8 text-center border border-astraea-pink/5">Loading...</div>
+          [1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-grow">
+                  <Skeleton className="w-1/3 h-5" />
+                  <Skeleton className="w-1/2 h-4" />
+                </div>
+                <Skeleton className="w-20 h-6 rounded-full" />
+              </div>
+              <div className="flex justify-between text-sm">
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-16 h-5" />
+              </div>
+              <Skeleton className="w-full h-10 rounded-xl" />
+            </div>
+          ))
         ) : currentOrders.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center border border-astraea-pink/5 text-gray-500">No orders found.</div>
         ) : (
@@ -253,7 +270,24 @@ const AdminOrders = () => {
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm">
               {loading ? (
-                <tr><td colSpan="9" className="text-center py-10"><div className="w-6 h-6 border-2 border-astraea-pink border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
+                [1, 2, 3, 4, 5].map(i => (
+                  <tr key={i}>
+                    <td className="px-6 py-5"><Skeleton className="w-24 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-32 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-16 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-20 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-16 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-20 h-5" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-16 h-6 rounded-full" /></td>
+                    <td className="px-6 py-5"><Skeleton className="w-12 h-6 rounded-lg" /></td>
+                    <td className="px-6 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Skeleton className="w-28 h-9 rounded-xl" />
+                        <Skeleton className="w-12 h-9 rounded-xl" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : currentOrders.length === 0 ? (
                 <tr><td colSpan="9" className="text-center py-10 text-gray-500">No orders found.</td></tr>
               ) : (
@@ -306,14 +340,14 @@ const AdminOrders = () => {
               <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50"
+                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50"
+                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

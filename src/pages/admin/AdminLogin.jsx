@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Eye, EyeOff, Lock } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const AdminLogin = () => {
   const { user, login } = useAuth();
@@ -93,7 +94,7 @@ const AdminLogin = () => {
               disabled={loading}
               className="flex-1 py-4 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
             >
-              {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Login'}
+              {loading ? <Skeleton className="w-16 h-5 bg-white/30" /> : 'Login'}
             </button>
 
           </div>

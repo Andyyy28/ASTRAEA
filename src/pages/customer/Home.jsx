@@ -5,6 +5,7 @@ import { formatPrice } from '../../lib/formatPrice';
 import { Star, CheckCircle, Package, Truck, Heart, Flower2, Gift, Leaf } from 'lucide-react';
 import astraeaLogo from '../../assets/astraea-logo.jpg';
 import violetBouquetFeature from '../../assets/violet-bouquet-feature.jpeg';
+import Skeleton from '../../components/Skeleton';
 
 const Home = () => {
   const [featuredBouquets, setFeaturedBouquets] = useState([]);
@@ -179,10 +180,15 @@ const Home = () => {
           </div>
 
           {loading ? (
-            <div className="flex justify-center space-x-4">
-              <div className="w-64 h-80 bg-astraea-blush animate-pulse rounded-xl"></div>
-              <div className="w-64 h-80 bg-astraea-blush animate-pulse rounded-xl hidden md:block"></div>
-              <div className="w-64 h-80 bg-astraea-blush animate-pulse rounded-xl hidden lg:block"></div>
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mx-auto max-w-6xl">
+              {[1, 2, 3].map(i => (
+                <div key={i} className={`scrapbook-card w-full max-w-[20rem] flex-1 basis-[18rem] space-y-4 p-4 ${i === 3 ? 'hidden lg:block' : i === 2 ? 'hidden md:block' : ''}`}>
+                  <Skeleton className="w-full aspect-[4/5] rounded-[16px]" />
+                  <Skeleton className="w-2/3 h-5" />
+                  <Skeleton className="w-1/3 h-7 rounded-xl" />
+                  <Skeleton className="w-full h-11 rounded-full" />
+                </div>
+              ))}
             </div>
           ) : featuredBouquets.length === 0 ? (
             <div className="scrapbook-card bg-[#FFFDFE] text-center py-16">
@@ -193,7 +199,7 @@ const Home = () => {
               </p>
             </div>
           ) : (
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mx-auto max-w-6xl">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 mx-auto max-w-6xl fade-in-content">
               {featuredBouquets.map((bouquet) => {
                 const image = bouquet.images?.[0];
 
@@ -260,27 +266,43 @@ const Home = () => {
           <div className="text-center mb-10 md:mb-16">
             <h2 className="section-heading text-xl md:text-3xl">✦ What Our Customers Say</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="scrapbook-card bg-[#FFFDFE] p-4 md:p-6">
-                <div className="flex text-astraea-rosegold mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-5 h-5 ${i < review.rating ? 'fill-current' : 'opacity-30'}`} />
-                  ))}
-                </div>
-                <p className="font-accent italic text-xl text-astraea-darkgray/90 mb-6">
-                  "{review.message}"
-                </p>
-                {review.admin_reply && (
-                  <div className="mb-5 rounded-2xl border-2 border-dashed border-astraea-pink/30 bg-astraea-blush/30 p-4 text-sm text-astraea-darkgray/80">
-                    <p className="font-bold text-[#C4658A] mb-1">Astraea replied:</p>
-                    <p>{review.admin_reply}</p>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="scrapbook-card bg-[#FFFDFE] p-4 md:p-6 space-y-4">
+                  <div className="flex gap-1 mb-4">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Skeleton key={star} className="w-5 h-5 rounded-full" />
+                    ))}
                   </div>
-                )}
-                <p className="font-bold text-sm tracking-wide">♡ {review.name}</p>
-              </div>
-            ))}
-          </div>
+                  <Skeleton className="w-full h-16" />
+                  <Skeleton className="w-24 h-4 mt-6" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 fade-in-content">
+              {reviews.map((review) => (
+                <div key={review.id} className="scrapbook-card bg-[#FFFDFE] p-4 md:p-6">
+                  <div className="flex text-astraea-rosegold mb-4">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-5 h-5 ${i < review.rating ? 'fill-current' : 'opacity-30'}`} />
+                    ))}
+                  </div>
+                  <p className="font-accent italic text-xl text-astraea-darkgray/90 mb-6">
+                    "{review.message}"
+                  </p>
+                  {review.admin_reply && (
+                    <div className="mb-5 rounded-2xl border-2 border-dashed border-astraea-pink/30 bg-astraea-blush/30 p-4 text-sm text-astraea-darkgray/80">
+                      <p className="font-bold text-[#C4658A] mb-1">Astraea replied:</p>
+                      <p>{review.admin_reply}</p>
+                    </div>
+                  )}
+                  <p className="font-bold text-sm tracking-wide">♡ {review.name}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

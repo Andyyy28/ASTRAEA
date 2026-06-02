@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { ArrowLeft, User, Truck, Receipt, CheckCircle2, Clock } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
@@ -52,7 +53,78 @@ const AdminOrderDetail = () => {
     setUpdating(false);
   };
 
-  if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto">
+        {/* Back Link Skeleton */}
+        <Skeleton className="w-32 h-5" />
+        
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl border border-gray-200">
+          <div className="space-y-2 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-3">
+              <Skeleton className="w-48 h-8" />
+              <Skeleton className="w-20 h-6 rounded-full" />
+              <Skeleton className="w-20 h-6 rounded-full" />
+            </div>
+            <Skeleton className="w-36 h-4" />
+          </div>
+          <div className="flex gap-3 w-full md:w-auto">
+            <Skeleton className="w-32 h-10" />
+            <Skeleton className="w-32 h-10" />
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Col */}
+          <div className="space-y-6">
+            {/* Customer Info Card */}
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
+              <Skeleton className="w-44 h-6" />
+              <div className="space-y-3">
+                <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-32 h-5" /></div>
+                <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-32 h-5" /></div>
+                <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-48 h-5" /></div>
+              </div>
+            </div>
+            {/* Delivery Info Card */}
+            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
+              <Skeleton className="w-44 h-6" />
+              <div className="space-y-3">
+                <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-28 h-5" /></div>
+                <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-40 h-5" /></div>
+              </div>
+            </div>
+          </div>
+          {/* Right Col */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
+            <Skeleton className="w-32 h-6" />
+            <div className="space-y-4">
+              <div className="flex gap-4 border-b border-gray-100 pb-4">
+                <Skeleton className="w-16 h-16 rounded-xl" />
+                <div className="flex-grow space-y-2">
+                  <Skeleton className="w-40 h-5" />
+                  <Skeleton className="w-full h-12" />
+                </div>
+              </div>
+              <div className="flex gap-4 border-b border-gray-100 pb-4">
+                <Skeleton className="w-16 h-16 rounded-xl" />
+                <div className="flex-grow space-y-2">
+                  <Skeleton className="w-32 h-5" />
+                  <Skeleton className="w-full h-12" />
+                </div>
+              </div>
+            </div>
+            <div className="pt-6 border-t border-gray-200 flex justify-between items-center">
+              <Skeleton className="w-24 h-6" />
+              <Skeleton className="w-36 h-8" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!order) return <div className="text-center py-20 text-gray-500">Order not found.</div>;
 
   const getStatusBadge = (status) => {
@@ -85,7 +157,7 @@ const AdminOrderDetail = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+    <div className="space-y-6 animate-fade-in fade-in-content max-w-5xl mx-auto">
       
       <Link to="/admin/orders" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-astraea-pink transition-colors">
         <ArrowLeft className="w-4 h-4 mr-1" /> Back to Orders

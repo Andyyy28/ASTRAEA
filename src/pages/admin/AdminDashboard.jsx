@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { ShoppingBag, Clock, DollarSign, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const AdminDashboard = () => {
   const [metrics, setMetrics] = useState({
@@ -135,7 +136,70 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;
+    return (
+      <div className="space-y-8 animate-fade-in fade-in-content">
+        {/* Metrics Row Skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 flex items-center gap-3">
+              <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-2xl" />
+              <div className="space-y-2 flex-grow">
+                <Skeleton className="w-16 h-3" />
+                <Skeleton className="w-12 h-7" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Pending Orders Table Skeleton */}
+          <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
+            <div className="flex justify-between items-center mb-6">
+              <Skeleton className="w-36 h-6" />
+              <Skeleton className="w-16 h-4" />
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-5 gap-4 pb-2 border-b border-gray-200">
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-20 h-4" />
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-16 h-4" />
+                <Skeleton className="w-12 h-4" />
+              </div>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="grid grid-cols-5 gap-4 py-3 border-b border-gray-50 items-center">
+                  <Skeleton className="w-20 h-5" />
+                  <Skeleton className="w-24 h-5" />
+                  <Skeleton className="w-16 h-5" />
+                  <Skeleton className="w-16 h-5" />
+                  <Skeleton className="w-16 h-9 rounded-xl" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Low Stock Alerts Skeleton */}
+          <div className="bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
+            <div className="flex items-center mb-6">
+              <Skeleton className="w-10 h-10 rounded-xl mr-3" />
+              <Skeleton className="w-28 h-6" />
+            </div>
+            <div className="space-y-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50">
+                  <div className="space-y-2 flex-grow mr-4">
+                    <Skeleton className="w-3/4 h-5" />
+                    <Skeleton className="w-24 h-4 rounded-full" />
+                  </div>
+                  <Skeleton className="w-16 h-8 rounded-xl" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

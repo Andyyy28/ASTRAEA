@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Lock, CheckCircle2 } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const AdminSettings = () => {
   const { user } = useAuth();
@@ -98,7 +99,7 @@ const AdminSettings = () => {
               disabled={loading}
               className="w-full min-h-11 py-3 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
             >
-              {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Update Password'}
+              {loading ? <Skeleton className="w-40 h-5 bg-white/30" /> : 'Update Password'}
             </button>
           </form>
         </div>

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 // Upload image to Supabase Storage, returns the public URL
 const uploadImage = async (file) => {
@@ -288,7 +289,7 @@ const AdminBouquets = () => {
 
   return (
     <>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in fade-in-content">
       
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Ready-Made Bouquets</h1>
@@ -302,7 +303,24 @@ const AdminBouquets = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:hidden">
         {loading ? (
-          <div className="bg-white rounded-xl p-8 text-center border border-gray-200">Loading...</div>
+          [1, 2, 3].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden p-4 space-y-4">
+              <Skeleton className="w-full aspect-[4/3] rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="w-2/3 h-5" />
+                <Skeleton className="w-1/3 h-4" />
+                <Skeleton className="w-1/4 h-5" />
+              </div>
+              <div className="flex justify-between items-center gap-2">
+                <Skeleton className="w-16 h-8 rounded-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))
         ) : bouquets.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No bouquets found.</div>
         ) : (
@@ -366,12 +384,38 @@ const AdminBouquets = () => {
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
               {loading ? (
-                <tr><td colSpan="6" className="text-center py-10"><div className="w-6 h-6 border-2 border-astraea-pink border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
+                [1, 2, 3, 4, 5].map(i => (
+                  <tr key={i}>
+                    <td className="px-6 py-4">
+                      <Skeleton className="w-16 h-16 rounded-xl" />
+                    </td>
+                    <td className="px-6 py-4 space-y-2">
+                      <Skeleton className="w-48 h-5" />
+                      <Skeleton className="w-16 h-4" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="w-20 h-5" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Skeleton className="w-12 h-6 rounded-full mx-auto" />
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Skeleton className="w-16 h-6 rounded-full mx-auto" />
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                        <Skeleton className="w-8 h-8 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
               ) : bouquets.length === 0 ? (
                 <tr><td colSpan="6" className="text-center py-10 text-gray-500">No bouquets found.</td></tr>
               ) : (
                 bouquets.map(b => (
-                  <tr key={b.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={b.id} className="border-b border-gray-100 hover:bg-[#FFFDFE] transition-colors">
                     <td className="px-6 py-4">
                       <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                         {b.images && b.images[0] ? (
@@ -585,7 +629,6 @@ const AdminBouquets = () => {
                   <span className="ml-2 text-sm text-gray-700 font-medium">Featured (Homepage)</span>
                 </label>
               </div>
-
               <div className="mt-8 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:justify-end gap-3">
                 <button 
                   type="button" 
@@ -600,10 +643,7 @@ const AdminBouquets = () => {
                   className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center justify-center gap-2"
                 >
                   {uploading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Saving...
-                    </>
+                    <Skeleton className="w-24 h-5 bg-white/30" />
                   ) : 'Save Bouquet'}
                 </button>
               </div>
@@ -616,4 +656,3 @@ const AdminBouquets = () => {
 };
 
 export default AdminBouquets;
-

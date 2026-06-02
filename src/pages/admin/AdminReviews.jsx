@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useNotifications } from '../../context/NotificationContext';
 import { Eye, EyeOff, MessageSquareReply, Star, Trash2 } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -134,9 +135,36 @@ const AdminReviews = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="h-64 bg-astraea-blush animate-pulse rounded-2xl"></div>
+            <div key={item} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-4 md:p-6 space-y-6">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2 flex-1 max-w-[200px]">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="flex gap-1 mt-2">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <Skeleton key={i} className="w-5 h-5 rounded-full" />
+                    ))}
+                  </div>
+                </div>
+                <Skeleton className="w-20 h-6 rounded-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-28 w-full rounded-xl" />
+              </div>
+              <div className="flex gap-3">
+                <Skeleton className="h-11 flex-1 rounded-full" />
+                <Skeleton className="h-11 flex-1 rounded-full" />
+                <Skeleton className="h-11 w-24 rounded-full" />
+              </div>
+            </div>
           ))}
         </div>
       ) : reviews.length === 0 ? (

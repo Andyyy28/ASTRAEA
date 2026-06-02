@@ -5,6 +5,7 @@ import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
@@ -27,6 +28,7 @@ const Customize = () => {
   const { addToCart } = useCart();
   const { showToast } = useNotifications();
 
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
   const [dbFlowers, setDbFlowers] = useState([]);
   const [dbFlowerColors, setDbFlowerColors] = useState([]);
@@ -80,6 +82,7 @@ const Customize = () => {
         setAddonOptions(addonRes.data);
         setAddons(addonRes.data.reduce((acc, addon) => ({ ...acc, [addon.key]: false }), {}));
       }
+      setLoading(false);
     };
     fetchData();
   }, []);
@@ -441,8 +444,67 @@ const Customize = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Steps Indicator Skeleton */}
+          <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
+            <div className="flex items-center min-w-max justify-center md:justify-start">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <React.Fragment key={i}>
+                  <div className="flex flex-col items-center relative">
+                    <Skeleton className="w-8 h-8 rounded-full" />
+                  </div>
+                  {i < 6 && <div className="w-12 sm:w-20 h-1 mx-2 bg-astraea-rosegold/30" />}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-8 animate-fade-in">
+            {/* Left box skeleton */}
+            <div className="lg:w-2/3 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl border border-astraea-rosegold/20 min-h-[500px] flex flex-col justify-between shadow-sm">
+              <div className="space-y-6">
+                <Skeleton className="w-48 h-8 mb-6" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="rounded-2xl p-4 md:p-6 border border-gray-150 space-y-4 bg-white/50">
+                      <Skeleton className="w-24 h-6" />
+                      <Skeleton className="w-32 h-4" />
+                      <Skeleton className="w-20 h-6" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-between items-center mt-12 pt-6 border-t border-gray-100">
+                <Skeleton className="w-20 h-10 rounded-full" />
+                <Skeleton className="w-32 h-10 rounded-full" />
+              </div>
+            </div>
+
+            {/* Right SummaryPanel skeleton */}
+            <div className="hidden lg:block lg:w-1/3 bg-astraea-darkgray p-6 rounded-2xl space-y-6 shadow-lg">
+              <Skeleton className="w-32 h-6 bg-white/10" />
+              <div className="space-y-4">
+                <div className="flex justify-between pb-2 border-b border-white/10">
+                  <Skeleton className="w-12 h-4 bg-white/10" />
+                  <Skeleton className="w-24 h-4 bg-white/10" />
+                </div>
+              </div>
+              <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-center">
+                <Skeleton className="w-12 h-6 bg-white/10" />
+                <Skeleton className="w-24 h-8 bg-white/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8">
+    <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8 fade-in-content">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
           <div className="flex items-center min-w-max justify-center md:justify-start">

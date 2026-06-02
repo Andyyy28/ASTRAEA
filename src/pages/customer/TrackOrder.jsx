@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { Search, Clock, Scissors, CheckCircle, Package, MessageCircle } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const statuses = [
   { id: 'pending', label: 'Pending', icon: Clock },
@@ -67,7 +68,7 @@ const TrackOrder = () => {
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Reference number, e.g. AC-2026-AB12CD34" className="kawaii-input pl-14" required />
             </div>
             <input type="text" value={verification} onChange={(e) => setVerification(e.target.value)} placeholder="Email address or contact number used at checkout" className="kawaii-input" required />
-            <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4">{loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : 'Track'}</button>
+            <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4">{loading ? <Skeleton className="w-16 h-4 bg-white/30" /> : 'Track'}</button>
           </form>
           {error && <div className="mt-6 p-4 bg-[#FDDDE6] text-[#C4658A] rounded-xl border-2 border-dashed border-astraea-pink text-center animate-fade-in">{error}</div>}
         </div>

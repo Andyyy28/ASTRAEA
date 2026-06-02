@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, MessageSquareText, Settings, LogOut, Menu, X } from 'lucide-react';
+import Skeleton from './Skeleton';
 
 const AdminLayout = () => {
   const { user, loading, logout } = useAuth();
@@ -28,7 +29,44 @@ const AdminLayout = () => {
   }, [user, loading, navigate]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-astraea-cream"><div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;
+    return (
+      <div className="min-h-screen md:h-screen bg-astraea-cream flex flex-col md:flex-row text-astraea-darkgray overflow-hidden">
+        {/* Sidebar Skeleton (Desktop) */}
+        <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 border-r-2 border-dashed border-astraea-pink md:h-screen p-6 space-y-6">
+          <div className="h-10 flex items-center bg-white/80 rounded-full px-3 border border-dashed border-astraea-pink/30">
+            <Skeleton className="w-full h-6" />
+          </div>
+          <div className="flex-1 space-y-3">
+            {[1, 2, 3, 4, 5, 6, 7].map(i => (
+              <Skeleton key={i} className="w-full h-11 rounded-full" />
+            ))}
+          </div>
+          <Skeleton className="w-full h-11 rounded-full" />
+        </aside>
+        
+        {/* Main Content Skeleton */}
+        <div className="flex-1 flex flex-col">
+          {/* Topbar */}
+          <header className="h-16 md:h-20 bg-astraea-cream/85 border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10">
+            <Skeleton className="w-36 h-8" />
+            <Skeleton className="w-48 h-10 rounded-full" />
+          </header>
+          {/* Main Body */}
+          <main className="flex-1 p-4 sm:p-8 lg:p-12 space-y-6">
+            <div className="flex justify-between items-center">
+              <Skeleton className="w-48 h-8" />
+              <Skeleton className="w-32 h-10 rounded-xl" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Skeleton className="w-full h-32 rounded-2xl" />
+              <Skeleton className="w-full h-32 rounded-2xl" />
+              <Skeleton className="w-full h-32 rounded-2xl" />
+            </div>
+            <Skeleton className="w-full h-64 rounded-2xl" />
+          </main>
+        </div>
+      </div>
+    );
   }
 
   if (!user) return null; // Will redirect

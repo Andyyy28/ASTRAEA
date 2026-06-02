@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, supabaseConfigReady } from '../lib/supabase';
+import Skeleton from '../components/Skeleton';
 
 const AuthContext = createContext();
 const SESSION_LOAD_TIMEOUT_MS = 5000;
@@ -192,8 +193,37 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, isDevMode }}>
       {loading ? (
-        <div className="min-h-screen flex items-center justify-center bg-astraea-cream">
-          <div className="w-10 h-10 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div>
+        <div className="min-h-screen bg-astraea-cream flex flex-col">
+          {/* Skeleton Navbar */}
+          <header className="h-20 bg-white/80 border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10">
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-8 h-8 rounded-full" />
+              <Skeleton className="w-32 h-6" />
+            </div>
+            <div className="flex items-center gap-6">
+              <Skeleton className="w-16 h-4 hidden sm:block" />
+              <Skeleton className="w-16 h-4 hidden sm:block" />
+              <Skeleton className="w-16 h-4 hidden sm:block" />
+              <Skeleton className="w-10 h-10 rounded-full" />
+            </div>
+          </header>
+          {/* Skeleton Page Body */}
+          <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-8">
+            <div className="text-center space-y-3">
+              <Skeleton className="w-64 h-10 mx-auto" />
+              <Skeleton className="w-96 h-5 mx-auto" />
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] p-4 space-y-4 shadow-[4px_4px_0px_#F9A8C9]">
+                  <Skeleton className="w-full aspect-[4/3] rounded-xl" />
+                  <Skeleton className="w-2/3 h-5" />
+                  <Skeleton className="w-1/3 h-6" />
+                  <Skeleton className="w-full h-10 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </main>
         </div>
       ) : children}
     </AuthContext.Provider>

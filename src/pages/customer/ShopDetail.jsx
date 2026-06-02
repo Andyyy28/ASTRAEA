@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { normalizeStock } from '../../lib/bouquetStock';
 import { ArrowLeft, Flower2, Plus, Minus } from 'lucide-react';
+import Skeleton from '../../components/Skeleton';
 
 const ShopDetail = () => {
   const { id } = useParams();
@@ -109,7 +110,41 @@ const ShopDetail = () => {
     });
   };
 
-  if (loading) return <div className="min-h-screen py-8 md:py-20 bg-astraea-cream flex justify-center"><div className="w-16 h-16 border-4 border-astraea-pink border-t-transparent rounded-full animate-spin"></div></div>;
+  if (loading) {
+    return (
+      <div className="py-8 md:py-16 bg-astraea-cream min-h-[80vh]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <Skeleton className="w-48 h-6" />
+          </div>
+          <div className="flex flex-col md:flex-row gap-8 md:gap-12 animate-fade-in">
+            <div className="md:w-1/2 flex flex-col gap-4">
+              <Skeleton className="w-full aspect-[4/5] rounded-2xl" />
+              <div className="flex gap-4">
+                <Skeleton className="w-24 h-24 rounded-xl" />
+                <Skeleton className="w-24 h-24 rounded-xl" />
+              </div>
+            </div>
+            <div className="md:w-1/2 flex flex-col p-4 md:p-6 bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px]">
+              <Skeleton className="w-24 h-6 mb-4" />
+              <Skeleton className="w-3/4 h-10 mb-4" />
+              <Skeleton className="w-36 h-12 mb-6" />
+              <Skeleton className="w-28 h-6 mb-6" />
+              <Skeleton className="w-full h-24 mb-6" />
+              <Skeleton className="w-full h-12 mb-6" />
+              <div className="mt-auto pt-6 border-t-2 border-dashed border-astraea-pink/30">
+                <div className="flex justify-between items-center mb-6">
+                  <Skeleton className="w-20 h-8" />
+                  <Skeleton className="w-36 h-12" />
+                </div>
+                <Skeleton className="w-full h-14 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!bouquet) return <div className="min-h-screen py-20 flex flex-col items-center justify-center bg-astraea-cream text-center px-4"><Flower2 className="w-20 h-20 text-astraea-pink/50 mb-6" /><h2 className="section-heading text-2xl md:text-4xl mb-4">Bouquet Not Found</h2><p className="text-sm md:text-base text-astraea-darkgray/70 mb-8">This bouquet might have been removed or the link is invalid.</p><Link to="/shop" className="kawaii-btn-primary min-h-11 px-8 py-3">Back to Shop</Link></div>;
 
   const images = bouquet.images?.length ? bouquet.images : [];
@@ -117,7 +152,7 @@ const ShopDetail = () => {
   const isOutOfStock = stock === 0;
 
   return (
-    <div className="animate-fade-in py-8 md:py-16 bg-astraea-cream min-h-[80vh]">
+    <div className="animate-fade-in fade-in-content py-8 md:py-16 bg-astraea-cream min-h-[80vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link to="/shop" className="inline-flex items-center text-astraea-darkgray hover:text-astraea-pink transition-colors mb-8 font-medium"><ArrowLeft className="w-5 h-5 mr-2" />Back to Shop</Link>
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
