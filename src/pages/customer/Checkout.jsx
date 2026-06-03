@@ -6,6 +6,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { formatPrice } from '../../lib/formatPrice';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import { sendOrderNotification } from '../../lib/telegram';
 
 // Upload proof of payment to Supabase Storage, returns the public URL
 const uploadPaymentProof = async (file) => {
@@ -139,6 +140,21 @@ const Checkout = () => {
         p_items: orderItems
       });
       if (error) throw error;
+
+      // Fire-and-forget Telegram notification — never blocks checkout
+      sendOrderNotification({
+        referenceNumber: data.reference_number,
+        customerName: formData.customer_name,
+        contactNumber: formData.contact_number,
+        deliveryMethod,
+        paymentMethod: formData.payment_method,
+        preferredDate: formData.preferred_date,
+        preferredTime: formData.preferred_time,
+        deliveryAddress: formData.delivery_address,
+        specialNotes: formData.special_notes,
+        cartItems,
+        grandTotal,
+      });
 
       clearCart();
       setOrderPlaced(data.reference_number);

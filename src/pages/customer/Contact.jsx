@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, MessageCircle, Clock, Globe, AtSign, Check, Phone, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { sendReviewNotification } from '../../lib/telegram';
 
 const Contact = () => {
   const [formData, setFormData] = useState({ name: '', message: '', rating: 5 });
@@ -35,6 +36,13 @@ const Contact = () => {
       setLoading(false);
       return;
     }
+
+    // Fire-and-forget Telegram notification — never blocks the success state
+    sendReviewNotification({
+      customerName: formData.name.trim(),
+      rating: formData.rating,
+      message: formData.message.trim(),
+    });
 
     setLoading(false);
     setSubmitted(true);
