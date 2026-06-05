@@ -131,6 +131,101 @@
 }
 
 @layer utilities {
+  @media (min-width: 641px) {
+    .home-hero-mobile {
+      background-color: #ffe7ef;
+      background-image:
+        linear-gradient(90deg, rgba(255, 231, 239, 0.98) 0%, rgba(255, 231, 239, 0.92) 24%, rgba(255, 231, 239, 0.55) 42%, rgba(255, 231, 239, 0.16) 62%, rgba(255, 231, 239, 0) 78%),
+        url('/home-hero.jpeg');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .home-hero-mobile > div {
+      position: relative;
+      z-index: 1;
+    }
+
+    .home-hero-mobile .home-hero-mobile-edge,
+    .home-hero-mobile .home-hero-desktop-photo img,
+    .home-hero-mobile .home-hero-mobile-photo-wash,
+    .home-hero-mobile .home-hero-mobile-bottom-fade {
+      display: none;
+    }
+
+    .home-hero-mobile .home-hero-desktop-photo {
+      background: transparent;
+    }
+
+    .home-hero-mobile .home-hero-mobile-wash {
+      background-image:
+        radial-gradient(circle at 8% 22%, rgba(255, 255, 255, 0.98) 0, rgba(255, 255, 255, 0.88) 24%, rgba(255, 255, 255, 0.48) 42%, rgba(255, 255, 255, 0) 62%),
+        linear-gradient(90deg, rgba(255, 231, 239, 0.72) 0%, rgba(255, 231, 239, 0.42) 74%, rgba(255, 231, 239, 0) 100%);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .home-hero-mobile {
+      background-color: #ffe7ef;
+      background-image: url('/mobile-view.jpeg');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+    }
+
+    .home-hero-mobile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(90deg, rgba(255, 231, 239, 0.82) 0%, rgba(255, 231, 239, 0.5) 42%, rgba(255, 182, 193, 0.04) 72%, rgba(255, 182, 193, 0) 100%),
+        linear-gradient(rgba(255, 182, 193, 0.08), rgba(255, 182, 193, 0.08)),
+        url('/mobile-view.jpeg');
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+    }
+
+    .home-hero-mobile > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .home-hero-mobile > div {
+      background: transparent;
+    }
+
+    .home-hero-mobile > div > div:last-child {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      min-height: 100%;
+      pointer-events: none;
+    }
+
+    .home-hero-mobile > div > div:last-child img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      object-position: center;
+      opacity: 0;
+    }
+
+    .home-hero-mobile .home-hero-mobile-edge,
+    .home-hero-mobile .home-hero-mobile-photo-wash,
+    .home-hero-mobile .home-hero-mobile-bottom-fade {
+      display: none;
+    }
+
+    .home-hero-mobile .home-hero-mobile-wash {
+      background-color: transparent;
+      background-image: linear-gradient(90deg, rgba(255, 231, 239, 0.68) 0%, rgba(255, 231, 239, 0.28) 44%, rgba(255, 182, 193, 0.02) 72%, rgba(255, 182, 193, 0) 100%);
+    }
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.7s ease-out forwards;
   }
@@ -248,4 +343,3 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
-

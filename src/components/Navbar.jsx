@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, X } from 'lucide-react';
+import {
+  ClipboardList,
+  HouseHeart,
+  Mail,
+  MapPin,
+  PartyPopper,
+  ShoppingBag,
+  ShoppingCart,
+  WandSparkles,
+  X
+} from 'lucide-react';
 
 import { useCart } from '../context/CartContext';
 
@@ -10,17 +20,14 @@ const Navbar = () => {
   const { cartCount } = useCart();
 
   const flowerIcon = String.fromCodePoint(10047);
-  const heartIcon = String.fromCodePoint(9825);
-  const starIcon = String.fromCodePoint(9733);
-  const sparkIcon = String.fromCodePoint(10022);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop' },
-    { name: 'Customize', path: '/customize' },
-    { name: 'Other Products', path: '/other-products' },
-    { name: 'Track Order', path: '/track-order' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Home', path: '/', icon: HouseHeart },
+    { name: 'Shop', path: '/shop', icon: ShoppingBag, accent: 'flower' },
+    { name: 'Customize', path: '/customize', icon: WandSparkles },
+    { name: 'Other Products', path: '/other-products', icon: PartyPopper },
+    { name: 'Track Order', path: '/track-order', icon: ClipboardList, accent: 'pin' },
+    { name: 'Contact', path: '/contact', icon: Mail, accent: 'flower' },
   ];
 
   useEffect(() => {
@@ -41,7 +48,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-30 border-b-2 border-dashed border-[#F58AB6]/70 bg-[#FFE5EE]/90 shadow-[0_10px_30px_rgba(249,168,201,0.22)] backdrop-blur-xl animate-fade-in transition-all">
+    <nav className="sticky top-0 z-30 border-b-2 border-dashed border-[#F58AB6]/70 bg-[#FFE7EF]/95 shadow-[0_8px_22px_rgba(249,168,201,0.12)] backdrop-blur-xl animate-fade-in transition-all">
       <div className="pointer-events-none absolute inset-x-0 bottom-[-18px] hidden h-8 items-center justify-center md:flex">
         <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
         <span className="relative mx-5 h-8 w-12">
@@ -51,35 +58,35 @@ const Navbar = () => {
         </span>
         <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
       </div>
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
+      <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-10">
+        <div className="flex h-16 items-center justify-between gap-4 md:h-20">
           <div className="flex-shrink-0 flex items-center">
             <Link
               to="/"
-              className="font-heading text-xl sm:text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-wide flex items-center gap-2 rounded-full px-3 py-2 hover:bg-white/70"
+              className="font-heading flex items-center gap-3 rounded-full px-3 py-2 text-xl font-black tracking-wide text-astraea-darkgray transition-colors hover:bg-white/70 sm:text-2xl md:text-[2rem]"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F58AB6] text-lg text-white shadow-[2px_2px_0px_#FDDDE6]">{flowerIcon}</span>
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#F58AB6] text-lg text-white shadow-[2px_2px_0px_#FDDDE6]">{flowerIcon}</span>
               Astraea Collection
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden items-center gap-2 md:flex xl:gap-3">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`whitespace-nowrap px-5 py-3 rounded-full text-sm font-extrabold transition-all hover:bg-white/80 hover:text-astraea-pink
-                  ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[0_2px_0px_#F9A8C9,0_12px_24px_rgba(249,168,201,0.2)] ring-1 ring-[#F4BFCF]' : 'text-astraea-darkgray'}`}
+                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-[15px] font-bold transition-all hover:bg-white/80 hover:text-astraea-pink xl:px-5 xl:text-[16px]
+                  ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[0_2px_0px_#F9A8C9,0_12px_24px_rgba(249,168,201,0.16)] ring-1 ring-[#F4BFCF]' : 'text-astraea-darkgray'}`}
               >
                 {link.name}
               </Link>
             ))}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link
               to="/cart"
-              className="relative min-h-12 min-w-12 p-2 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink transition-colors rounded-full bg-white/75 border-2 border-dashed border-astraea-pink shadow-[2px_2px_0px_#F9A8C9]"
+              className="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-astraea-pink bg-white/80 text-astraea-darkgray shadow-[2px_2px_0px_#F9A8C9] transition-colors hover:text-astraea-pink"
             >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
@@ -92,7 +99,7 @@ const Navbar = () => {
             <div className="md:hidden flex items-center">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="min-h-11 min-w-11 flex items-center justify-center rounded-[12px] border-2 border-[#F4BFCF] bg-white px-[10px] py-2 text-[#E891B8] shadow-[2px_2px_0px_#F9A8C9] focus:outline-none"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-[12px] border-2 border-[#F4BFCF] bg-white px-[10px] py-2 text-[#E891B8] shadow-[2px_2px_0px_#F9A8C9] focus:outline-none"
                 aria-label={isOpen ? 'Close menu' : 'Open menu'}
               >
                 {isOpen ? (
@@ -144,22 +151,31 @@ const Navbar = () => {
           </div>
 
           <nav className="flex-1 py-2">
-            {navLinks.map((link, index) => {
-              const icons = [heartIcon, flowerIcon, starIcon, sparkIcon, heartIcon, flowerIcon];
-              const icon = icons[index] || flowerIcon;
+            {navLinks.map((link) => {
+              const Icon = link.icon;
 
               return (
                 <Link
                   key={link.name}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`block border-b border-dashed border-[#F4BFCF] px-5 py-[14px] font-heading text-[16px] font-semibold text-[#3D2C35] transition-colors ${
+                  className={`flex items-center gap-3 border-b border-dashed border-[#F4BFCF] px-5 py-[14px] font-heading text-[16px] font-semibold text-[#3D2C35] transition-colors ${
                     isActive(link.path)
                       ? 'border-l-[3px] border-l-[#F9A8C9] bg-[#FDDDE6] text-[#E891B8]'
                       : 'bg-transparent hover:bg-[#FFF5F7] hover:text-[#E891B8]'
                   }`}
                 >
-                  <span className="mr-2 inline-block">{icon}</span>
+                  <span className="relative grid h-7 w-7 shrink-0 place-items-center text-[#E06591]">
+                    <Icon className="h-6 w-6" strokeWidth={2.2} />
+                    {link.accent === 'flower' && (
+                      <span className="absolute -bottom-1 -right-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-[#FDDDE6] font-heading text-[13px] leading-none text-[#E06591]">
+                        {flowerIcon}
+                      </span>
+                    )}
+                    {link.accent === 'pin' && (
+                      <MapPin className="absolute -bottom-1 -right-1 h-4 w-4 fill-[#E06591] text-[#E06591]" strokeWidth={2.2} />
+                    )}
+                  </span>
                   {link.name}
                 </Link>
               );

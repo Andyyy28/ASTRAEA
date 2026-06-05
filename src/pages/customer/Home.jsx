@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
-import { Star, CheckCircle, Package, Truck, Heart, Flower2, Gift, Leaf } from 'lucide-react';
-import astraeaLogo from '../../assets/astraea-logo.jpg';
+import { Star, CheckCircle, Package, Truck, Heart } from 'lucide-react';
 import violetBouquetFeature from '../../assets/violet-bouquet-feature.jpeg';
 import Skeleton from '../../components/Skeleton';
 
@@ -40,84 +39,59 @@ const Home = () => {
 
   return (
     <div className="animate-fade-in">
-      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_20%,#FFFFFF_0,#FFFFFF00_24%),radial-gradient(circle_at_78%_12%,#FFFFFFB8_0,#FFFFFF00_23%),linear-gradient(135deg,#FFE7EF_0%,#FFF3F7_45%,#FAD8E9_100%)] min-h-[760px] md:min-h-[calc(100vh-5rem)] pt-10 md:pt-16">
-        <div className="pointer-events-none absolute inset-0">
-          <span className="absolute left-6 top-8 text-4xl text-astraea-pink/30 animate-float">♡</span>
-          <span className="absolute right-10 top-12 text-3xl text-astraea-lavender/50 animate-float" style={{ animationDelay: '0.8s' }}>✦</span>
-          <span className="absolute left-[18%] bottom-20 text-3xl text-astraea-mint/50 animate-float" style={{ animationDelay: '1.2s' }}>✿</span>
-        </div>
-        <div className="relative z-10 mx-auto grid w-full max-w-[1180px] items-center gap-10 px-4 pb-10 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-          <div className="space-y-7 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-dashed border-[#F58AB6]/70 bg-white/80 px-6 py-3 shadow-[4px_4px_0px_#F9A8C9]">
-              <Heart className="h-4 w-4 fill-[#F58AB6] text-[#F58AB6]" />
-              <span className="font-accent text-2xl text-astraea-rosegold">♡ cute flower shop</span>
-            </div>
-            <h1 className="font-heading text-5xl font-black leading-[0.95] tracking-[-0.02em] text-astraea-darkgray sm:text-6xl md:text-7xl lg:text-8xl">
-              Astraea
-              <span className="block">Collection</span>
-            </h1>
-            <div className="mx-auto flex w-28 items-center gap-2 lg:mx-0">
-              <span className="h-1 flex-1 rounded-full bg-astraea-pink"></span>
-              <span className="h-2 w-2 rounded-full bg-astraea-pink"></span>
-              <span className="h-2 w-2 rounded-full bg-astraea-pink"></span>
-              <span className="h-2 w-2 rounded-full bg-astraea-pink"></span>
-            </div>
-            <p className="mx-auto max-w-xl font-accent text-4xl font-bold leading-tight text-astraea-rosegold md:text-5xl lg:mx-0">
-              Handcrafted fuzzy wire flowers that last forever.
-            </p>
-            <div className="flex flex-col justify-center gap-4 pt-2 sm:flex-row lg:justify-start">
-              <Link to="/shop" className="kawaii-btn-primary transform-gpu min-h-12 px-10 py-4 text-center text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98]">
-                Shop Bouquets
-              </Link>
-              <Link to="/customize" className="kawaii-btn-outline transform-gpu min-h-12 border-dashed px-10 py-4 text-center text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98]">
-                Customize Yours
-              </Link>
-            </div>
-            <p className="font-accent text-2xl font-bold text-astraea-rosegold">
-              ✿ Made with love, just for you ♡
-            </p>
-          </div>
-          <div className="animate-float-up-down relative mx-auto w-full max-w-[560px] lg:max-w-[620px]">
-            <div className="absolute left-[-3%] top-10 z-20 hidden rotate-[-2deg] rounded-2xl border-2 border-dashed border-[#E4A34D]/50 bg-[#FFE1A8] px-6 py-4 font-accent text-3xl font-bold leading-tight text-[#B86C7F] shadow-[4px_4px_0px_rgba(232,145,184,0.35)] sm:block">
-              handmade
-              <span className="block">with love</span>
-            </div>
-            <div className="absolute left-[34%] top-[-12px] z-30 h-12 w-44 rotate-[1deg] rounded-sm bg-[#FFE1A8]/85 shadow-[0_4px_16px_rgba(232,145,184,0.18)] before:absolute before:inset-0 before:bg-[radial-gradient(#fff_1.2px,transparent_1.2px)] before:bg-[length:16px_12px] before:opacity-70"></div>
-            <div className="absolute -bottom-3 right-2 z-30 grid h-20 w-20 place-items-center rounded-full border-4 border-white bg-[#F9A8C9] text-4xl text-white shadow-[3px_5px_0px_rgba(232,145,184,0.45)]">
-              ✿
-            </div>
-            <div className="absolute -right-1 bottom-2 h-[86%] w-[82%] rotate-[4deg] rounded-[22px] bg-[#F8AEBE]/65 shadow-[8px_14px_22px_rgba(232,145,184,0.25)]"></div>
-            <div className="relative rotate-[2deg] rounded-[24px] bg-white p-4 pb-14 shadow-[0_24px_45px_rgba(96,53,70,0.18)]">
-              <div className="aspect-[4/3.85] overflow-hidden rounded-[12px] bg-astraea-blush">
-                <img src={astraeaLogo} alt="Astraea Collection bouquet logo" className="h-full w-full object-cover object-center" />
+      <section className="home-hero-mobile relative overflow-hidden bg-[#FFE7EF]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 border-t-2 border-dashed border-[#F58AB6]/75"></div>
+        <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-[1680px] items-stretch lg:grid-cols-[1fr_minmax(0,1.35fr)]">
+          <div className="relative flex min-h-[420px] items-center px-5 py-12 sm:px-8 md:px-12 lg:px-14 xl:px-20">
+            <div className="home-hero-mobile-wash absolute inset-0 bg-[radial-gradient(circle_at_8%_22%,rgba(255,255,255,0.98)_0,rgba(255,255,255,0.86)_24%,rgba(255,255,255,0.48)_44%,rgba(255,255,255,0)_68%)]"></div>
+            <div className="home-hero-mobile-edge absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-[#FFE7EF] via-[#FFE7EF]/85 to-transparent sm:w-44 lg:w-52"></div>
+
+            <div className="relative z-10 w-full max-w-[720px] space-y-6 text-left">
+              <div className="inline-flex items-center gap-3 rounded-full border-2 border-dashed border-[#F58AB6]/75 bg-white/70 px-6 py-3 shadow-[0_8px_20px_rgba(232,145,184,0.16)]">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F58AB6] text-base text-white">
+                  <Heart className="h-4 w-4 fill-current" />
+                </span>
+                <span className="font-accent text-[clamp(1.4rem,2vw,2.1rem)] text-astraea-rosegold">cute flower shop</span>
               </div>
-              <p className="absolute bottom-4 left-0 right-0 text-center font-accent text-3xl font-bold text-[#A9797F]">
-                Handcrafted with care
+
+              <h1 className="max-w-[11ch] font-heading text-[clamp(3.5rem,6vw,7.75rem)] font-black leading-[0.9] tracking-[-0.03em] text-astraea-darkgray">
+                Astraea
+                <span className="block">Collection</span>
+              </h1>
+
+              <div className="flex w-28 items-center gap-2">
+                <span className="h-1.5 flex-1 rounded-full bg-[#F58AB6]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
+              </div>
+
+              <p className="max-w-[14ch] font-accent text-[clamp(2.2rem,3vw,4.2rem)] leading-[1.05] text-astraea-rosegold">
+                Handcrafted fuzzy wire flowers that last forever.
               </p>
+
+              <div className="flex flex-col gap-4 pt-2 sm:flex-row">
+                <Link to="/shop" className="kawaii-btn-primary min-h-14 px-10 text-lg">
+                  Shop Bouquets
+                </Link>
+                <Link to="/customize" className="kawaii-btn-outline min-h-14 border-dashed px-10 text-lg">
+                  Customize Yours
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="relative z-10 mt-4 border-t-2 border-white/80 bg-white/55 py-5 shadow-[0_-10px_30px_rgba(255,255,255,0.55)]">
-          <div className="absolute inset-x-0 top-[-18px] h-8 bg-[radial-gradient(ellipse_at_center,#FFFFFF_0_58%,transparent_60%)] bg-[length:70px_24px]"></div>
-          <div className="mx-auto grid max-w-[1180px] grid-cols-4 gap-2 px-4 lg:px-8">
-            {[
-              { icon: Flower2, title: 'Handcrafted', copy: 'with love' },
-              { icon: Leaf, title: 'Long lasting', copy: 'and durable' },
-              { icon: Gift, title: 'Perfect gift', copy: 'for any occasion' },
-              { icon: Heart, title: 'Custom made', copy: 'just for you' }
-            ].map((item) => (
-              <div key={item.title} className="min-w-0 p-2 text-center text-astraea-darkgray lg:border-r lg:last:border-r-0 lg:border-[#F58AB6]/50">
-                <item.icon className="mx-auto h-6 w-6 text-astraea-pink" />
-                <div className="min-w-0">
-                  <p className="truncate font-body text-xs font-bold">{item.title}</p>
-                  <p className="hidden text-sm text-astraea-darkgray/80 sm:block">{item.copy}</p>
-                </div>
-              </div>
-            ))}
+
+          <div className="home-hero-desktop-photo relative min-h-[420px] overflow-hidden lg:-ml-24 lg:min-h-full">
+            <img
+              src="/home-hero.jpeg"
+              alt="Colorful handmade fuzzy wire bouquets"
+              className="h-full w-full object-cover object-center"
+            />
+            <div className="home-hero-mobile-photo-wash absolute inset-0 bg-[linear-gradient(90deg,rgba(255,231,239,0.98)_0%,rgba(255,231,239,0.92)_14%,rgba(255,231,239,0.55)_28%,rgba(255,231,239,0.18)_46%,rgba(255,231,239,0.03)_60%,rgba(255,231,239,0)_70%),linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)]"></div>
+            <div className="home-hero-mobile-bottom-fade absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#FFE7EF] via-[#FFE7EF]/65 to-transparent"></div>
           </div>
         </div>
       </section>
-
       <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_22%,#FFFFFFD9_0,#FFFFFF00_24%),radial-gradient(circle_at_84%_18%,#FFFFFFB8_0,#FFFFFF00_22%),linear-gradient(135deg,#FFE7EF_0%,#FFF5F8_48%,#FAD8E9_100%)] py-12 md:py-20">
         <div className="pointer-events-none absolute inset-0">
           <span className="absolute left-[3%] top-[18%] text-4xl text-astraea-pink/35 animate-float">♡</span>
