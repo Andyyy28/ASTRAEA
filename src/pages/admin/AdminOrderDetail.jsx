@@ -313,7 +313,12 @@ const AdminOrderDetail = () => {
                     )}
                     
                     {item.fillers && item.fillers.length > 0 && (
-                      <p><span className="font-medium text-gray-800">Fillers:</span> {item.fillers.map(f => f.name || f).join(', ')}</p>
+                      <div className="mt-1">
+                        <span className="font-medium text-gray-800 block mb-1">Fillers:</span>
+                        <ul className="list-disc pl-5">
+                          {item.fillers.map((f, i) => <li key={i}>{f.quantity || 1}x {f.name || f} {f.color ? `(${f.color})` : ''}</li>)}
+                        </ul>
+                      </div>
                     )}
                     
                     {item.wrapper && (

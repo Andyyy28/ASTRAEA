@@ -76,7 +76,9 @@ const Cart = () => {
                       <div className="text-sm text-astraea-darkgray/70 space-y-1 mb-4 bg-astraea-blush/30 p-3 rounded-xl border-2 border-dashed border-astraea-pink/20">
                         <p><span className="font-medium">Size:</span> {item.custom_details.size?.name}</p>
                         {item.custom_details.flowers?.map((f, i) => <p key={i}>• {f.quantity}x {f.name} {f.color ? `(${f.color})` : ''}</p>)}
-                        {item.custom_details.fillers?.length > 0 && <p>• Fillers: {item.custom_details.fillers.map(f => f.name || f).join(', ')}</p>}
+                        {item.custom_details.fillers?.map((f, i) => (
+                          <p key={i}>• {f.quantity || 1}x {f.name || f} {f.color ? `(${f.color})` : ''}</p>
+                        ))}
                         {item.custom_details.wrapper && <p>• Wrapper: {item.custom_details.wrapper.material} {item.custom_details.wrapper.color ? `(${item.custom_details.wrapper.color})` : ''}</p>}
                         {item.custom_details.addonDetails?.length > 0
                           ? item.custom_details.addonDetails.map(addon => <p key={addon.key}>• {addon.name}</p>)

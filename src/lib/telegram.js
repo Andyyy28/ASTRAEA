@@ -87,7 +87,7 @@ function describeItem(item) {
       parts.push(`Flowers: ${flowerList}`);
     }
     if (d.fillers?.length) {
-      const fillerList = d.fillers.map(f => f.name || f).join(', ');
+      const fillerList = d.fillers.map(f => `${f.quantity || 1}x ${f.name || f}${f.color ? ` (${f.color})` : ''}`).join(', ');
       parts.push(`Fillers: ${fillerList}`);
     }
     if (d.wrapper?.name) parts.push(`Wrapper: ${d.wrapper.name}`);

@@ -52,7 +52,7 @@ const emptyForms = {
 
 const tabs = [
   ['flowers', 'Flowers & Colors'],
-  ['fillers', 'Fillers'],
+  ['fillers', 'Fillers & Colors'],
   ['wrappers', 'Wrappers'],
   ['fuzzy', 'Fuzzy Wires'],
   ['sizes', 'Sizes'],
@@ -68,6 +68,7 @@ const AdminInventory = () => {
   const [flowers, setFlowers] = useState([]);
   const [flowerColors, setFlowerColors] = useState([]);
   const [fillers, setFillers] = useState([]);
+  const [fillerColors, setFillerColors] = useState([]);
   const [wrappers, setWrappers] = useState([]);
   const [wrapperColors, setWrapperColors] = useState([]);
   const [fuzzyWireColors, setFuzzyWireColors] = useState([]);
@@ -91,10 +92,11 @@ const AdminInventory = () => {
 
   const fetchInventory = async () => {
     setLoading(true);
-    const [fRes, fcRes, filRes, wRes, wcRes, fuzzyRes, sizeRes, addonRes] = await Promise.all([
+    const [fRes, fcRes, filRes, ficRes, wRes, wcRes, fuzzyRes, sizeRes, addonRes] = await Promise.all([
       supabase.from('flowers').select('*').order('created_at', { ascending: false }),
       supabase.from('flower_colors').select('*'),
       supabase.from('fillers').select('*'),
+      supabase.from('filler_colors').select('*'),
       supabase.from('wrappers').select('*'),
       supabase.from('wrapper_colors').select('*'),
       supabase.from('fuzzy_wire_colors').select('*').order('display_order', { ascending: true }),
@@ -105,6 +107,7 @@ const AdminInventory = () => {
     if (fRes.data) setFlowers(fRes.data);
     if (fcRes.data) setFlowerColors(fcRes.data);
     if (filRes.data) setFillers(filRes.data);
+    if (ficRes.data) setFillerColors(ficRes.data);
     if (wRes.data) setWrappers(wRes.data);
     if (wcRes.data) setWrapperColors(wcRes.data);
     if (fuzzyRes.data) setFuzzyWireColors(fuzzyRes.data);
@@ -118,6 +121,7 @@ const AdminInventory = () => {
       flowers: setFlowers,
       flower_colors: setFlowerColors,
       fillers: setFillers,
+      filler_colors: setFillerColors,
       wrappers: setWrappers,
       wrapper_colors: setWrapperColors,
       fuzzy_wire_colors: setFuzzyWireColors,
@@ -165,7 +169,8 @@ const AdminInventory = () => {
 
   const openModal = (type, item = null) => {
     const baseType = type.replace('edit_', '').replace('add_', '');
-    const nextForm = item ? {
+    const isAddingNestedColor = type.startsWith('add_') && type.includes('color');
+    const nextForm = item && !isAddingNestedColor ? {
       key: item.key || '',
       name: item.name || item.material || item.color_name || '',
       price: item.price ?? '',
@@ -176,7 +181,7 @@ const AdminInventory = () => {
       display_order: item.display_order ?? 0,
       hex: item.hex_code || '#F9A8C9',
       is_available: item.is_available !== false,
-    } : { ...(emptyForms[baseType] || {}) };
+    } : { ...(emptyForms[isAddingNestedColor ? 'color' : baseType] || {}) };
     setModalType(type);
     setActiveItem(item);
     setFormData(nextForm);
@@ -231,6 +236,13 @@ const AdminInventory = () => {
           stock,
           is_available: formData.is_available !== false,
         }, setFlowers);
+      } else if (modalType.includes('filler_color')) {
+        saved = await saveRow('filler_colors', {
+          filler_id: activeItem.filler_id || activeItem.id,
+          color_name: formData.name,
+          hex_code: formData.hex,
+          is_available: formData.is_available !== false,
+        }, setFillerColors);
       } else if (modalType.includes('filler')) {
         saved = await saveRow('fillers', {
           name: formData.name,
@@ -432,7 +444,7 @@ const AdminInventory = () => {
               )}
 
               {activeTab === 'fillers' && (
-                <InventoryTable title="Fillers" addText="Add Filler" onAdd={() => openModal('add_filler')} headers={['Image', 'Name', 'Price', 'Stock', 'Availability', 'Actions']}>
+                <InventoryTable title="Fillers" addText="Add Filler" onAdd={() => openModal('add_filler')} headers={['Image', 'Name', 'Price', 'Stock', 'Availability', 'Colors (click to toggle)', 'Actions']}>
                   {fillers.map(f => (
                     <tr key={f.id}>
                       <td className="px-4 py-4">{imagePreview(f, f.name)}</td>
@@ -440,6 +452,12 @@ const AdminInventory = () => {
                       <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(f.price)}</td>
                       <td className="px-4 py-4">{stockControls('fillers', f)}</td>
                       <td className="px-4 py-4">{f.stock <= 0 ? <span className={`${softBadge} bg-[#FDDDE6] text-[#C4658A]`}>Out of Stock</span> : availabilityButton('fillers', f)}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-2 items-center">
+                          {fillerColors.filter(c => c.filler_id === f.id).map(c => colorChip('filler_colors', c, () => openModal('edit_filler_color', c)))}
+                          <button onClick={() => openModal('add_filler_color', f)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
+                        </div>
+                      </td>
                       <td className="px-4 py-4 text-right">{actions('edit_filler', 'fillers', f)}</td>
                     </tr>
                   ))}
@@ -542,11 +560,11 @@ const AdminInventory = () => {
                 </>
               )}
               {modalType.includes('size') && <Field label="Approx. Stems"><input type="text" value={formData.stems || ''} onChange={e => setFormData({ ...formData, stems: e.target.value })} className={inputClass} /></Field>}
-              {((modalType.includes('flower') && !modalType.includes('color')) || modalType.includes('filler') || (modalType.includes('wrapper') && !modalType.includes('color')) || modalType.includes('addon')) ? (
+              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color')) || modalType.includes('addon')) ? (
                 <Field label={modalType.includes('addon') ? 'Price' : modalType.includes('flower') ? 'Price Per Stem' : 'Price'}><input type="number" required min="0" step="0.01" value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} /></Field>
               ) : null}
               {modalType.includes('size') && <Field label="Base Price"><input type="number" required min="0" step="0.01" value={formData.base_price || ''} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className={inputClass} /></Field>}
-              {((modalType.includes('flower') && !modalType.includes('color')) || modalType.includes('filler') || (modalType.includes('wrapper') && !modalType.includes('color'))) ? (
+              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color'))) ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
                   <div
@@ -609,7 +627,7 @@ const AdminInventory = () => {
                   />
                 </div>
               ) : null}
-              {(modalType.includes('flower') && !modalType.includes('color')) || modalType.includes('filler') ? (
+              {(modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) ? (
                 <Field label="Stock Count"><input type="number" min="0" step="1" value={formData.stock ?? 0} onChange={e => setFormData({ ...formData, stock: e.target.value })} className={inputClass} /></Field>
               ) : null}
               {(modalType.includes('size') || modalType.includes('addon') || modalType.includes('fuzzy')) && (

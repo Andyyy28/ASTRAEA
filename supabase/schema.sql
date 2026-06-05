@@ -10,6 +10,7 @@
 DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS flower_colors CASCADE;
+DROP TABLE IF EXISTS filler_colors CASCADE;
 DROP TABLE IF EXISTS wrapper_colors CASCADE;
 DROP TABLE IF EXISTS fuzzy_wire_colors CASCADE;
 DROP TABLE IF EXISTS bouquet_addons CASCADE;
@@ -81,6 +82,15 @@ CREATE TABLE fillers (
     price DECIMAL(10, 2) NOT NULL,
     image_url TEXT,
     stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+    is_available BOOLEAN DEFAULT true
+);
+
+-- filler_colors
+CREATE TABLE filler_colors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    filler_id UUID REFERENCES fillers(id) ON DELETE CASCADE,
+    color_name TEXT NOT NULL,
+    hex_code TEXT,
     is_available BOOLEAN DEFAULT true
 );
 
@@ -255,10 +265,17 @@ INSERT INTO flower_colors (flower_id, color_name, hex_code, is_available) VALUES
 ('11111111-1111-1111-1111-111111111111', 'Peach', '#FFDAB9', false);
 
 -- Fillers
-INSERT INTO fillers (name, price, stock, is_available) VALUES
-('Baby''s Breath', 30.00, 20, true),
-('Eucalyptus Leaves', 25.00, 20, true),
-('Fern', 20.00, 20, true);
+INSERT INTO fillers (id, name, price, stock, is_available) VALUES
+('99999999-9999-9999-9999-999999999991', 'Baby''s Breath', 30.00, 20, true),
+('99999999-9999-9999-9999-999999999992', 'Eucalyptus Leaves', 25.00, 20, true),
+('99999999-9999-9999-9999-999999999993', 'Fern', 20.00, 20, true);
+
+-- Filler Colors
+INSERT INTO filler_colors (filler_id, color_name, hex_code, is_available) VALUES
+('99999999-9999-9999-9999-999999999991', 'White', '#FFFFFF', true),
+('99999999-9999-9999-9999-999999999991', 'Pink', '#FFC0CB', true),
+('99999999-9999-9999-9999-999999999992', 'Green', '#7FB069', true),
+('99999999-9999-9999-9999-999999999993', 'Green', '#4F7942', true);
 
 -- Wrappers
 INSERT INTO wrappers (id, material, price, is_available) VALUES
