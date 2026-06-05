@@ -130,7 +130,7 @@ const Navbar = () => {
         />
 
         <div
-          className={`absolute left-0 top-0 z-50 flex h-screen w-[80vw] max-w-[300px] flex-col overflow-y-auto bg-[#FDDDE6] shadow-[4px_0px_20px_rgba(249,168,201,0.4)] transition-transform duration-300 ease-out ${
+          className={`absolute left-0 top-0 z-50 flex h-[100dvh] w-[80vw] max-w-[300px] flex-col overflow-hidden bg-[#FDDDE6] shadow-[4px_0px_20px_rgba(249,168,201,0.4)] transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -150,7 +150,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          <nav className="flex-1 py-2">
+          <nav className="min-h-0 flex-1 overflow-y-auto py-2">
             {navLinks.map((link) => {
               const Icon = link.icon;
 
@@ -182,7 +182,7 @@ const Navbar = () => {
             })}
           </nav>
 
-          <div className="border-t-2 border-dashed border-[#F4BFCF] p-5">
+          <div className="mt-auto shrink-0 border-t-2 border-dashed border-[#F4BFCF] bg-[#FDDDE6] p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
             <Link
               to="/cart"
               onClick={() => setIsOpen(false)}
