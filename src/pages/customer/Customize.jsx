@@ -12,6 +12,10 @@ const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 const money = formatPrice;
 const stockBadge = 'kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
 const getColorName = (color) => color?.color_name || color?.name || '';
+const getSelectedWrapperColorName = (selectedWrapperColorId, wrapperColors) => {
+  const color = wrapperColors.find(c => String(c.id) === String(selectedWrapperColorId));
+  return getColorName(color);
+};
 const getSelectedColorName = (selectedColor, colors, flowerId, flowerName) => {
   const selectedColorId = typeof selectedColor === 'object' ? selectedColor?.id : selectedColor;
   const colorRow = colors.find(c => String(c.id) === String(selectedColorId) && String(c.flower_id) === String(flowerId));
@@ -42,7 +46,7 @@ const Customize = () => {
   const [selectedFlowerColors, setSelectedFlowerColors] = useState({});
   const [selectedFillers, setSelectedFillers] = useState({});
   const [selectedWrapper, setSelectedWrapper] = useState(null);
-  const [selectedWrapperColor, setSelectedWrapperColor] = useState(null);
+  const [selectedWrapperColorId, setSelectedWrapperColorId] = useState(null);
   const [addons, setAddons] = useState({});
   const [message, setMessage] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -190,7 +194,7 @@ const Customize = () => {
       wrapper: selectedWrapper ? {
         id: selectedWrapper,
         material: dbWrappers.find(x => x.id === selectedWrapper)?.material,
-        color: selectedWrapperColor,
+        color: getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors),
       } : null,
       addons,
       addonDetails: selectedAddonOptions.map(addon => ({ key: addon.key, name: addon.name, price: Number(addon.price || 0) })),
@@ -370,7 +374,7 @@ const Customize = () => {
                   key={w.id}
                   onClick={() => {
                     setSelectedWrapper(w.id);
-                    setSelectedWrapperColor(null);
+                    setSelectedWrapperColorId(null);
                   }}
                   className={`cursor-pointer overflow-hidden rounded-[12px] border-2 bg-white text-center transition-all ${selectedWrapper === w.id ? 'border-dashed border-[#F9A8C9] shadow-[3px_3px_0px_#F9A8C9]' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
@@ -402,8 +406,8 @@ const Customize = () => {
                   {activeWrapperColors.length > 0 ? activeWrapperColors.map(c => (
                     <button
                       key={c.id}
-                      onClick={() => setSelectedWrapperColor(c.color_name)}
-                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedWrapperColor === c.color_name ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
+                      onClick={() => setSelectedWrapperColorId(c.id)}
+                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${String(selectedWrapperColorId) === String(c.id) ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                       style={{ backgroundColor: c.hex_code }}
                       title={c.color_name}
                     />
@@ -547,7 +551,8 @@ const Customize = () => {
               selectedFillers={selectedFillers}
               dbFillers={dbFillers}
               selectedWrapper={selectedWrapper}
-              selectedWrapperColor={selectedWrapperColor}
+              selectedWrapperColorId={selectedWrapperColorId}
+              dbWrapperColors={dbWrapperColors}
               dbWrappers={dbWrappers}
               selectedAddonOptions={selectedAddonOptions}
               calculateTotal={calculateTotal}
@@ -585,7 +590,7 @@ const Customize = () => {
   );
 };
 
-const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, dbFillers, selectedWrapper, selectedWrapperColor, dbWrappers, selectedAddonOptions, calculateTotal }) => (
+const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, dbFillers, selectedWrapper, selectedWrapperColorId, dbWrapperColors, dbWrappers, selectedAddonOptions, calculateTotal }) => (
   <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
     <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
     <div className="space-y-4 text-sm font-medium">
@@ -613,7 +618,7 @@ const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbF
       {selectedWrapper && (
         <div className="flex justify-between border-b border-white/10 pb-2">
           <span className="text-white/80">Wrapper</span>
-          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColor ? ` (${selectedWrapperColor})` : ''} ({money(dbWrappers.find(w => w.id === selectedWrapper)?.price)})</span>
+          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColorId ? ` (${getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors)})` : ''} ({money(dbWrappers.find(w => w.id === selectedWrapper)?.price)})</span>
         </div>
       )}
       {selectedAddonOptions.length > 0 && (
