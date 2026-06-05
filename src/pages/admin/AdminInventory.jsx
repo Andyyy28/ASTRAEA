@@ -6,7 +6,7 @@ import { Image as ImageIcon, Minus, Plus, Trash2, X } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 
 // Upload image to Supabase Storage, returns the public URL
-const uploadImage = async (file) => {
+const uploadImage = async (file, bucket = 'bouquets') => {
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) {
     console.error('Auth session error:', sessionError);
@@ -19,7 +19,7 @@ const uploadImage = async (file) => {
   const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
 
   const { error } = await supabase.storage
-    .from('bouquets')
+    .from(bucket)
     .upload(fileName, file, {
       cacheControl: '3600',
       upsert: false
@@ -29,13 +29,13 @@ const uploadImage = async (file) => {
     throw error;
   }
 
-  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
+  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
   return urlData.publicUrl;
 };
 
-const getBouquetStoragePath = (publicUrl) => {
+const getStoragePath = (publicUrl, bucket = 'bouquets') => {
   if (!publicUrl) return null;
-  const marker = '/storage/v1/object/public/bouquets/';
+  const marker = `/storage/v1/object/public/${bucket}/`;
   const markerIndex = publicUrl.indexOf(marker);
   if (markerIndex === -1) return null;
   return publicUrl.slice(markerIndex + marker.length).split('?')[0];
@@ -47,7 +47,7 @@ const emptyForms = {
   wrapper: { name: '', price: '', image_url: '', is_available: true },
   color: { name: '', hex: '#F9A8C9', is_available: true },
   size: { key: '', name: '', stems: '', base_price: '', display_order: 0, is_available: true },
-  addon: { key: '', name: '', price: '', display_order: 0, is_available: true },
+  addon: { key: '', name: '', price: '', image_url: '', display_order: 0, is_available: true },
 };
 
 const tabs = [
@@ -224,8 +224,10 @@ const AdminInventory = () => {
       let imageUrl = formData.image_url || null;
       const oldImageUrl = activeItem?.image_url || null;
 
+      const imageBucket = modalType.includes('addon') ? 'addons' : 'bouquets';
+
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+        imageUrl = await uploadImage(imageFile, imageBucket);
       }
 
       if (modalType.includes('flower') && !modalType.includes('color')) {
@@ -293,15 +295,16 @@ const AdminInventory = () => {
           key: formData.key,
           name: formData.name,
           price: parseFloat(formData.price) || 0,
+          image_url: imageUrl,
           display_order: displayOrder,
           is_available: formData.is_available !== false,
         }, setAddons);
       }
 
       if (saved) {
-        const oldPath = imageFile ? getBouquetStoragePath(oldImageUrl) : null;
+        const oldPath = imageFile ? getStoragePath(oldImageUrl, imageBucket) : null;
         if (oldPath) {
-          await supabase.storage.from('bouquets').remove([oldPath]);
+          await supabase.storage.from(imageBucket).remove([oldPath]);
         }
         closeModal();
       }
@@ -514,9 +517,10 @@ const AdminInventory = () => {
               )}
 
               {activeTab === 'addons' && (
-                <InventoryTable title="Bouquet Add-ons" addText="Add Add-on" onAdd={() => openModal('add_addon')} headers={['Key', 'Name', 'Price', 'Order', 'Availability', 'Actions']}>
+                <InventoryTable title="Bouquet Add-ons" addText="Add Add-on" onAdd={() => openModal('add_addon')} headers={['Image', 'Key', 'Name', 'Price', 'Order', 'Availability', 'Actions']}>
                   {orderedAddons.map(addon => (
                     <tr key={addon.id}>
+                      <td className="px-4 py-4">{imagePreview(addon, addon.name)}</td>
                       <td className="px-4 py-4 font-mono text-xs text-gray-600">{addon.key}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{addon.name}</td>
                       <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(addon.price)}</td>
@@ -534,109 +538,111 @@ const AdminInventory = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 w-full h-[92vh] sm:h-auto sm:max-w-md animate-fade-in shadow-xl overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[92vh] sm:max-h-[calc(100vh-2rem)] sm:max-w-md animate-fade-in shadow-xl flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-100">
               <h3 className="font-bold text-lg text-gray-800">{modalType.startsWith('edit_') ? 'Edit Item' : 'Add Item'}</h3>
               <button onClick={closeModal} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
 
-            <form onSubmit={handleModalSubmit} className="space-y-4">
-              {(modalType.includes('size') || modalType.includes('addon')) && (
-                <Field label="Key"><input type="text" required value={formData.key || ''} onChange={e => setFormData({ ...formData, key: e.target.value })} className={inputClass} /></Field>
-              )}
-              {!modalType.includes('color') && !modalType.includes('fuzzy') && (
-                <Field label={modalType.includes('wrapper') ? 'Material Name' : 'Name'}><input type="text" required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} /></Field>
-              )}
-              {(modalType.includes('color') || modalType.includes('fuzzy')) && (
-                <>
-                  <Field label="Color Name"><input type="text" required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} /></Field>
-                  <Field label="Color Hex Code">
-                    <div className="flex gap-2">
-                      <input type="color" required value={formData.hex || '#F9A8C9'} onChange={e => setFormData({ ...formData, hex: e.target.value })} className="w-12 h-10 border border-gray-300 rounded-lg p-1 cursor-pointer" />
-                      <input type="text" required value={formData.hex || '#F9A8C9'} onChange={e => setFormData({ ...formData, hex: e.target.value })} pattern="^#[0-9A-Fa-f]{6}$" className={`${inputClass} flex-grow`} />
-                    </div>
-                  </Field>
-                </>
-              )}
-              {modalType.includes('size') && <Field label="Approx. Stems"><input type="text" value={formData.stems || ''} onChange={e => setFormData({ ...formData, stems: e.target.value })} className={inputClass} /></Field>}
-              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || modalType.includes('addon')) ? (
-                <Field label={modalType.includes('addon') ? 'Price' : modalType.includes('flower') ? 'Price Per Stem' : 'Price'}><input type="number" required min="0" step="0.01" value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} /></Field>
-              ) : null}
-              {modalType.includes('size') && <Field label="Base Price"><input type="number" required min="0" step="0.01" value={formData.base_price || ''} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className={inputClass} /></Field>}
-              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color'))) ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-                  <div
-                    className="border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-5 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[150px] hover:bg-astraea-blush/10"
-                    onClick={() => document.getElementById('inventory-image-upload').click()}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const file = e.dataTransfer.files[0];
-                      if (file && file.type.startsWith('image/')) {
-                        setImageFile(file);
-                        setFormData({ ...formData, image_url: URL.createObjectURL(file) });
-                      }
-                    }}
-                  >
-                    <input
-                      type="file"
-                      id="inventory-image-upload"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
+            <form onSubmit={handleModalSubmit} className="flex min-h-0 flex-1 flex-col">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                {(modalType.includes('size') || modalType.includes('addon')) && (
+                  <Field label="Key"><input type="text" required value={formData.key || ''} onChange={e => setFormData({ ...formData, key: e.target.value })} className={inputClass} /></Field>
+                )}
+                {!modalType.includes('color') && !modalType.includes('fuzzy') && (
+                  <Field label={modalType.includes('wrapper') ? 'Material Name' : 'Name'}><input type="text" required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} /></Field>
+                )}
+                {(modalType.includes('color') || modalType.includes('fuzzy')) && (
+                  <>
+                    <Field label="Color Name"><input type="text" required value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputClass} /></Field>
+                    <Field label="Color Hex Code">
+                      <div className="flex gap-2">
+                        <input type="color" required value={formData.hex || '#F9A8C9'} onChange={e => setFormData({ ...formData, hex: e.target.value })} className="w-12 h-10 border border-gray-300 rounded-lg p-1 cursor-pointer" />
+                        <input type="text" required value={formData.hex || '#F9A8C9'} onChange={e => setFormData({ ...formData, hex: e.target.value })} pattern="^#[0-9A-Fa-f]{6}$" className={`${inputClass} flex-grow`} />
+                      </div>
+                    </Field>
+                  </>
+                )}
+                {modalType.includes('size') && <Field label="Approx. Stems"><input type="text" value={formData.stems || ''} onChange={e => setFormData({ ...formData, stems: e.target.value })} className={inputClass} /></Field>}
+                {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || modalType.includes('addon')) ? (
+                  <Field label={modalType.includes('addon') ? 'Price' : modalType.includes('flower') ? 'Price Per Stem' : 'Price'}><input type="number" required min="0" step="0.01" value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} /></Field>
+                ) : null}
+                {modalType.includes('size') && <Field label="Base Price"><input type="number" required min="0" step="0.01" value={formData.base_price || ''} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className={inputClass} /></Field>}
+                {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color')) || modalType.includes('addon')) ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                    <div
+                      className="border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-5 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[150px] hover:bg-astraea-blush/10"
+                      onClick={() => document.getElementById('inventory-image-upload').click()}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
                           setImageFile(file);
                           setFormData({ ...formData, image_url: URL.createObjectURL(file) });
                         }
                       }}
-                    />
-                    {formData.image_url ? (
-                      <div className="relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                        <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
-                          Change Image
+                    >
+                      <input
+                        type="file"
+                        id="inventory-image-upload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setImageFile(file);
+                            setFormData({ ...formData, image_url: URL.createObjectURL(file) });
+                          }
+                        }}
+                      />
+                      {formData.image_url ? (
+                        <div className="relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                          <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
+                            Change Image
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <ImageIcon className="w-8 h-8 text-gray-400 mx-auto" />
-                        <p className="text-sm font-medium text-gray-600">Drag & drop or click to upload</p>
-                        <p className="text-xs text-gray-400">Supports PNG, JPG, JPEG</p>
-                      </div>
-                    )}
-                  </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto" />
+                          <p className="text-sm font-medium text-gray-600">Drag & drop or click to upload</p>
+                          <p className="text-xs text-gray-400">Supports PNG, JPG, JPEG</p>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="relative flex py-3 items-center">
-                    <div className="flex-grow border-t border-gray-200"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">or use image URL</span>
-                    <div className="flex-grow border-t border-gray-200"></div>
-                  </div>
+                    <div className="relative flex py-3 items-center">
+                      <div className="flex-grow border-t border-gray-200"></div>
+                      <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">or use image URL</span>
+                      <div className="flex-grow border-t border-gray-200"></div>
+                    </div>
 
-                  <input
-                    type="url"
-                    value={imageFile ? '' : (formData.image_url || '')}
-                    onChange={e => {
-                      setImageFile(null);
-                      setFormData({ ...formData, image_url: e.target.value });
-                    }}
-                    placeholder="https://example.com/image.jpg"
-                    className={inputClass}
-                  />
-                </div>
-              ) : null}
-              {(modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) ? (
-                <Field label="Stock Count"><input type="number" min="0" step="1" value={formData.stock ?? 0} onChange={e => setFormData({ ...formData, stock: e.target.value })} className={inputClass} /></Field>
-              ) : null}
-              {(modalType.includes('size') || modalType.includes('addon') || modalType.includes('fuzzy')) && (
-                <Field label="Display Order"><input type="number" step="1" value={formData.display_order ?? 0} onChange={e => setFormData({ ...formData, display_order: e.target.value })} className={inputClass} /></Field>
-              )}
-              <label className="flex items-center gap-3 rounded-xl border border-astraea-rosegold/20 p-3 text-sm font-bold text-gray-700">
-                <input type="checkbox" checked={formData.is_available !== false} onChange={e => setFormData({ ...formData, is_available: e.target.checked })} className="w-5 h-5 accent-astraea-pink" />
-                Available
-              </label>
-              <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-3">
+                    <input
+                      type="url"
+                      value={imageFile ? '' : (formData.image_url || '')}
+                      onChange={e => {
+                        setImageFile(null);
+                        setFormData({ ...formData, image_url: e.target.value });
+                      }}
+                      placeholder="https://example.com/image.jpg"
+                      className={inputClass}
+                    />
+                  </div>
+                ) : null}
+                {(modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) ? (
+                  <Field label="Stock Count"><input type="number" min="0" step="1" value={formData.stock ?? 0} onChange={e => setFormData({ ...formData, stock: e.target.value })} className={inputClass} /></Field>
+                ) : null}
+                {(modalType.includes('size') || modalType.includes('addon') || modalType.includes('fuzzy')) && (
+                  <Field label="Display Order"><input type="number" step="1" value={formData.display_order ?? 0} onChange={e => setFormData({ ...formData, display_order: e.target.value })} className={inputClass} /></Field>
+                )}
+                <label className="flex items-center gap-3 rounded-xl border border-astraea-rosegold/20 p-3 text-sm font-bold text-gray-700">
+                  <input type="checkbox" checked={formData.is_available !== false} onChange={e => setFormData({ ...formData, is_available: e.target.checked })} className="w-5 h-5 accent-astraea-pink" />
+                  Available
+                </label>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:justify-end gap-3 border-t border-gray-100 bg-white p-4 sm:p-6">
                 <button type="button" onClick={closeModal} className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100">Cancel</button>
                 <button type="submit" disabled={uploading} className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 hover:shadow-md disabled:opacity-70 flex items-center justify-center gap-2">
                   {uploading ? (

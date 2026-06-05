@@ -60,10 +60,13 @@ CREATE TABLE IF NOT EXISTS public.bouquet_addons (
     key TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     price NUMERIC(10, 2) NOT NULL,
+    image_url TEXT,
     display_order INTEGER NOT NULL DEFAULT 0,
     is_available BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.bouquet_addons ADD COLUMN IF NOT EXISTS image_url TEXT;
 
 INSERT INTO public.bouquet_sizes (key, name, stems, base_price, display_order, is_available)
 VALUES

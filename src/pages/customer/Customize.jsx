@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
-import { Check, ChevronLeft, ChevronRight, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Image as ImageIcon, Minus, Plus, ShoppingBag } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 
 const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
@@ -487,6 +487,13 @@ const Customize = () => {
               {addonOptions.map(addon => (
                 <label key={addon.id} className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
                   <input type="checkbox" checked={!!addons[addon.key]} onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })} className="w-5 h-5 accent-astraea-pink mr-4" />
+                  <span className="mr-4 flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-astraea-blush text-astraea-pink/40">
+                    {addon.image_url ? (
+                      <img src={addon.image_url} alt={addon.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <ImageIcon className="h-6 w-6" />
+                    )}
+                  </span>
                   <span className="font-bold flex-grow">{addon.name}</span>
                   <span className="text-astraea-pink font-medium">+{money(addon.price)}</span>
                 </label>
