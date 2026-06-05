@@ -279,9 +279,9 @@ INSERT INTO filler_colors (filler_id, color_name, hex_code, is_available) VALUES
 
 -- Wrappers
 INSERT INTO wrappers (id, material, price, is_available) VALUES
-('66666666-6666-6666-6666-666666666666', 'Kraft Paper', 20.00, true),
-('77777777-7777-7777-7777-777777777777', 'Satin Ribbon Wrap', 35.00, true),
-('88888888-8888-8888-8888-888888888888', 'Korean Wrap', 40.00, true);
+('66666666-6666-6666-6666-666666666666', 'Kraft Paper', 0.00, true),
+('77777777-7777-7777-7777-777777777777', 'Satin Ribbon Wrap', 0.00, true),
+('88888888-8888-8888-8888-888888888888', 'Korean Wrap', 0.00, true);
 
 -- Wrapper Colors
 INSERT INTO wrapper_colors (wrapper_id, color_name, hex_code, is_available) VALUES

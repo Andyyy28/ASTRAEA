@@ -142,10 +142,6 @@ const Customize = () => {
       const filler = dbFillers.find(f => f.id === filId);
       if (filler) total += Number(filler.price || 0) * qty;
     });
-    if (selectedWrapper) {
-      const wrapper = dbWrappers.find(w => w.id === selectedWrapper);
-      if (wrapper) total += Number(wrapper.price || 0);
-    }
     selectedAddonOptions.forEach(addon => {
       total += Number(addon.price || 0);
     });
@@ -461,7 +457,6 @@ const Customize = () => {
                     )}
                   </div>
                   <h3 className="px-1 py-1 pb-0.5 text-center text-xs font-bold font-heading truncate">{w.material}</h3>
-                  <span className="block px-1 pb-1.5 text-center text-xs font-accent text-[#8B6914]">+{money(w.price)}</span>
                 </div>
               ))}
             </div>
@@ -688,7 +683,7 @@ const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbF
       {selectedWrapper && (
         <div className="flex justify-between border-b border-white/10 pb-2">
           <span className="text-white/80">Wrapper</span>
-          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColorId ? ` (${getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors)})` : ''} ({money(dbWrappers.find(w => w.id === selectedWrapper)?.price)})</span>
+          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColorId ? ` (${getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors)})` : ''}</span>
         </div>
       )}
       {selectedAddonOptions.length > 0 && (

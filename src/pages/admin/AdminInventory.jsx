@@ -254,7 +254,7 @@ const AdminInventory = () => {
       } else if (modalType.includes('wrapper') && !modalType.includes('color')) {
         saved = await saveRow('wrappers', {
           material: formData.name,
-          price: parseFloat(formData.price) || 0,
+          price: Number(activeItem?.price || 0),
           image_url: imageUrl,
           is_available: formData.is_available !== false,
         }, setWrappers);
@@ -465,12 +465,11 @@ const AdminInventory = () => {
               )}
 
               {activeTab === 'wrappers' && (
-                <InventoryTable title="Wrappers" addText="Add Wrapper" onAdd={() => openModal('add_wrapper')} headers={['Image', 'Material', 'Price', 'Availability', 'Colors (click to toggle)', 'Actions']}>
+                <InventoryTable title="Wrappers" addText="Add Wrapper" onAdd={() => openModal('add_wrapper')} headers={['Image', 'Material', 'Availability', 'Colors (click to toggle)', 'Actions']}>
                   {wrappers.map(w => (
                     <tr key={w.id}>
                       <td className="px-4 py-4">{imagePreview(w, w.material)}</td>
                       <td className="px-4 py-4 font-bold text-gray-800">{w.material}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(w.price)}</td>
                       <td className="px-4 py-4">{availabilityButton('wrappers', w)}</td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
@@ -560,7 +559,7 @@ const AdminInventory = () => {
                 </>
               )}
               {modalType.includes('size') && <Field label="Approx. Stems"><input type="text" value={formData.stems || ''} onChange={e => setFormData({ ...formData, stems: e.target.value })} className={inputClass} /></Field>}
-              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color')) || modalType.includes('addon')) ? (
+              {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || modalType.includes('addon')) ? (
                 <Field label={modalType.includes('addon') ? 'Price' : modalType.includes('flower') ? 'Price Per Stem' : 'Price'}><input type="number" required min="0" step="0.01" value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} /></Field>
               ) : null}
               {modalType.includes('size') && <Field label="Base Price"><input type="number" required min="0" step="0.01" value={formData.base_price || ''} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className={inputClass} /></Field>}

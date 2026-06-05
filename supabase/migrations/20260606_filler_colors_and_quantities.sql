@@ -100,16 +100,14 @@ BEGIN
     END LOOP;
 
     IF p_item->'wrapper' IS NOT NULL AND jsonb_typeof(p_item->'wrapper') = 'object' THEN
-        SELECT price INTO v_price
+        PERFORM 1
         FROM public.wrappers
         WHERE id = (p_item#>>'{wrapper,id}')::UUID
           AND is_available = true;
 
-        IF v_price IS NULL THEN
+        IF NOT FOUND THEN
             RAISE EXCEPTION 'Invalid custom wrapper selection';
         END IF;
-
-        v_total := v_total + v_price;
     END IF;
 
     FOR v_addon_key IN
