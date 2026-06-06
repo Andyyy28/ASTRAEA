@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Globe, AtSign, Video, Mail, Phone, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
-  const flowerIcon = String.fromCodePoint(10047);
   const heartIcon = String.fromCodePoint(9825);
   const starIcon = String.fromCodePoint(9733);
 
@@ -14,7 +13,10 @@ const Footer = () => {
           
           {/* Brand & Tagline */}
           <div className="space-y-4">
-            <h3 className="font-heading text-2xl font-extrabold text-astraea-pink">{flowerIcon} Astraea Collection</h3>
+            <h3 className="font-heading flex items-center gap-3 text-2xl font-extrabold text-[#C4658A]">
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
+              Astraea Collection
+            </h3>
             <p className="text-sm leading-relaxed max-w-sm">
               Handcrafted fuzzy wire flowers that last forever. Perfect for any occasion, our everlasting bouquets bring timeless joy and beauty to your space.
             </p>
@@ -86,10 +88,6 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-dashed border-astraea-pink/40 text-center flex flex-col md:flex-row justify-between items-center text-xs text-astraea-darkgray/70">
           <p>&copy; 2026 Astraea Collection. All rights reserved.</p>
-          <div className="mt-4 md:mt-0 space-x-4">
-            <Link to="/privacy" className="hover:text-astraea-pink">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-astraea-pink">Terms of Service</Link>
-          </div>
         </div>
       </div>
     </footer>

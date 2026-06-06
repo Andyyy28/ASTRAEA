@@ -88,7 +88,7 @@ const AdminLayout = () => {
       <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
         <div className="h-20 flex items-center px-8 border-b border-dashed border-astraea-pink/30">
           <Link to="/" className="text-2xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-2 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
-            <Flower2 className="w-6 h-6 text-astraea-pink" /> Astraea Admin
+            <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" /> Astraea Admin
           </Link>
         </div>
         
@@ -137,7 +137,10 @@ const AdminLayout = () => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <span className="text-lg font-bold tracking-tight text-astraea-pink">✿ Astraea Admin</span>
+            <span className="flex items-center gap-2 text-lg font-bold tracking-tight text-astraea-pink">
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
+              Astraea Admin
+            </span>
           </div>
           
           <div className="hidden md:flex items-center">
@@ -167,7 +170,7 @@ const AdminLayout = () => {
         <div className="fixed inset-0 z-50 bg-astraea-cream md:hidden">
           <div className="h-16 px-4 flex items-center justify-between border-b-2 border-dashed border-astraea-pink/30">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2">
-              <Flower2 className="w-6 h-6 text-astraea-pink" /> Astraea Admin
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" /> Astraea Admin
             </Link>
             <button onClick={() => setIsMobileMenuOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray rounded-full bg-white/80 border border-dashed border-astraea-pink/40" aria-label="Close admin menu">
               <X className="w-6 h-6" />

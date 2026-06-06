@@ -54,7 +54,7 @@ const Home = () => {
                 <span className="font-accent text-[clamp(1.4rem,2vw,2.1rem)] text-astraea-rosegold">cute flower shop</span>
               </div>
 
-              <h1 className="max-w-[11ch] font-heading text-[clamp(3.5rem,6vw,7.75rem)] font-black leading-[0.9] tracking-[-0.03em] text-astraea-darkgray">
+              <h1 className="max-w-[11ch] font-heading text-[clamp(3.5rem,6vw,7.75rem)] font-black leading-[0.9] tracking-[-0.03em] text-[#C4658A]">
                 Astraea
                 <span className="block">Collection</span>
               </h1>
