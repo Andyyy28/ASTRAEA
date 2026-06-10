@@ -86,9 +86,9 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-dashed border-astraea-pink/40 text-center flex flex-col md:flex-row justify-between items-center text-xs text-astraea-darkgray/70">
-          <p>&copy; 2026 Astraea Collection. All rights reserved.</p>
-        </div>
+        <div className="pt-8 border-t border-dashed border-astraea-pink/40 text-center flex flex-col items-center text-xs text-astraea-darkgray/70">
+  <p>&copy; 2026 Astraea Collection. All rights reserved.</p>
+</div>
       </div>
     </footer>
   );

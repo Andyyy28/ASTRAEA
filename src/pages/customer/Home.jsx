@@ -6,6 +6,22 @@ import { Star, CheckCircle, Package, Truck, Heart } from 'lucide-react';
 import violetBouquetFeature from '../../assets/violet-bouquet-feature.jpeg';
 import Skeleton from '../../components/Skeleton';
 
+const PersonIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    className="h-4 w-4 text-astraea-darkgray/80"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21a8 8 0 0 0-16 0" />
+    <circle cx="12" cy="8" r="4" />
+  </svg>
+);
+
 const Home = () => {
   const [featuredBouquets, setFeaturedBouquets] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -272,7 +288,10 @@ const Home = () => {
                       <p>{review.admin_reply}</p>
                     </div>
                   )}
-                  <p className="font-bold text-sm tracking-wide">♡ {review.name}</p>
+                  <p className="font-bold text-sm tracking-wide flex items-center gap-2">
+                    <PersonIcon />
+                    <span>{review.name}</span>
+                  </p>
                 </div>
               ))}
             </div>
