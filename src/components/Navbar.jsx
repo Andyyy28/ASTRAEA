@@ -63,7 +63,7 @@ const Navbar = () => {
           <div className="flex-shrink-0 flex items-center">
             <Link
               to="/"
-              className="font-heading flex items-center gap-3 rounded-full px-3 py-2 text-xl font-black tracking-wide text-[#C4658A] transition-colors hover:bg-white/70 sm:text-2xl md:text-[2rem]"
+              className="font-heading flex items-center gap-3 rounded-full px-3 py-2 text-xl font-black tracking-wide text-[#DE3163] transition-colors hover:bg-white/70 sm:text-2xl md:text-[2rem]"
             >
               <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
               Astraea Collection
@@ -136,7 +136,7 @@ const Navbar = () => {
         >
           <div className="border-b-2 border-dashed border-[#E891B8] bg-[#F9A8C9] px-5 pb-4 pt-6">
             <div className="flex items-start justify-between gap-4">
-              <div className="font-heading flex items-center gap-2 text-[18px] font-bold text-[#C4658A]">
+              <div className="font-heading flex items-center gap-2 text-[18px] font-bold text-[#DE3163]">
                 <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
                 Astraea Collection
               </div>

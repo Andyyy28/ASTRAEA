@@ -63,34 +63,34 @@ const Home = () => {
             <div className="home-hero-mobile-edge absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-[#FFE7EF] via-[#FFE7EF]/85 to-transparent sm:w-44 lg:w-52"></div>
 
             <div className="relative z-10 w-full max-w-[720px] space-y-6 text-left">
-              <div className="inline-flex items-center gap-3 rounded-full border-2 border-dashed border-[#F58AB6]/75 bg-white/70 px-6 py-3 shadow-[0_8px_20px_rgba(232,145,184,0.16)]">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F58AB6] text-base text-white">
+              <div className="inline-flex items-center gap-3 rounded-full border-2 border-dashed border-[#DE3163]/75 bg-white/70 px-6 py-3 shadow-[0_8px_20px_rgba(232,145,184,0.16)]">
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#DE3163] text-base text-white">
                   <Heart className="h-4 w-4 fill-current" />
                 </span>
-                <span className="font-accent text-[clamp(1.4rem,2vw,2.1rem)] text-astraea-rosegold">cute flower shop</span>
+                <span className="font-accent text-[clamp(1.4rem,2vw,2.1rem)] text-[#DE3163]">cute flower shop</span>
               </div>
 
-              <h1 className="max-w-[11ch] font-heading text-[clamp(3.5rem,6vw,7.75rem)] font-black leading-[0.9] tracking-[-0.03em] text-[#C4658A]">
+              <h1 className="max-w-[11ch] font-heading text-[clamp(3.5rem,6vw,7.75rem)] font-black leading-[0.9] tracking-[-0.03em] text-[#DE3163]">
                 Astraea
                 <span className="block">Collection</span>
               </h1>
 
               <div className="flex w-28 items-center gap-2">
-                <span className="h-1.5 flex-1 rounded-full bg-[#F58AB6]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#F58AB6]"></span>
+                <span className="h-1.5 flex-1 rounded-full bg-[#DE3163]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
               </div>
 
-              <p className="max-w-[14ch] font-accent text-[clamp(2.2rem,3vw,4.2rem)] leading-[1.05] text-astraea-rosegold">
+              <p className="max-w-[14ch] font-accent text-[clamp(2.2rem,3vw,4.2rem)] leading-[1.05] text-[#DE3163]">
                 Handcrafted fuzzy wire flowers that last forever.
               </p>
 
               <div className="flex flex-col gap-4 pt-2 sm:flex-row">
-                <Link to="/shop" className="kawaii-btn-primary min-h-14 px-10 text-lg">
+                <Link to="/shop" className="kawaii-btn-primary min-h-14 border-[#E0115F] bg-[#E0115F] px-10 text-lg text-white hover:bg-[#C80F54]">
                   Shop Bouquets
                 </Link>
-                <Link to="/customize" className="kawaii-btn-outline min-h-14 border-dashed px-10 text-lg">
+                <Link to="/customize" className="kawaii-btn-outline min-h-14 border-dashed border-[#E0115F] px-10 text-lg text-[#E0115F] hover:bg-[#E0115F] hover:text-white">
                   Customize Yours
                 </Link>
               </div>
