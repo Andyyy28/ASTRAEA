@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, Image as ImageIcon, Minus, Plus, ShoppingBag } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import PreparationEstimate from '../../components/PreparationEstimate';
 
 const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
@@ -578,6 +579,11 @@ const Customize = () => {
   return (
     <div className="min-h-screen bg-astraea-blush/30 py-8 pb-28 lg:pb-8 fade-in-content">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PreparationEstimate items={[{ item_type: 'custom', quantity: 1, custom_details: {
+          size: selectedSize, flowers: Object.values(selectedFlowers).map(quantity => ({ quantity })),
+          fillers: Object.values(selectedFillers).map(quantity => ({ quantity })), addons,
+          wrapper: selectedWrapper, instructions,
+        } }]} />
         <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
           <div className="flex items-center min-w-max justify-center md:justify-start">
             {steps.map((step, idx) => (

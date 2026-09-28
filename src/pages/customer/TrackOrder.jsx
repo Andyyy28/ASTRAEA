@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { Search, Clock, Scissors, CheckCircle, Package, MessageCircle } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import OrderTiming from '../../components/OrderTiming';
 
 const statuses = [
   { id: 'pending', label: 'Pending', icon: Clock },
@@ -107,6 +108,7 @@ const TrackOrder = () => {
             <div className="p-4 md:p-8 flex flex-col lg:flex-row gap-6 md:gap-10 bg-[#FFFDFE]">
               <div className="lg:w-2/3">
                 <h3 className="section-heading text-xl mb-6">Order Details</h3>
+                <OrderTiming order={order} />
                 <div className="space-y-4">
                   {orderItems.map(item => (
                     <div key={item.id} className="flex justify-between items-start border-b border-dashed border-astraea-pink/20 pb-4">
