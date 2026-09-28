@@ -25,7 +25,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['createAdmin.js'],
+    files: ['createAdmin.js', 'tests/**/*.js', 'scripts/**/*.js'],
     languageOptions: {
       globals: globals.node,
     },

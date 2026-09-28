@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
@@ -56,11 +56,7 @@ const AdminOtherProducts = () => {
   const labelClass = 'block text-sm font-medium text-[#C4658A] mb-1 font-heading';
   const toggleClass = (active, hiddenStyle = false) => `w-full min-h-11 rounded-full border-2 px-4 py-2 text-sm font-bold transition-colors ${active ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : hiddenStyle ? 'bg-[#F1EFE8] border-[#D3D1C7] text-[#5F5E5A]' : 'bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]'}`;
 
-  const syncStockDrafts = (items) => {
-    setStockDrafts(Object.fromEntries(items.map(product => [product.id, Number(product.stock) || 0])));
-  };
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('other_products')
@@ -68,14 +64,14 @@ const AdminOtherProducts = () => {
       .order('created_at', { ascending: false });
     if (data) {
       setProducts(data);
-      syncStockDrafts(data);
+      setStockDrafts(Object.fromEntries(data.map(product => [product.id, Number(product.stock) || 0])));
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const channel = supabase

@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { ArrowLeft, User, Truck, Receipt, CheckCircle2, Clock } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import OrderTiming from '../../components/OrderTiming';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
@@ -11,6 +12,10 @@ const AdminOrderDetail = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [readyAt, setReadyAt] = useState('');
+  const [timingNote, setTimingNote] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -18,6 +23,12 @@ const AdminOrderDetail = () => {
       const { data: orderData } = await supabase.from('orders').select('*').eq('id', id).single();
       if (orderData) {
         setOrder(orderData);
+        setTimingNote(orderData.timing_note || '');
+        if (orderData.confirmed_ready_at) setReadyAt(new Date(new Date(orderData.confirmed_ready_at).getTime() + 8 * 3600000).toISOString().slice(0, 16));
+        if (orderData.payment_proof_url && !orderData.payment_proof_url.startsWith('http')) {
+          const { data: proof } = await supabase.storage.from('payment-proofs').createSignedUrl(orderData.payment_proof_url, 600);
+          setProofUrl(proof?.signedUrl || '');
+        } else setProofUrl(orderData.payment_proof_url || '');
         const { data: itemsData } = await supabase
           .from('order_items')
           .select('*, bouquets(name, images), other_products(name, images)')
@@ -40,8 +51,24 @@ const AdminOrderDetail = () => {
       setOrder(data);
     } else if (error) {
       console.error('Order status update failed:', error);
+      setFeedback(error.message);
     }
     setUpdating(false);
+  };
+
+  const confirmTiming = async (event) => {
+    event.preventDefault();
+    setUpdating(true);
+    setFeedback('');
+    try {
+      const { data, error } = await supabase.rpc('confirm_order_timing', {
+        p_order_id: id, p_ready_at: new Date(`${readyAt}:00+08:00`).toISOString(), p_note: timingNote,
+      });
+      if (error) throw error;
+      setOrder(data);
+      setFeedback('Time saved. It is now visible in order tracking. Contact the customer to confirm the arrangement.');
+    } catch (error) { setFeedback(error.message); }
+    finally { setUpdating(false); }
   };
 
   const handleTogglePaid = async () => {
@@ -207,6 +234,20 @@ const AdminOrderDetail = () => {
         
         {/* Left Col: Info Cards */}
         <div className="space-y-6">
+          <div className="bg-white p-4 rounded-2xl border">
+            <h2 className="font-bold">Preparation and handoff</h2>
+            <OrderTiming order={order} />
+            <form onSubmit={confirmTiming} className="space-y-3">
+              <label className="block text-sm">Confirmed collection / delivery time (Philippines)
+                <input aria-label="Confirmed handoff time" type="datetime-local" required value={readyAt} onChange={e => setReadyAt(e.target.value)} className="kawaii-input mt-2" />
+              </label>
+              <label className="block text-sm">Timing note visible to customer
+                <textarea maxLength={500} value={timingNote} onChange={e => setTimingNote(e.target.value)} className="kawaii-input mt-2" placeholder="Explain queue, design changes or delivery arrangements." />
+              </label>
+              <button disabled={updating || ['cancelled', 'completed'].includes(order.status)} className="kawaii-btn-primary">Confirm time</button>
+            </form>
+            <p role="status" className="text-sm mt-3">{feedback}</p>
+          </div>
           {/* Customer Info */}
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center"><User className="w-5 h-5 mr-2 text-astraea-pink" /> Customer Information</h3>
@@ -218,9 +259,9 @@ const AdminOrderDetail = () => {
               {order.payment_method === 'gcash' && (
                 <div className="pt-2">
                   <span className="text-gray-500 block text-xs uppercase tracking-wider mb-2">Proof of Payment</span>
-                  {order.payment_proof_url ? (
+                  {proofUrl ? (
                     <img
-                      src={order.payment_proof_url}
+                      src={proofUrl}
                       alt="GCash proof of payment"
                       className="w-full max-w-xs rounded-xl border border-gray-200 bg-white object-contain"
                     />
@@ -302,6 +343,7 @@ const AdminOrderDetail = () => {
                   {/* Detailed Breakdown for Custom Items */}
                   <div className="text-sm text-gray-600 mt-2 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-100">
                     {item.size && <p><span className="font-medium text-gray-800">Size:</span> {item.size}</p>}
+                    {item.instructions && <p><span className="font-medium text-gray-800">Design instructions:</span> {item.instructions}</p>}
                     
                     {item.flowers && item.flowers.length > 0 && (
                       <div className="mt-1">
