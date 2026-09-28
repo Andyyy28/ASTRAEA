@@ -39,7 +39,7 @@ const isMissingStockSchema = (error) => (
   || error?.message?.toLowerCase().includes('schema cache')
 );
 
-const omitStock = ({ stock, ...payload }) => payload;
+const omitStock = (values) => { const payload = { ...values }; delete payload.stock; return payload; };
 
 const AdminBouquets = () => {
   const [bouquets, setBouquets] = useState([]);
