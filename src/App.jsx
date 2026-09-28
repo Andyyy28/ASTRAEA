@@ -18,6 +18,7 @@ import Checkout from './pages/customer/Checkout';
 import TrackOrder from './pages/customer/TrackOrder';
 import FAQ from './pages/customer/FAQ';
 import Contact from './pages/customer/Contact';
+import Share from './pages/customer/Share';
 
 // Admin Pages
 import AdminLayout from './components/AdminLayout';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/share" element={<Share />} />
               <Route path="*" element={<div className="text-center p-20">Page Coming Soon</div>} />
             </Route>
 
