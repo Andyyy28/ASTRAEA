@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -8,29 +8,28 @@ import { NotificationProvider } from './context/NotificationContext';
 
 // Customer Pages
 import Home from './pages/customer/Home';
-const Shop = lazy(() => import('./pages/customer/Shop'));
-const ShopDetail = lazy(() => import('./pages/customer/ShopDetail'));
-const Customize = lazy(() => import('./pages/customer/Customize'));
-const OtherProducts = lazy(() => import('./pages/customer/OtherProducts'));
-const OtherProductDetail = lazy(() => import('./pages/customer/OtherProductDetail'));
-const Cart = lazy(() => import('./pages/customer/Cart'));
-const Checkout = lazy(() => import('./pages/customer/Checkout'));
-const TrackOrder = lazy(() => import('./pages/customer/TrackOrder'));
-const FAQ = lazy(() => import('./pages/customer/FAQ'));
-const Contact = lazy(() => import('./pages/customer/Contact'));
-const Share = lazy(() => import('./pages/customer/Share'));
+import Shop from './pages/customer/Shop';
+import ShopDetail from './pages/customer/ShopDetail';
+import Customize from './pages/customer/Customize';
+import OtherProducts from './pages/customer/OtherProducts';
+import OtherProductDetail from './pages/customer/OtherProductDetail';
+import Cart from './pages/customer/Cart';
+import Checkout from './pages/customer/Checkout';
+import TrackOrder from './pages/customer/TrackOrder';
+import FAQ from './pages/customer/FAQ';
+import Contact from './pages/customer/Contact';
 
 // Admin Pages
 import AdminLayout from './components/AdminLayout';
-const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
-const AdminOrderDetail = lazy(() => import('./pages/admin/AdminOrderDetail'));
-const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
-const AdminBouquets = lazy(() => import('./pages/admin/AdminBouquets'));
-const AdminOtherProducts = lazy(() => import('./pages/admin/AdminOtherProducts'));
-const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
-const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminOrderDetail from './pages/admin/AdminOrderDetail';
+import AdminInventory from './pages/admin/AdminInventory';
+import AdminBouquets from './pages/admin/AdminBouquets';
+import AdminOtherProducts from './pages/admin/AdminOtherProducts';
+import AdminReviews from './pages/admin/AdminReviews';
+import AdminSettings from './pages/admin/AdminSettings';
 
 const CustomerLayout = () => (
   <div className="flex flex-col min-h-screen">
@@ -48,7 +47,6 @@ function App() {
       <CartProvider>
         <NotificationProvider>
           <Router>
-            <Suspense fallback={<div role="status" className="text-center p-16">Loading Astraea…</div>}>
             <Routes>
             {/* Customer Routes */}
             <Route element={<CustomerLayout />}>
@@ -63,7 +61,6 @@ function App() {
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/contact" element={<Contact />} />
-              <Route path="/share" element={<Share />} />
               <Route path="*" element={<div className="text-center p-20">Page Coming Soon</div>} />
             </Route>
 
@@ -80,7 +77,6 @@ function App() {
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
             </Routes>
-            </Suspense>
           </Router>
         </NotificationProvider>
       </CartProvider>

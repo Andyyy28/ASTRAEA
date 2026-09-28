@@ -6,15 +6,14 @@ import { useNotifications } from '../../context/NotificationContext';
 import { formatPrice } from '../../lib/formatPrice';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import PreparationEstimate from '../../components/PreparationEstimate';
-import { estimateOrder, scheduleError, shopDate } from '../../lib/preparation';
+import { sendOrderNotification } from '../../lib/telegram';
 
-// Store payment evidence privately; staff use short-lived signed URLs.
+// Upload proof of payment to Supabase Storage, returns the public URL
 const uploadPaymentProof = async (file) => {
-  const fileName = `${crypto.randomUUID()}.${file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'}`;
+  const fileName = `payment-proofs/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
 
   const { error } = await supabase.storage
-    .from('payment-proofs')
+    .from('bouquets')
     .upload(fileName, file, {
       cacheControl: '3600',
       upsert: false
@@ -24,7 +23,8 @@ const uploadPaymentProof = async (file) => {
     throw error;
   }
 
-  return fileName;
+  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
+  return urlData.publicUrl;
 };
 
 const Checkout = () => {
@@ -48,7 +48,6 @@ const Checkout = () => {
   const { showToast } = useNotifications();
   const deliveryFee = deliveryMethod === 'delivery' ? 80 : 0;
   const grandTotal = cartTotal + deliveryFee;
-  const preparationMinutes = estimateOrder(cartItems);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -75,13 +74,6 @@ const Checkout = () => {
 
   const handlePaymentProofChange = (e) => {
     const file = e.target.files?.[0] || null;
-    if (file && (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024)) {
-      setErrors(prev => ({ ...prev, payment_proof: 'Choose a JPG, PNG or WebP image up to 5 MB.' }));
-      setPaymentProofFile(null);
-      setPaymentProofPreview('');
-      e.target.value = '';
-      return;
-    }
     setPaymentProofFile(file);
     setErrors(prev => ({ ...prev, payment_proof: '' }));
     setPaymentProofPreview(file ? URL.createObjectURL(file) : '');
@@ -95,8 +87,7 @@ const Checkout = () => {
     if (!formData.payment_method) nextErrors.payment_method = 'Payment method is required.';
     if (formData.payment_method === 'gcash' && !paymentProofFile) nextErrors.payment_proof = 'Proof of payment is required for GCash.';
     if (!formData.preferred_date) nextErrors.preferred_date = deliveryMethod === 'pickup' ? 'Pickup date is required.' : 'Delivery date is required.';
-    const timingError = scheduleError(formData.preferred_date, formData.preferred_time, preparationMinutes);
-    if (timingError) nextErrors.preferred_time = timingError;
+    if (deliveryMethod === 'pickup' && !formData.preferred_time) nextErrors.preferred_time = 'Pickup time is required.';
     if (deliveryMethod === 'delivery' && !formData.delivery_address.trim()) nextErrors.delivery_address = 'Delivery address is required.';
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -130,7 +121,6 @@ const Checkout = () => {
         wrapper: item.custom_details?.wrapper || null,
         addons: item.custom_details?.addons || null,
         message_card: item.message_card || item.custom_details?.message || null,
-        instructions: item.custom_details?.instructions || null,
         quantity: item.quantity
       }));
 
@@ -150,6 +140,21 @@ const Checkout = () => {
         p_items: orderItems
       });
       if (error) throw error;
+
+      // Fire-and-forget Telegram notification — never blocks checkout
+      sendOrderNotification({
+        referenceNumber: data.reference_number,
+        customerName: formData.customer_name,
+        contactNumber: formData.contact_number,
+        deliveryMethod,
+        paymentMethod: formData.payment_method,
+        preferredDate: formData.preferred_date,
+        preferredTime: formData.preferred_time,
+        deliveryAddress: formData.delivery_address,
+        specialNotes: formData.special_notes,
+        cartItems,
+        grandTotal,
+      });
 
       clearCart();
       setOrderPlaced(data.reference_number);
@@ -179,7 +184,7 @@ const Checkout = () => {
             <p className="font-accent text-4xl text-[#8B6914]">{orderPlaced}</p>
           </div>
           <p className="text-astraea-darkgray/80 mb-10 max-w-md mx-auto leading-relaxed">
-            We've received your request. Your requested time is not confirmed yet. We will contact you at <span className="font-bold">{formData.contact_number}</span> to confirm the details and payment.
+            We've received your order and our artisans will begin preparing it soon. We will contact you at <span className="font-bold">{formData.contact_number}</span> to confirm the details and payment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/track-order" className="kawaii-btn-primary px-8 py-3">Track My Order</Link>
@@ -269,7 +274,7 @@ const Checkout = () => {
                     <label className="block text-sm font-medium text-[#C4658A] mb-2">Upload Proof of Payment *</label>
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp"
+                      accept="image/*"
                       onChange={handlePaymentProofChange}
                       className="kawaii-input file:mr-4 file:rounded-full file:border-0 file:bg-astraea-pink file:px-4 file:py-2 file:font-bold file:text-white file:transition-colors file:hover:bg-astraea-rosegold"
                     />
@@ -294,11 +299,9 @@ const Checkout = () => {
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">{deliveryMethod === 'pickup' ? 'Pickup Details' : 'Delivery Details'}</h3>
               {deliveryMethod === 'delivery' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea name="delivery_address" rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea>{errors.delivery_address && <p className={errorClass}>{errors.delivery_address}</p>}</div>}
-              <PreparationEstimate items={cartItems} />
-              <p className="text-sm">Requested date and time (Philippine time). Same-day pickup depends on staff confirmation; delivery includes additional travel time.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input type="date" min={shopDate()} aria-label="Requested date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Requested Time *</label><input type="time" aria-label="Requested time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>
+                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
+                {deliveryMethod === 'pickup' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
               </div>
               <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Special Instructions (Optional)</label><textarea name="special_notes" rows="2" value={formData.special_notes} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Any additional notes for us..."></textarea></div>
             </div>
@@ -328,7 +331,7 @@ const Checkout = () => {
               <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
                 {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />Place Order</>}
               </button>
-              <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">Submitting an order does not confirm its requested time. Staff will contact you to confirm availability and payment.</p>
+              <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">By placing this order, you agree to our Terms of Service and Privacy Policy. Payment details will be sent after confirmation.</p>
             </div>
           </div>
         </form>

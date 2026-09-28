@@ -54,7 +54,7 @@ export const NotificationProvider = ({ children }) => {
   };
 
   const showToast = ({ type = 'info', title, message }) => {
-    const id = crypto.randomUUID();
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     setToasts(prev => [...prev, { id, type, title, message }]);
     const timer = window.setTimeout(() => removeToast(id), TOAST_DURATION);
     timersRef.current.set(id, timer);
@@ -78,10 +78,9 @@ export const NotificationProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const timers = timersRef.current;
     return () => {
-      timers.forEach(timer => window.clearTimeout(timer));
-      timers.clear();
+      timersRef.current.forEach(timer => window.clearTimeout(timer));
+      timersRef.current.clear();
     };
   }, []);
 

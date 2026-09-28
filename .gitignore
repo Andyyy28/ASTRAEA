@@ -25,7 +25,3 @@ dist-ssr
 *.sw?
 
 .vercel
-
-# Local QA output
-.playwright-cli/
-output/playwright/

@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { reserveBouquetStock, releaseBouquetStock } from '../lib/bouquetStock';
 import { supabase } from '../lib/supabase';
+
 const CartContext = createContext();
+
 export const useCart = () => useContext(CartContext);
+
 const buildItemSignature = (item) => {
   if (item.item_type === 'custom') {
     return JSON.stringify({
@@ -29,55 +33,165 @@ const buildItemSignature = (item) => {
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     try {
-      // v2 abandons legacy browser reservations. Reconcile old stock with staff.
-      const saved = JSON.parse(localStorage.getItem('astraea_cart_v2') || '[]');
-      return Array.isArray(saved) ? saved.filter(i => i && Number.isInteger(i.quantity) && i.quantity > 0 && Number.isFinite(Number(i.price)) && Number(i.price) >= 0) : [];
-    } catch { return []; }
+      const saved = localStorage.getItem('astraea_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.warn('Unable to load saved cart:', error);
+      localStorage.removeItem('astraea_cart');
+      return [];
+    }
   });
+
   useEffect(() => {
-    try { localStorage.setItem('astraea_cart_v2', JSON.stringify(cartItems)); }
-    catch { /* Cart still works in memory when browser storage is unavailable. */ }
+    localStorage.setItem('astraea_cart', JSON.stringify(cartItems));
   }, [cartItems]);
-  const checkStock = async (item, quantity, excludeId) => {
-    const isBouquet = item.item_type === 'bouquet';
-    if (!isBouquet && item.item_type !== 'other_product') return { ok: true };
-    const key = isBouquet ? 'bouquet_id' : 'other_product_id';
-    const { data, error } = await supabase.from(isBouquet ? 'bouquets' : 'other_products')
-      .select(isBouquet ? 'stock, is_visible' : 'stock, is_visible, is_available').eq('id', item[key]).single();
-    if (error) throw error;
-    const stock = Number(data?.stock) || 0;
-    const existing = cartItems.filter(i => i.cartId !== excludeId && i[key] === item[key]).reduce((n, i) => n + i.quantity, 0);
-    const ok = !!data?.is_visible && (isBouquet || data.is_available) && existing + quantity <= stock;
-    return { ok, stock, ...(!ok ? { reason: existing + quantity > stock && stock > 0 ? 'limit-reached' : 'out-of-stock' } : {}) };
-  };
+
   const addToCart = async (item) => {
-    const quantity = Number(item.quantity || 1);
-    if (!Number.isInteger(quantity) || quantity < 1) return { ok: false };
-    const result = await checkStock(item, quantity);
-    if (!result.ok) return result;
+    const quantity = Math.max(1, Number(item.quantity) || 1);
+    const incoming = {
+      ...item,
+      quantity,
+      reserved_quantity: item.item_type === 'bouquet' ? quantity : 0
+    };
+    const incomingSignature = buildItemSignature(incoming);
+    let newStock = null;
+
+    if (incoming.item_type === 'bouquet' && incoming.bouquet_id) {
+      newStock = await reserveBouquetStock(incoming.bouquet_id, quantity);
+      if (newStock === null) {
+        return { ok: false, reason: 'out-of-stock' };
+      }
+    }
+
+    if (incoming.item_type === 'other_product' && incoming.other_product_id) {
+      const { data, error } = await supabase
+        .from('other_products')
+        .select('stock, is_available')
+        .eq('id', incoming.other_product_id)
+        .single();
+
+      const availableStock = Number(data?.stock) || 0;
+      if (error || !data || !data.is_available || availableStock <= 0) {
+        return { ok: false, reason: 'out-of-stock', stock: availableStock };
+      }
+
+      const alreadyInCart = cartItems
+        .filter(current => current.item_type === 'other_product' && current.other_product_id === incoming.other_product_id)
+        .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
+
+      if (alreadyInCart + quantity > availableStock) {
+        return { ok: false, reason: 'limit-reached', stock: availableStock };
+      }
+    }
+
     setCartItems(prev => {
-      const signature = buildItemSignature(item);
-      const match = prev.find(i => buildItemSignature(i) === signature);
-      return match ? prev.map(i => i.cartId === match.cartId ? { ...i, quantity: i.quantity + quantity } : i)
-        : [...prev, { ...item, quantity, cartId: crypto.randomUUID() }];
+      const existingIndex = prev.findIndex(current => buildItemSignature(current) === incomingSignature);
+
+      if (existingIndex !== -1) {
+        return prev.map((current, index) => (
+          index === existingIndex
+            ? {
+                ...current,
+                quantity: (current.quantity || 1) + quantity,
+                reserved_quantity: (current.reserved_quantity || 0) + incoming.reserved_quantity
+              }
+            : current
+        ));
+      }
+
+      return [...prev, { ...incoming, cartId: Date.now().toString() }];
     });
-    return result;
+
+    return { ok: true, stock: newStock };
   };
+
   const removeFromCart = async (cartId) => {
-    setCartItems(prev => prev.filter(i => i.cartId !== cartId));
+    const item = cartItems.find(current => current.cartId === cartId);
+    if (item?.item_type === 'bouquet' && item.bouquet_id && item.reserved_quantity > 0) {
+      await releaseBouquetStock(item.bouquet_id, item.reserved_quantity);
+    }
+    setCartItems(prev => prev.filter(item => item.cartId !== cartId));
     return { ok: true };
   };
-  const updateQuantity = async (cartId, quantity) => {
-    if (!Number.isInteger(quantity)) return { ok: false };
-    if (quantity < 1) return removeFromCart(cartId);
-    const item = cartItems.find(i => i.cartId === cartId);
+
+  const updateQuantity = async (cartId, newQuantity) => {
+    const item = cartItems.find(current => current.cartId === cartId);
     if (!item) return { ok: false };
-    const result = await checkStock(item, quantity, cartId);
-    if (result.ok) setCartItems(prev => prev.map(i => i.cartId === cartId ? { ...i, quantity } : i));
-    return result;
+
+    if (newQuantity < 1) {
+      if (item.item_type === 'bouquet' && item.bouquet_id && item.reserved_quantity > 0) {
+        await releaseBouquetStock(item.bouquet_id, item.reserved_quantity);
+      }
+      setCartItems(prev => prev.filter(item => item.cartId !== cartId));
+      return { ok: true };
+    }
+
+    if (item.item_type === 'other_product' && item.other_product_id) {
+      const { data, error } = await supabase
+        .from('other_products')
+        .select('stock, is_available')
+        .eq('id', item.other_product_id)
+        .single();
+
+      const availableStock = Number(data?.stock) || 0;
+      if (error || !data || !data.is_available || availableStock <= 0) {
+        return { ok: false, reason: 'out-of-stock', stock: availableStock };
+      }
+
+      const otherCartQuantity = cartItems
+        .filter(current => current.cartId !== cartId && current.item_type === 'other_product' && current.other_product_id === item.other_product_id)
+        .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
+
+      if (otherCartQuantity + newQuantity > availableStock) {
+        return { ok: false, reason: 'limit-reached', stock: availableStock };
+      }
+    }
+
+    const currentQuantity = item.quantity || 1;
+    const difference = newQuantity - currentQuantity;
+    const reservedQuantity = item.reserved_quantity || 0;
+    let nextReservedQuantity = reservedQuantity;
+    let newStock = null;
+
+    if (item.item_type === 'bouquet' && item.bouquet_id && difference > 0) {
+      newStock = await reserveBouquetStock(item.bouquet_id, difference);
+      if (newStock === null) {
+        return { ok: false, reason: 'out-of-stock' };
+      }
+      nextReservedQuantity = reservedQuantity + difference;
+    }
+
+    if (item.item_type === 'bouquet' && item.bouquet_id && difference < 0) {
+      const releaseQuantity = Math.min(Math.abs(difference), reservedQuantity);
+      if (releaseQuantity > 0) {
+        newStock = await releaseBouquetStock(item.bouquet_id, releaseQuantity);
+      }
+      nextReservedQuantity = Math.max(0, reservedQuantity - releaseQuantity);
+    }
+
+    setCartItems(prev =>
+      prev.map(item => item.cartId === cartId ? { ...item, quantity: newQuantity, reserved_quantity: nextReservedQuantity } : item)
+    );
+
+    return { ok: true, stock: newStock };
   };
+
   const clearCart = () => setCartItems([]);
-  const cartCount = cartItems.reduce((n, i) => n + i.quantity, 0);
-  const cartTotal = cartItems.reduce((n, i) => n + Number(i.price || 0) * i.quantity, 0);
-  return <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal }}>{children}</CartContext.Provider>;
+
+  const cartCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+  const cartTotal = cartItems.reduce((total, item) => total + ((item.price || item.subtotal) * (item.quantity || 1)), 0);
+
+  return (
+    <CartContext.Provider value={{
+      cartItems,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      cartCount,
+      cartTotal
+    }}>
+      {children}
+    </CartContext.Provider>
+  );
 };

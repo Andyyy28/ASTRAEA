@@ -71,8 +71,7 @@ export const AuthProvider = ({ children }) => {
       console.warn('Supabase anon key is missing or invalid. Rendering the app without auth.');
       setUser(null);
       setLoading(false);
-      window.clearTimeout(timeoutId);
-      return () => { mounted = false; };
+      return () => {};
     }
 
     supabase.auth.getSession()

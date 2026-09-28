@@ -42,7 +42,6 @@ const Footer = () => {
                 { name: 'Home', path: '/' },
                 { name: 'Shop', path: '/shop' },
                 { name: 'Customize', path: '/customize' },
-                { name: 'Website QR Code', path: '/share' },
                 { name: 'Other Products', path: '/other-products' },
                 { name: 'FAQ', path: '/faq' },
                 { name: 'Contact', path: '/contact' }

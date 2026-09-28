@@ -132,6 +132,7 @@ const AdminOrders = () => {
       case 'confirmed': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
       case 'being-made': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
       case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
+      case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
       case 'completed': return <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
       case 'cancelled': return <span className="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold capitalize">Cancelled</span>;
       default: return null;
