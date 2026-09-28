@@ -48,7 +48,7 @@ function App() {
       <CartProvider>
         <NotificationProvider>
           <Router>
-            <Suspense fallback={<div role="status" className="text-center p-16">Loading Astraea…</div>}>
+            <Suspense fallback={<div role="status" className="text-center p-16">Loading Astraeaâ€¦</div>}>
             <Routes>
             {/* Customer Routes */}
             <Route element={<CustomerLayout />}>

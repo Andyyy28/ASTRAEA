@@ -41,6 +41,6 @@ Browser Telegram notifications are intentionally disabled because Vite variables
 
 ## Deployment
 
-Apply and verify the migration in staging, configure Vercel's public Supabase variables and `VITE_PUBLIC_SITE_URL`, then deploy the matching frontend. Test a cash pickup, a private GCash proof, an intricate custom order, staff timing confirmation, tracking and cancellation against staging before production. The current working changes have not been pushed or deployed and no production database migration has been run.
+Apply and verify the migration in staging, configure Vercel's public Supabase variables and `VITE_PUBLIC_SITE_URL`, then deploy the matching frontend. Test a cash pickup, a private GCash proof, an intricate custom order, staff timing confirmation, tracking and cancellation against staging before production. The feature branch is pushed; no production database migration has been run or verified.
 
-See `AUDIT.md` for findings, verification boundaries and prioritized improvements.
+The feature branch is `feature/preparation-and-qr`. The live `main` branch was restored because the production Supabase project did not yet have the new timing RPC (`PGRST202` on 2026-09-28). This branch is ready for staging review; it must not be merged or deployed until the database migration and verification steps above are complete. See `AUDIT.md` for findings and recommendations.
