@@ -84,13 +84,13 @@ const Navbar = () => {
       </div>
       <div className="mx-auto max-w-[1680px] px-4 sm:px-6 lg:px-10">
         <div className="flex h-16 items-center justify-between gap-4 md:h-20">
-          <div className="flex-shrink-0 flex items-center">
+          <div className="min-w-0 flex-1 flex items-center">
             <Link
               to="/"
-              className="font-heading flex items-center gap-3 rounded-full px-3 py-2 text-xl font-black tracking-wide text-[#DE3163] transition-colors hover:bg-white/70 sm:text-2xl md:text-[2rem]"
+              className="font-heading flex min-w-0 max-w-full items-center gap-2 rounded-full px-1 py-2 text-[clamp(1rem,4.8vw,1.5rem)] font-black tracking-wide text-[#DE3163] transition-colors hover:bg-white/70 sm:gap-3 sm:px-3 sm:text-2xl md:text-[2rem]"
             >
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
-              Astraea Collection
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-[45px] sm:w-[45px]" />
+              <span className="truncate">Astraea Collection</span>
             </Link>
           </div>
 
@@ -107,7 +107,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             <Link
               to="/cart"
               className="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-astraea-pink bg-white/80 text-astraea-darkgray shadow-[2px_2px_0px_#F9A8C9] transition-colors hover:text-astraea-pink"

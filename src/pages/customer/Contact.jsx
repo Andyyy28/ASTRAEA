@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, MessageCircle, Clock, Globe, AtSign, Check, Phone, Star } from 'lucide-react';
+import { Mail, MessageCircle, Clock, Globe, AtSign, Video, Check, Phone, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import TurnstileWidget from '../../components/TurnstileWidget';
 
@@ -125,6 +125,7 @@ const Contact = () => {
                 <div className="flex gap-4">
                   <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Globe className="w-6 h-6" /></a>
                   <a aria-label="Astraea Collection Messenger" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><AtSign className="w-6 h-6" /></a>
+                  <a aria-label="Video chat with Astraea Collection" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Video className="w-6 h-6" /></a>
                 </div>
               </div>
             </div>

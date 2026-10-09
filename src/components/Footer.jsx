@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Mail, Phone, MessageCircle } from 'lucide-react';
+import { AtSign, Globe, Mail, Phone, MessageCircle, Video } from 'lucide-react';
 
 const Footer = () => {
   const heartIcon = String.fromCodePoint(9825);
@@ -20,12 +20,15 @@ const Footer = () => {
             <p className="text-sm leading-relaxed max-w-sm">
               Handcrafted fuzzy wire flowers that last forever. Perfect for any occasion, our everlasting bouquets bring timeless joy and beauty to your space.
             </p>
-            <div className="flex space-x-4 pt-2">
+            <div className="flex items-center gap-5 pt-2">
               <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
-                <ExternalLink className="h-5 w-5" aria-hidden="true" />
+                <Globe className="h-7 w-7" aria-hidden="true" />
               </a>
               <a aria-label="Contact Astraea Collection on Facebook" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
-                <ExternalLink className="h-5 w-5" aria-hidden="true" />
+                <AtSign className="h-7 w-7" aria-hidden="true" />
+              </a>
+              <a aria-label="Video chat with Astraea Collection" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
+                <Video className="h-7 w-7" aria-hidden="true" />
               </a>
             </div>
           </div>
