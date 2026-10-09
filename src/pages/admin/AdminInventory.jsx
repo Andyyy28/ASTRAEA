@@ -36,7 +36,7 @@ const AdminInventory = () => {
   const [wrappers, setWrappers] = useState([]);
   const [wrapperColors, setWrapperColors] = useState([]);
   const [fuzzyWireColors, setFuzzyWireColors] = useState([]);
-  const [sizes, setSizes] = useState([]);
+  const [, setSizes] = useState([]);
   const [addons, setAddons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,7 +47,6 @@ const AdminInventory = () => {
   const [uploading, setUploading] = useState(false);
   const { showToast, showConfirm } = useNotifications();
 
-  const orderedSizes = useMemo(() => [...sizes].sort((a, b) => (a.display_order || 0) - (b.display_order || 0)), [sizes]);
   const orderedAddons = useMemo(() => [...addons].sort((a, b) => (a.display_order || 0) - (b.display_order || 0)), [addons]);
 
   useEffect(() => {

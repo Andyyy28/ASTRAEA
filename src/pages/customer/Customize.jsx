@@ -45,7 +45,7 @@ const Customize = () => {
   const [dbFillerColors, setDbFillerColors] = useState([]);
   const [dbWrappers, setDbWrappers] = useState([]);
   const [dbWrapperColors, setDbWrapperColors] = useState([]);
-  const [sizeOptions, setSizeOptions] = useState([]);
+  const [, setSizeOptions] = useState([]);
   const [addonOptions, setAddonOptions] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedFlowers, setSelectedFlowers] = useState({});
