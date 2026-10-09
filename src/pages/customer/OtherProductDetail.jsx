@@ -37,19 +37,25 @@ const OtherProductDetail = () => {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+    setProduct(null); setLoading(true); setQuantity(1); setMessageCard(''); setActiveImage(0);
     const fetchProduct = async () => {
       const { data, error } = await supabase
         .from('other_products')
         .select('*')
         .eq('id', id)
         .eq('is_visible', true)
+        .is('archived_at', null)
+        .abortSignal(controller.signal)
         .single();
 
+      if (controller.signal.aborted) return;
       if (data) setProduct(data); else console.error('Product not found', error);
       setLoading(false);
     };
 
     if (id) fetchProduct();
+    return () => controller.abort();
   }, [id]);
 
   useEffect(() => {
@@ -61,7 +67,7 @@ const OtherProductDetail = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'other_products', filter: `id=eq.${id}` },
         (payload) => {
-          if (payload.eventType === 'DELETE' || !payload.new?.is_visible) {
+          if (payload.eventType === 'DELETE' || !payload.new?.is_visible || payload.new?.archived_at) {
             setProduct(null);
             return;
           }
@@ -164,13 +170,13 @@ const OtherProductDetail = () => {
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           <div className="md:w-1/2 flex flex-col gap-4">
             <div className="scrapbook-card washi-strip aspect-[4/5] bg-astraea-blush rounded-2xl flex items-center justify-center overflow-hidden">
-              {images[activeImage] ? <img src={images[activeImage]} alt={product.name} className="w-full h-full object-cover object-top rounded-[14px]" /> : <Flower2 className="w-32 h-32 text-astraea-pink/20" />}
+              {images[activeImage] ? <img src={images[activeImage]} alt={product.name} decoding="async" className="w-full h-full object-cover object-top rounded-[14px]" /> : <Flower2 className="w-32 h-32 text-astraea-pink/20" />}
             </div>
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, idx) => (
-                  <button key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
-                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover object-top rounded-xl" />
+                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover object-top rounded-xl" />
                   </button>
                 ))}
               </div>
@@ -193,11 +199,11 @@ const OtherProductDetail = () => {
                 <textarea id="message" rows="3" value={messageCard} onChange={(e) => setMessageCard(e.target.value)} placeholder="A sweet note for your gift..." className="kawaii-input min-h-[100px] resize-none"></textarea>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
+                <label htmlFor="other-product-quantity" className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
                 <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
-                  <span className="w-12 text-center font-bold text-lg">{quantity}</span>
-                  <button
+                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
+                  <span id="other-product-quantity" aria-live="polite" className="w-12 text-center font-bold text-lg">{quantity}</span>
+                  <button type="button" aria-label="Increase quantity"
                     onClick={() => {
                       if (quantity >= stock) {
                         showToast({ type: 'error', title: 'Oops!', message: `Only ${stock} items available ✦` });

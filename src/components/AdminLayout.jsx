@@ -5,7 +5,7 @@ import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, MessageSquareText, Se
 import Skeleton from './Skeleton';
 
 const AdminLayout = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, isAdmin, loading, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -23,10 +23,10 @@ const AdminLayout = () => {
   }, [isMobileMenuOpen]);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && (!user || !isAdmin)) {
       navigate('/admin/login');
     }
-  }, [user, loading, navigate]);
+  }, [user, isAdmin, loading, navigate]);
 
   if (loading) {
     return (
@@ -69,7 +69,7 @@ const AdminLayout = () => {
     );
   }
 
-  if (!user) return null; // Will redirect
+  if (!user || !isAdmin) return null; // Will redirect
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -86,9 +86,9 @@ const AdminLayout = () => {
       
       {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
-        <div className="h-20 flex items-center px-8 border-b border-dashed border-astraea-pink/30">
-          <Link to="/" className="text-2xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-2 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
-            <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" /> Astraea Admin
+        <div className="min-h-24 flex items-center px-6 py-4 border-b border-dashed border-astraea-pink/30">
+          <Link to="/" className="w-full text-xl font-extrabold leading-tight tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-3 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
+            <img src="/web_logo.png" alt="Astraea Collection logo" className="h-11 w-11 shrink-0 rounded-full object-cover" /> <span>Astraea Admin</span>
           </Link>
         </div>
         
@@ -128,7 +128,7 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col min-w-0 md:h-screen md:min-h-0 md:overflow-hidden">
         
         {/* Topbar (Mobile & Desktop) */}
-        <header className="h-16 md:h-20 bg-astraea-cream/85 backdrop-blur-xl border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
+        <header className="min-h-20 md:min-h-24 py-2 md:py-3 bg-astraea-cream/85 backdrop-blur-xl border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -138,7 +138,7 @@ const AdminLayout = () => {
               <Menu className="w-6 h-6" />
             </button>
             <span className="flex items-center gap-2 text-lg font-bold tracking-tight text-astraea-pink">
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" />
               Astraea Admin
             </span>
           </div>
@@ -168,15 +168,15 @@ const AdminLayout = () => {
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 bg-astraea-cream md:hidden">
-          <div className="h-16 px-4 flex items-center justify-between border-b-2 border-dashed border-astraea-pink/30">
+          <div className="min-h-20 py-2 px-4 flex items-center justify-between border-b-2 border-dashed border-astraea-pink/30">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2">
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" /> Astraea Admin
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" /> Astraea Admin
             </Link>
             <button onClick={() => setIsMobileMenuOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray rounded-full bg-white/80 border border-dashed border-astraea-pink/40" aria-label="Close admin menu">
               <X className="w-6 h-6" />
             </button>
           </div>
-          <nav className="h-[calc(100vh-4rem)] overflow-y-auto p-4">
+          <nav className="h-[calc(100vh-5rem)] overflow-y-auto p-4">
             <ul className="space-y-2">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;

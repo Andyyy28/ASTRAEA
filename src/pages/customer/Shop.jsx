@@ -110,11 +110,11 @@ const Shop = () => {
       subtotal: bouquet.price
       });
     } catch (error) {
-      console.error('Stock reservation failed:', error);
+      console.error('Unable to add item to cart:', error);
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this bouquet just went out of stock!'
+        message: 'Could not add this bouquet right now. Please try again.'
       });
       return;
     }
@@ -123,14 +123,10 @@ const Shop = () => {
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this bouquet just went out of stock!'
+        message: result.reason === 'unavailable' ? 'The catalogue is temporarily unavailable. Please try again.' : 'Sorry, this bouquet just went out of stock!'
       });
-      setBouquets(prev => prev.map(b => b.id === bouquet.id ? { ...b, stock: 0 } : b));
+      if (result.reason === 'out-of-stock') setBouquets(prev => prev.map(b => b.id === bouquet.id ? { ...b, stock: 0 } : b));
       return;
-    }
-
-    if (result.stock !== null && result.stock !== undefined) {
-      setBouquets(prev => prev.map(b => b.id === bouquet.id ? { ...b, stock: result.stock } : b));
     }
     showToast({
       type: 'success',
@@ -218,6 +214,9 @@ const Shop = () => {
                     <img
                       src={bouquet.images[0]}
                       alt={bouquet.name}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 360px"
                       className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (

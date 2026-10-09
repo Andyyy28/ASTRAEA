@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, AtSign, Video, Mail, Phone, MessageCircle } from 'lucide-react';
+import { ExternalLink, Mail, Phone, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
   const heartIcon = String.fromCodePoint(9825);
@@ -21,15 +21,11 @@ const Footer = () => {
               Handcrafted fuzzy wire flowers that last forever. Perfect for any occasion, our everlasting bouquets bring timeless joy and beauty to your space.
             </p>
             <div className="flex space-x-4 pt-2">
-              <a href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
-                <Globe className="h-5 w-5" />
+              <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
+                <ExternalLink className="h-5 w-5" aria-hidden="true" />
               </a>
-              <a href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
-                <AtSign className="h-5 w-5" />
-              </a>
-              {/* TikTok placeholder icon */}
-              <a href="#" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
-                <Video className="h-5 w-5" /> 
+              <a aria-label="Contact Astraea Collection on Facebook" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="text-astraea-darkgray hover:text-astraea-pink transition-colors">
+                <ExternalLink className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -88,7 +84,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-dashed border-astraea-pink/40 text-center flex flex-col items-center text-xs text-astraea-darkgray/70">
-  <p>&copy; 2026 Astraea Collection. All rights reserved.</p>
+  <p>&copy; 2026 Astraea Collection.</p>
 </div>
       </div>
     </footer>

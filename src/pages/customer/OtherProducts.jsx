@@ -230,6 +230,9 @@ const OtherProducts = () => {
                     <img
                       src={product.images[0]}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
+                      sizes="(max-width: 1024px) 50vw, 360px"
                       className="w-full h-full object-cover object-top rounded-[16px] transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (

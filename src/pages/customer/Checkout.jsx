@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { supabase } from '../../lib/supabase';
@@ -6,26 +6,9 @@ import { useNotifications } from '../../context/NotificationContext';
 import { formatPrice } from '../../lib/formatPrice';
 import { CheckCircle2, ShoppingBag, ArrowLeft, Truck, Store, CreditCard, Banknote } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import { sendOrderNotification } from '../../lib/telegram';
-
-// Upload proof of payment to Supabase Storage, returns the public URL
-const uploadPaymentProof = async (file) => {
-  const fileName = `payment-proofs/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-
-  const { error } = await supabase.storage
-    .from('bouquets')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
-  if (error) {
-    console.log(error);
-    throw error;
-  }
-
-  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
-  return urlData.publicUrl;
-};
+import TurnstileWidget from '../../components/TurnstileWidget';
+import { todayKeyInManila, isPastBusinessDate } from '../../lib/businessTime';
+import { clearPendingCheckout, newRequestUuid, readPendingCheckout, writePendingCheckout } from '../../lib/checkoutRecovery';
 
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -45,9 +28,17 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(null);
   const [errors, setErrors] = useState({});
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const [requestUuid, setRequestUuid] = useState(newRequestUuid);
+  const submittingRef = useRef(false);
+  const [checkoutDraft, setCheckoutDraft] = useState(null);
+  const [serverQuote, setServerQuote] = useState(null);
+  const [pendingCheckout, setPendingCheckout] = useState(() => readPendingCheckout());
   const { showToast } = useNotifications();
   const deliveryFee = deliveryMethod === 'delivery' ? 80 : 0;
   const grandTotal = cartTotal + deliveryFee;
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -74,6 +65,7 @@ const Checkout = () => {
 
   const handlePaymentProofChange = (e) => {
     const file = e.target.files?.[0] || null;
+    if (paymentProofPreview?.startsWith('blob:')) URL.revokeObjectURL(paymentProofPreview);
     setPaymentProofFile(file);
     setErrors(prev => ({ ...prev, payment_proof: '' }));
     setPaymentProofPreview(file ? URL.createObjectURL(file) : '');
@@ -87,85 +79,125 @@ const Checkout = () => {
     if (!formData.payment_method) nextErrors.payment_method = 'Payment method is required.';
     if (formData.payment_method === 'gcash' && !paymentProofFile) nextErrors.payment_proof = 'Proof of payment is required for GCash.';
     if (!formData.preferred_date) nextErrors.preferred_date = deliveryMethod === 'pickup' ? 'Pickup date is required.' : 'Delivery date is required.';
+    else if (isPastBusinessDate(formData.preferred_date)) nextErrors.preferred_date = `Choose today or a future date (${todayKeyInManila()}).`;
     if (deliveryMethod === 'pickup' && !formData.preferred_time) nextErrors.preferred_time = 'Pickup time is required.';
     if (deliveryMethod === 'delivery' && !formData.delivery_address.trim()) nextErrors.delivery_address = 'Delivery address is required.';
+    if (!turnstileToken) nextErrors.turnstile = 'Please complete the security check.';
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
+  const finishSuccessfulCheckout = (result, order) => {
+    clearPendingCheckout();
+    setPendingCheckout(null);
+    clearCart();
+    setCheckoutDraft(null);
+    setServerQuote(null);
+    try { sessionStorage.removeItem('astraea_checkout_request_uuid'); } catch { /* storage may be disabled */ }
+    setOrderPlaced(result.reference_number);
+    setFormData(prev => ({ ...prev, customer_name: order.customer_name, contact_number: order.contact_number }));
+  };
+
+  const invokeCheckout = async (pending) => {
+    const { data, error } = await supabase.functions.invoke('guest-api', { body: pending.body });
+    if (error || !data?.reference_number) throw (error || new Error('Order could not be placed.'));
+    finishSuccessfulCheckout(data, pending.body.order);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (cartItems.length === 0) return;
-    if (!validateForm()) {
-      showToast({
-        type: 'error',
-        title: 'Oops!',
-        message: 'Please complete the required checkout details.'
-      });
+    if (submittingRef.current) return;
+    if (pendingCheckout) {
+      submittingRef.current = true;
+      setLoading(true);
+      try {
+        // Replay the exact signed request after a lost response. Do not rebuild it from edited form fields.
+        await invokeCheckout(pendingCheckout);
+      } catch {
+        showToast({ type: 'error', title: 'Order status unavailable', message: 'We could not confirm the previous attempt. Please retry without changing the order details.' });
+      } finally {
+        submittingRef.current = false;
+        setLoading(false);
+      }
       return;
     }
+    if (cartItems.length === 0) return;
+    if (!validateForm()) {
+      showToast({ type: 'error', title: 'Oops!', message: 'Please complete the required checkout details.' });
+      return;
+    }
+    submittingRef.current = true;
     setLoading(true);
+    let submitted = false;
     try {
-      let paymentProofUrl = null;
-      if (formData.payment_method === 'gcash') {
-        paymentProofUrl = await uploadPaymentProof(paymentProofFile);
-      }
-
       const orderItems = cartItems.map(item => ({
         item_type: item.item_type,
         bouquet_id: item.bouquet_id || null,
         other_product_id: item.other_product_id || null,
-        size: item.custom_details?.size?.id || null,
+        size: item.custom_details?.size?.key || item.custom_details?.size?.id || null,
         flowers: item.custom_details?.flowers || null,
         fillers: item.custom_details?.fillers || null,
         wrapper: item.custom_details?.wrapper || null,
         addons: item.custom_details?.addons || null,
         message_card: item.message_card || item.custom_details?.message || null,
+        instructions: item.custom_details?.instructions || null,
         quantity: item.quantity
       }));
 
-      const { data, error } = await supabase.rpc('place_order', {
-        p_order: {
-          customer_name: formData.customer_name,
-          contact_number: formData.contact_number,
-          facebook_account: formData.facebook_account,
-          payment_method: formData.payment_method,
-          payment_proof_url: paymentProofUrl,
-          delivery_method: deliveryMethod,
-          delivery_address: deliveryMethod === 'delivery' ? formData.delivery_address : null,
-          preferred_date: formData.preferred_date || null,
-          preferred_time: formData.preferred_time || null,
-          special_notes: formData.special_notes
-        },
-        p_items: orderItems
-      });
-      if (error) throw error;
+      const selectionKey = JSON.stringify({ items: orderItems, deliveryMethod });
+      let draft = checkoutDraft;
+      if (!draft || draft.selectionKey !== selectionKey || Date.parse(draft.expires_at) <= Date.now()) {
+        const { data: sessionData, error: sessionError } = await supabase.functions.invoke('guest-api', {
+          body: { action: 'start-checkout', turnstile_token: turnstileToken }
+        });
+        if (sessionError || !sessionData?.session_id || !sessionData?.session_token) throw new Error('Security verification failed. Please try again.');
+        const { data: quoteData, error: quoteError } = await supabase.functions.invoke('guest-api', {
+          body: { action: 'quote', session_id: sessionData.session_id, session_token: sessionData.session_token, items: orderItems, delivery_method: deliveryMethod }
+        });
+        if (quoteError || !quoteData?.quote_token || !quoteData?.expires_at) throw new Error('The quote could not be created. Please refresh and try again.');
+        draft = { ...sessionData, ...quoteData, selectionKey };
+        setCheckoutDraft(draft);
+        setServerQuote(quoteData);
+      }
 
-      // Fire-and-forget Telegram notification — never blocks checkout
-      sendOrderNotification({
-        referenceNumber: data.reference_number,
-        customerName: formData.customer_name,
-        contactNumber: formData.contact_number,
-        deliveryMethod,
-        paymentMethod: formData.payment_method,
-        preferredDate: formData.preferred_date,
-        preferredTime: formData.preferred_time,
-        deliveryAddress: formData.delivery_address,
-        specialNotes: formData.special_notes,
-        cartItems,
-        grandTotal,
-      });
+      const order = {
+        customer_name: formData.customer_name,
+        contact_number: formData.contact_number,
+        facebook_account: formData.facebook_account,
+        payment_method: formData.payment_method,
+        delivery_method: deliveryMethod,
+        delivery_address: deliveryMethod === 'delivery' ? formData.delivery_address : null,
+        preferred_date: formData.preferred_date || null,
+        preferred_time: formData.preferred_time || null,
+        special_notes: formData.special_notes
+      };
+      const body = { action: 'checkout', session_id: draft.session_id, session_token: draft.session_token, quote_token: draft.quote_token, request_uuid: requestUuid, order };
+      const pending = { body, created_at: new Date().toISOString(), total: draft.total };
 
-      clearCart();
-      setOrderPlaced(data.reference_number);
+      if (formData.payment_method === 'gcash') {
+        const proofForm = new FormData();
+        proofForm.append('action', 'proof-upload');
+        proofForm.append('session_id', draft.session_id);
+        proofForm.append('session_token', draft.session_token);
+        proofForm.append('file', paymentProofFile);
+        const { data: proofData, error: proofError } = await supabase.functions.invoke('guest-api', { body: proofForm });
+        if (proofError || proofData?.uploaded !== true) throw new Error('The payment proof could not be uploaded. Please try again.');
+
+      }
+
+      if (!writePendingCheckout(pending)) throw new Error('Enable session storage before placing an order so interrupted checkout attempts can be recovered safely.');
+      setPendingCheckout(pending);
+      submitted = true;
+      await invokeCheckout(pending);
     } catch (error) {
       console.error('Error placing order:', error);
-      showToast({
-        type: 'error',
-        title: 'Oops! ✦',
-        message: error.message || 'There was an error placing your order. Please try again.'
-      });
+      showToast({ type: 'error', title: 'Order not confirmed', message: submitted ? 'Retry the previous attempt to confirm whether it was accepted. Do not start another order until its status is confirmed.' : (error.message || 'There was an error placing your order. Please try again.') });
+      if (!submitted) {
+        setTurnstileToken('');
+        setTurnstileKey(key => key + 1);
+      }
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
@@ -195,6 +227,18 @@ const Checkout = () => {
     );
   }
 
+  if (pendingCheckout) {
+    return (
+      <div className="mx-auto min-h-[70vh] max-w-xl px-4 py-12">
+        <h1 className="section-heading text-2xl mb-4">Confirm your checkout</h1>
+        <p role="status" className="mb-4">An earlier attempt for {pendingCheckout.body.order.customer_name} is awaiting confirmation. Retry the same request safely, even if its quote has expired. Please do not place another order until this attempt is resolved.</p>
+        {Number.isFinite(Number(pendingCheckout.total)) && <p className="mb-4">Quoted total: {formatPrice(pendingCheckout.total)}</p>}
+        <form onSubmit={handleSubmit}><button type="submit" disabled={loading} className="kawaii-btn-primary w-full">{loading ? 'Checking…' : 'Retry previous checkout'}</button></form>
+        <Link to="/contact" className="block mt-4 underline">Contact the store if confirmation remains unavailable</Link>
+      </div>
+    );
+  }
+
   if (cartItems.length === 0) {
     return (
       <div className="min-h-[70vh] flex flex-col justify-center items-center bg-astraea-cream">
@@ -205,6 +249,9 @@ const Checkout = () => {
   }
 
   const fieldClass = 'kawaii-input';
+  const displayedDeliveryFee = serverQuote ? Number(serverQuote.delivery_fee) : deliveryFee;
+  const displayedTotal = serverQuote ? Number(serverQuote.total) : grandTotal;
+  const displayedSubtotal = displayedTotal - displayedDeliveryFee;
   const errorClass = 'mt-1 text-sm font-medium text-[#C4658A]';
 
   return (
@@ -223,18 +270,18 @@ const Checkout = () => {
             <div className="scrapbook-card washi-strip bg-[#FFFDFE]">
               <h3 className="section-heading text-xl md:text-2xl mb-6">Delivery Method</h3>
               <div className="flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
-                <button type="button" onClick={() => setDeliveryMethod('pickup')} className={`kawaii-btn flex-1 ${deliveryMethod === 'pickup' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Store className="w-5 h-5 mr-2" />Store Pickup</button>
-                <button type="button" onClick={() => setDeliveryMethod('delivery')} className={`kawaii-btn flex-1 ${deliveryMethod === 'delivery' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Truck className="w-5 h-5 mr-2" />Delivery</button>
+                <button type="button" onClick={() => { setDeliveryMethod('pickup'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`kawaii-btn flex-1 ${deliveryMethod === 'pickup' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Store className="w-5 h-5 mr-2" />Store Pickup</button>
+                <button type="button" onClick={() => { setDeliveryMethod('delivery'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`kawaii-btn flex-1 ${deliveryMethod === 'delivery' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Truck className="w-5 h-5 mr-2" />Delivery</button>
               </div>
             </div>
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">Contact Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name *</label><input type="text" name="customer_name" value={formData.customer_name} onChange={handleInputChange} className={fieldClass} placeholder="Jane Doe" />{errors.customer_name && <p className={errorClass}>{errors.customer_name}</p>}</div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Contact Number *</label><input type="tel" name="contact_number" value={formData.contact_number} onChange={handleInputChange} className={fieldClass} placeholder="0912 345 6789" />{errors.contact_number && <p className={errorClass}>{errors.contact_number}</p>}</div>
+                <div><label htmlFor="checkout-name" className="block text-sm font-medium text-[#C4658A] mb-2">Full Name *</label><input id="checkout-name" type="text" name="customer_name" maxLength={160} value={formData.customer_name} onChange={handleInputChange} className={fieldClass} placeholder="Jane Doe" />{errors.customer_name && <p className={errorClass}>{errors.customer_name}</p>}</div>
+                <div><label htmlFor="checkout-contact" className="block text-sm font-medium text-[#C4658A] mb-2">Contact Number *</label><input id="checkout-contact" type="tel" name="contact_number" maxLength={40} value={formData.contact_number} onChange={handleInputChange} className={fieldClass} placeholder="0912 345 6789" />{errors.contact_number && <p className={errorClass}>{errors.contact_number}</p>}</div>
               </div>
-              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Facebook Account *</label><input type="text" name="facebook_account" value={formData.facebook_account} onChange={handleInputChange} className={fieldClass} placeholder="Paste your Facebook profile link or name" />{errors.facebook_account && <p className={errorClass}>{errors.facebook_account}</p>}</div>
+              <div><label htmlFor="checkout-facebook" className="block text-sm font-medium text-[#C4658A] mb-2">Facebook Account *</label><input id="checkout-facebook" type="text" name="facebook_account" maxLength={160} value={formData.facebook_account} onChange={handleInputChange} className={fieldClass} placeholder="Paste your Facebook profile link or name" />{errors.facebook_account && <p className={errorClass}>{errors.facebook_account}</p>}</div>
             </div>
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
@@ -271,10 +318,11 @@ const Checkout = () => {
                     <img src="/gcash.jpeg" alt="GCash QR code" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#C4658A] mb-2">Upload Proof of Payment *</label>
+                    <label htmlFor="payment-proof" className="block text-sm font-medium text-[#C4658A] mb-2">Upload Proof of Payment *</label>
                     <input
+                      id="payment-proof"
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       onChange={handlePaymentProofChange}
                       className="kawaii-input file:mr-4 file:rounded-full file:border-0 file:bg-astraea-pink file:px-4 file:py-2 file:font-bold file:text-white file:transition-colors file:hover:bg-astraea-rosegold"
                     />
@@ -298,12 +346,12 @@ const Checkout = () => {
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">{deliveryMethod === 'pickup' ? 'Pickup Details' : 'Delivery Details'}</h3>
-              {deliveryMethod === 'delivery' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea name="delivery_address" rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea>{errors.delivery_address && <p className={errorClass}>{errors.delivery_address}</p>}</div>}
+              {deliveryMethod === 'delivery' && <div><label htmlFor="delivery-address" className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea id="delivery-address" name="delivery_address" maxLength={500} rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea>{errors.delivery_address && <p className={errorClass}>{errors.delivery_address}</p>}</div>}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
-                {deliveryMethod === 'pickup' && <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
+                <div><label htmlFor="preferred-date" className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input id="preferred-date" min={todayKeyInManila()} type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
+                {deliveryMethod === 'pickup' && <div><label htmlFor="preferred-time" className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input id="preferred-time" type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
               </div>
-              <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Special Instructions (Optional)</label><textarea name="special_notes" rows="2" value={formData.special_notes} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Any additional notes for us..."></textarea></div>
+              <div><label htmlFor="special-notes" className="block text-sm font-medium text-[#C4658A] mb-2">Special Instructions (Optional)</label><textarea id="special-notes" name="special_notes" maxLength={1000} rows="2" value={formData.special_notes} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Any additional notes for us..."></textarea></div>
             </div>
           </div>
 
@@ -321,17 +369,24 @@ const Checkout = () => {
                 ))}
               </div>
               <div className="space-y-4 mb-6 border-t border-dashed border-astraea-pink/30 pt-4">
-                <div className="flex justify-between text-astraea-darkgray/80"><span>Items Subtotal</span><span className="font-medium">{formatPrice(cartTotal)}</span></div>
-                <div className="flex justify-between text-astraea-darkgray/80"><span>Delivery Fee</span><span className="font-medium">{formatPrice(deliveryFee)}</span></div>
+                <div className="flex justify-between text-astraea-darkgray/80"><span>Items Subtotal</span><span className="font-medium">{formatPrice(displayedSubtotal)}</span></div>
+                <div className="flex justify-between text-astraea-darkgray/80"><span>Delivery Fee</span><span className="font-medium">{formatPrice(displayedDeliveryFee)}</span></div>
               </div>
               <div className="border-t border-dashed border-astraea-pink/30 pt-4 mb-8 flex justify-between items-end">
                 <span className="font-bold text-xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(grandTotal)}</span>
+                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(displayedTotal)}</span>
               </div>
               <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
-                {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />Place Order</>}
+                {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />{pendingCheckout ? 'Retry Order' : 'Place Order'}</>}
               </button>
-              <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">By placing this order, you agree to our Terms of Service and Privacy Policy. Payment details will be sent after confirmation.</p>
+              <TurnstileWidget
+                key={turnstileKey}
+                action="checkout"
+                onToken={setTurnstileToken}
+                onError={() => setTurnstileToken('')}
+              />
+              {errors.turnstile && <p className="mt-2 text-center text-sm font-medium text-[#C4658A]">{errors.turnstile}</p>}
+              <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">Your details are used to process this order. Payment details will be sent after confirmation.</p>
             </div>
           </div>
         </form>

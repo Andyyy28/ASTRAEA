@@ -1,7 +1,10 @@
 -- ================================================
 -- ASTRAEA COLLECTION - FULL DATABASE SETUP
--- Run this ENTIRE script in the Supabase SQL Editor
--- After this initial schema is applied, run migrations/20260525_secure_database.sql.
+-- This is the clean-slate schema for a brand-new, empty database only.
+-- Never run it against an existing or production database: it contains the
+-- historical DROP TABLE statements below. Follow supabase/fresh-install/README.md
+-- for the complete fresh-install chain, or use the additive migration files for
+-- an existing database upgrade.
 -- ================================================
 
 -- ================================================
@@ -338,10 +341,10 @@ INSERT INTO bouquet_addons (key, name, price, display_order, is_available) VALUE
 
 -- Bouquets
 INSERT INTO bouquets (name, description, price, category, images, stock, is_featured) VALUES
-('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Romantic', ARRAY['/bouquets/b1.jpg'], 0, true),
-('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Birthday', ARRAY['/bouquets/b2.jpg'], 0, true),
-('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Other', ARRAY['/bouquets/b3.jpg'], 0, true),
-('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/bouquets/b4.jpg'], 0, true);
+('Sweet Blush Rose', 'A beautiful arrangement of pink and white roses with baby''s breath.', 350.00, 'Romantic', ARRAY['/home-hero.jpeg'], 0, true),
+('Sunshine Sunflower', 'Bright yellow sunflowers wrapped in elegant kraft paper.', 450.00, 'Birthday', ARRAY['/mobile-view.jpeg'], 0, true),
+('Elegant Lily Dream', 'Premium lilies with eucalyptus leaves and satin ribbon.', 750.00, 'Other', ARRAY['/web_logo.png'], 0, true),
+('Grand Romance', 'A massive bouquet of red roses for that special someone.', 950.00, 'Romantic', ARRAY['/home-hero.jpeg'], 0, true);
 
 -- Reviews
 INSERT INTO reviews (name, message, rating, is_displayed) VALUES
@@ -351,14 +354,15 @@ INSERT INTO reviews (name, message, rating, is_displayed) VALUES
 
 
 -- ================================================
--- DONE! After running this, also run:
---   supabase/migrations/20260525_secure_database.sql
--- to set up RLS policies, admin_users table, and RPC functions.
+-- DONE for an empty database. After running this, also run the canonical files
+-- listed in supabase/fresh-install/README.md:
+--   supabase/fresh-install/migrations/*.sql
+-- in lexicographic order to set up RLS policies, admin_users, and RPCs.
 --
 -- Then in Supabase Auth Settings:
 -- 1. Disable "Enable email confirmations" for easy setup
--- 2. The admin account will auto-create on first login
--- 3. After signup, add the user to admin_users table:
+-- 2. Create an administrator through the documented server-side provisioning script.
+-- 3. Review and insert the approved user into admin_users:
 --    INSERT INTO admin_users (user_id) 
 --    SELECT id FROM auth.users WHERE email = 'admin_ako@gmail.com';
 -- ================================================

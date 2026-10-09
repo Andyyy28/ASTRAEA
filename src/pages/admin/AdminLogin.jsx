@@ -64,7 +64,7 @@ const AdminLogin = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-astraea-rosegold/40 rounded-xl p-3 focus:ring-2 focus:ring-astraea-pink outline-none"
-              placeholder="admin@astraea.com"
+              placeholder="you@example.com"
             />
           </div>
           

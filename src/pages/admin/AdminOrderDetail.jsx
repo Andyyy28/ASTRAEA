@@ -2,33 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
+import { getPaymentProofUrl } from '../../lib/paymentProof';
 import { ArrowLeft, User, Truck, Receipt, CheckCircle2, Clock } from 'lucide-react';
+import { useNotifications } from '../../context/NotificationContext';
 import Skeleton from '../../components/Skeleton';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
+  const { showToast } = useNotifications();
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [proofUrl, setProofUrl] = useState('');
+  const [proofError, setProofError] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
+    setProofUrl('');
+    setProofError('');
+    if (!order?.payment_proof_url) return;
+    const loadProof = async () => {
+      try {
+        const url = await getPaymentProofUrl(supabase, order.id);
+        if (!cancelled) { setProofUrl(url); setProofError(''); }
+      } catch {
+        if (!cancelled) {
+          setProofUrl('');
+          setProofError('Unable to securely load the payment proof.');
+        }
+      }
+    };
+    void loadProof();
+    const refresh = window.setInterval(loadProof, 240000);
+    return () => { cancelled = true; window.clearInterval(refresh); };
+  }, [order?.id, order?.payment_proof_url]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setOrder(null); setItems([]);
     const fetchOrderDetails = async () => {
       setLoading(true);
-      const { data: orderData } = await supabase.from('orders').select('*').eq('id', id).single();
+      const { data: orderData, error } = await supabase.from('orders').select('*').eq('id', id).abortSignal(controller.signal).single();
+      if (controller.signal.aborted) return;
+      if (error) showToast({ type: 'error', message: 'Order could not load. Please retry.' });
       if (orderData) {
         setOrder(orderData);
-        const { data: itemsData } = await supabase
+        const { data: itemsData, error: itemsError } = await supabase
           .from('order_items')
           .select('*, bouquets(name, images), other_products(name, images)')
-          .eq('order_id', id);
+          .eq('order_id', id).abortSignal(controller.signal);
+        if (controller.signal.aborted) return;
+        if (itemsError) showToast({ type: 'error', message: 'Order items could not load.' });
         if (itemsData) setItems(itemsData);
       }
       setLoading(false);
     };
 
     fetchOrderDetails();
-  }, [id]);
+    return () => controller.abort();
+  }, [id, showToast]);
 
   const handleUpdateStatus = async (newStatus) => {
     setUpdating(true);
@@ -39,17 +72,16 @@ const AdminOrderDetail = () => {
     if (!error && data) {
       setOrder(data);
     } else if (error) {
-      console.error('Order status update failed:', error);
+      showToast({ type: 'error', message: error.message || 'Status update failed. Please retry.' });
     }
     setUpdating(false);
   };
 
   const handleTogglePaid = async () => {
     setUpdating(true);
-    const { error } = await supabase.from('orders').update({ is_paid: !order.is_paid }).eq('id', id);
-    if (!error) {
-      setOrder(prev => ({ ...prev, is_paid: !prev.is_paid }));
-    }
+    const { data, error } = await supabase.rpc('set_order_paid', { p_order_id: id, p_is_paid: !order.is_paid });
+    if (!error && data) setOrder(data);
+    else if (error) showToast({ type: 'error', message: error.message || 'Payment update failed. Please retry.' });
     setUpdating(false);
   };
 
@@ -218,14 +250,15 @@ const AdminOrderDetail = () => {
               {order.payment_method === 'gcash' && (
                 <div className="pt-2">
                   <span className="text-gray-500 block text-xs uppercase tracking-wider mb-2">Proof of Payment</span>
-                  {order.payment_proof_url ? (
+                  {proofUrl ? (
                     <img
-                      src={order.payment_proof_url}
+                      src={proofUrl}
                       alt="GCash proof of payment"
+                      referrerPolicy="no-referrer"
                       className="w-full max-w-xs rounded-xl border border-gray-200 bg-white object-contain"
                     />
                   ) : (
-                    <p className="font-medium text-gray-500">No proof uploaded.</p>
+                    <p className="font-medium text-gray-500">{proofError || (order.payment_proof_url ? 'Loading payment proof…' : 'No proof uploaded.')}</p>
                   )}
                 </div>
               )}

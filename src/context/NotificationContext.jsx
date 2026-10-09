@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const NotificationContext = createContext(null);
 const TOAST_DURATION = 3000;
@@ -43,46 +43,74 @@ export const NotificationProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
   const [confirmState, setConfirmState] = useState(null);
   const timersRef = useRef(new Map());
+  const toastSequenceRef = useRef(0);
+  const confirmRef = useRef(null);
+  const dialogRef = useRef(null);
 
-  const removeToast = (id) => {
+  const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
     const timer = timersRef.current.get(id);
     if (timer) {
       window.clearTimeout(timer);
       timersRef.current.delete(id);
     }
-  };
+  }, []);
 
-  const showToast = ({ type = 'info', title, message }) => {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const showToast = useCallback(({ type = 'info', title, message }) => {
+    const id = `toast-${toastSequenceRef.current++}`;
     setToasts(prev => [...prev, { id, type, title, message }]);
     const timer = window.setTimeout(() => removeToast(id), TOAST_DURATION);
     timersRef.current.set(id, timer);
     return id;
-  };
+  }, [removeToast]);
 
-  const showConfirm = ({ title, message, confirmText = 'Yes, go ahead', cancelText = `Never mind ${heartIcon}` }) =>
+  const showConfirm = useCallback(({ title, message, confirmText = 'Yes, go ahead', cancelText = `Never mind ${heartIcon}` }) =>
     new Promise((resolve) => {
-      setConfirmState({
+      if (confirmRef.current?.resolve) confirmRef.current.resolve(false);
+      const next = {
         title,
         message,
         confirmText,
         cancelText,
         resolve,
-      });
-    });
+      };
+      confirmRef.current = next;
+      setConfirmState(next);
+    }), []);
 
-  const handleCloseConfirm = (result) => {
-    if (confirmState?.resolve) confirmState.resolve(result);
+  const handleCloseConfirm = useCallback((result) => {
+    if (confirmRef.current?.resolve) confirmRef.current.resolve(result);
+    confirmRef.current = null;
     setConfirmState(null);
-  };
+  }, []);
 
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
-      timersRef.current.forEach(timer => window.clearTimeout(timer));
-      timersRef.current.clear();
+      timers.forEach(timer => window.clearTimeout(timer));
+      timers.clear();
+      if (confirmRef.current?.resolve) confirmRef.current.resolve(false);
+      confirmRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!confirmState) return;
+    const previous = document.activeElement;
+    const dialog = dialogRef.current;
+    dialog?.querySelector('button')?.focus();
+    const keydown = event => {
+      if (event.key === 'Escape') { event.preventDefault(); handleCloseConfirm(false); }
+      if (event.key !== 'Tab') return;
+      const buttons = dialog?.querySelectorAll('button:not([disabled])');
+      if (!buttons?.length) return;
+      const first = buttons[0], last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', keydown);
+    return () => { document.removeEventListener('keydown', keydown); previous?.focus?.(); };
+  }, [confirmState, handleCloseConfirm]);
 
   return (
     <NotificationContext.Provider value={{ showToast, showConfirm }}>
@@ -93,6 +121,8 @@ export const NotificationProvider = ({ children }) => {
           const style = toastStyles[toast.type] || toastStyles.info;
           return (
             <div
+              role="status"
+              aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
               key={toast.id}
               className={`pointer-events-auto w-full sm:w-[300px] max-w-[calc(100vw-2.5rem)] rounded-[16px] border-2 ${style.border} border-l-[5px] ${style.borderLeft} bg-white ${style.shadow} px-4 py-3 font-body text-[#3D2C35] animate-toast-in`}
             >
@@ -126,6 +156,11 @@ export const NotificationProvider = ({ children }) => {
           onClick={() => handleCloseConfirm(false)}
         >
           <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+            aria-describedby="confirmation-message"
             className="relative w-full max-w-[320px] rounded-[24px] border-2 border-dashed border-[#F4BFCF] bg-white px-6 py-8 shadow-[6px_6px_0px_#F9A8C9] animate-confirm-pop"
             onClick={(e) => e.stopPropagation()}
           >
@@ -133,10 +168,10 @@ export const NotificationProvider = ({ children }) => {
             <div className="mx-auto mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F9A8C9] text-2xl text-white">
               {starIcon}
             </div>
-            <h3 className="text-center font-heading text-[18px] font-bold text-[#3D2C35]">
+            <h3 id="confirmation-title" className="text-center font-heading text-[18px] font-bold text-[#3D2C35]">
               {confirmState.title}
             </h3>
-            <p className="mt-2 text-center text-sm text-[#6B5560]">
+            <p id="confirmation-message" className="mt-2 text-center text-sm text-[#6B5560]">
               {confirmState.message}
             </p>
             <div className="my-5 border-t border-dashed border-[#F4BFCF]" />

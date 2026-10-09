@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ClipboardList,
@@ -16,6 +16,9 @@ import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const drawerRef = useRef(null);
+  const previousFocusRef = useRef(null);
   const location = useLocation();
   const { cartCount } = useCart();
 
@@ -31,15 +34,36 @@ const Navbar = () => {
   ];
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    document.body.style.position = isOpen ? 'fixed' : '';
-    document.body.style.width = isOpen ? '100%' : '';
+    const previous = { overflow: document.body.style.overflow, position: document.body.style.position, width: document.body.style.width };
+    document.body.style.overflow = isOpen ? 'hidden' : previous.overflow;
+    document.body.style.position = isOpen ? 'fixed' : previous.position;
+    document.body.style.width = isOpen ? '100%' : previous.width;
 
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
+      document.body.style.overflow = previous.overflow;
+      document.body.style.position = previous.position;
+      document.body.style.width = previous.width;
     };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      previousFocusRef.current?.focus?.();
+      return undefined;
+    }
+    previousFocusRef.current = document.activeElement;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') { setIsOpen(false); menuButtonRef.current?.focus(); return; }
+      if (event.key !== 'Tab' || !drawerRef.current) return;
+      const focusable = drawerRef.current.querySelectorAll('a[href],button:not([disabled])');
+      if (!focusable.length) return;
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    drawerRef.current?.querySelector('button')?.focus();
+    return () => document.removeEventListener('keydown', closeOnEscape);
   }, [isOpen]);
 
   const isActive = (path) => {
@@ -98,9 +122,12 @@ const Navbar = () => {
 
             <div className="md:hidden flex items-center">
               <button
+                ref={menuButtonRef}
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex min-h-11 min-w-11 items-center justify-center rounded-[12px] border-2 border-[#F4BFCF] bg-white px-[10px] py-2 text-[#E891B8] shadow-[2px_2px_0px_#F9A8C9] focus:outline-none"
                 aria-label={isOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isOpen}
+                aria-controls="mobile-navigation"
               >
                 {isOpen ? (
                   <X className="h-6 w-6" />
@@ -118,7 +145,8 @@ const Navbar = () => {
       </div>
 
       <div
-        className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+          inert={!isOpen}
+          className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
           isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         }`}
       >
@@ -130,6 +158,11 @@ const Navbar = () => {
         />
 
         <div
+          id="mobile-navigation"
+          ref={drawerRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
           className={`absolute left-0 top-0 z-50 flex h-[100dvh] w-[80vw] max-w-[300px] flex-col overflow-hidden bg-[#FDDDE6] shadow-[4px_0px_20px_rgba(249,168,201,0.4)] transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}

@@ -23,12 +23,16 @@ const ShopDetail = () => {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+    setBouquet(null); setLoading(true); setQuantity(1); setMessageCard(''); setActiveImage(0);
     const fetchBouquet = async () => {
-      const { data, error } = await supabase.from('bouquets').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('bouquets').select('*').eq('id', id).eq('is_visible', true).is('archived_at', null).abortSignal(controller.signal).single();
+      if (controller.signal.aborted) return;
       if (data) setBouquet(data); else console.error('Bouquet not found', error);
       setLoading(false);
     };
     if (id) fetchBouquet();
+    return () => controller.abort();
   }, [id]);
 
   useEffect(() => {
@@ -45,6 +49,7 @@ const ShopDetail = () => {
             return;
           }
 
+          if (!payload.new?.is_visible || payload.new?.archived_at) { setBouquet(null); return; }
           setBouquet(payload.new);
           setQuantity(current => Math.min(current, Math.max(1, normalizeStock(payload.new?.stock))));
         }
@@ -79,11 +84,11 @@ const ShopDetail = () => {
       subtotal: bouquet.price * quantity
       });
     } catch (error) {
-      console.error('Stock reservation failed:', error);
+      console.error('Unable to add item to cart:', error);
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this bouquet just went out of stock!'
+        message: 'Could not add this bouquet right now. Please try again.'
       });
       return;
     }
@@ -92,15 +97,10 @@ const ShopDetail = () => {
       showToast({
         type: 'error',
         title: 'Oops!',
-        message: 'Sorry, this bouquet just went out of stock!'
+        message: result.reason === 'unavailable' ? 'The catalogue is temporarily unavailable. Please try again.' : 'Sorry, this bouquet just went out of stock!'
       });
-      setBouquet(prev => prev ? { ...prev, stock: 0 } : prev);
+      if (result.reason === 'out-of-stock') setBouquet(prev => prev ? { ...prev, stock: 0 } : prev);
       return;
-    }
-
-    if (result.stock !== null && result.stock !== undefined) {
-      setBouquet(prev => prev ? { ...prev, stock: result.stock } : prev);
-      setQuantity(current => Math.min(current, Math.max(1, result.stock)));
     }
 
     showToast({
@@ -158,13 +158,13 @@ const ShopDetail = () => {
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
           <div className="md:w-1/2 flex flex-col gap-4">
             <div className="scrapbook-card washi-strip aspect-[4/5] bg-astraea-blush rounded-2xl flex items-center justify-center overflow-hidden">
-              {images[activeImage] ? <img src={images[activeImage]} alt={bouquet.name} className="w-full h-full object-cover rounded-[14px]" /> : <Flower2 className="w-32 h-32 text-astraea-pink/20" />}
+              {images[activeImage] ? <img src={images[activeImage]} alt={bouquet.name} decoding="async" className="w-full h-full object-cover rounded-[14px]" /> : <Flower2 className="w-32 h-32 text-astraea-pink/20" />}
             </div>
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, idx) => (
-                  <button key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
-                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
+                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
+                    <img src={img} alt={`Thumbnail ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
                   </button>
                 ))}
               </div>
@@ -184,11 +184,11 @@ const ShopDetail = () => {
                 <textarea id="message" rows="3" value={messageCard} onChange={(e) => setMessageCard(e.target.value)} placeholder="Happy Anniversary..." className="kawaii-input min-h-[100px] resize-none"></textarea>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
+                <label htmlFor="bouquet-quantity" className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
                 <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
-                  <span className="w-12 text-center font-bold text-lg">{quantity}</span>
-                  <button onClick={() => setQuantity(Math.min(stock, quantity + 1))} disabled={isOutOfStock || quantity >= stock} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"><Plus className="w-5 h-5" /></button>
+                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
+                  <span id="bouquet-quantity" aria-live="polite" className="w-12 text-center font-bold text-lg">{quantity}</span>
+                  <button type="button" aria-label="Increase quantity" onClick={() => setQuantity(Math.min(stock, quantity + 1))} disabled={isOutOfStock || quantity >= stock} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"><Plus className="w-5 h-5" /></button>
                 </div>
               </div>
             </div>

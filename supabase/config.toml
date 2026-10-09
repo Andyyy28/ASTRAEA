@@ -1,0 +1,13 @@
+# Function configuration only. No migrations or production settings are applied.
+[functions.notification-worker]
+# Custom high-entropy scheduler bearer credential is verified in the handler.
+verify_jwt = false
+
+[functions.admin-payment-proof]
+verify_jwt = true
+
+[functions.guest-api]
+verify_jwt = false
+
+[functions.cleanup-payment-proofs]
+verify_jwt = false

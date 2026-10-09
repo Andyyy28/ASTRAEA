@@ -2,45 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
+import { Plus, Minus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import { uploadCatalogImage } from '../../lib/catalogImages';
 
 // Upload image to Supabase Storage, returns the public URL
-const uploadImage = async (file) => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) {
-    console.error('Auth session error:', sessionError);
-    throw sessionError;
-  }
-  if (!session?.user) {
-    throw new Error('You must be signed in with a real Supabase admin account before uploading images.');
-  }
-
-  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-
-  const { error } = await supabase.storage
-    .from('bouquets')
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
-  if (error) {
-    console.log(error);
-    throw error;
-  }
-
-  const { data: urlData } = supabase.storage.from('bouquets').getPublicUrl(fileName);
-  return urlData.publicUrl;
-};
-
-const isMissingStockSchema = (error) => (
-  error?.code === 'PGRST204'
-  || error?.message?.toLowerCase().includes("'stock' column")
-  || error?.message?.toLowerCase().includes('schema cache')
-);
-
-const omitStock = ({ stock, ...payload }) => payload;
-
 const AdminBouquets = () => {
   const [bouquets, setBouquets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +27,20 @@ const AdminBouquets = () => {
   
   const [editingId, setEditingId] = useState(null);
   const { showToast, showConfirm } = useNotifications();
+
+  const adjustStock = async (bouquet, delta) => {
+    const { data, error } = await supabase.rpc('adjust_inventory_stock', {
+      p_product_type: 'bouquet', p_product_id: bouquet.id, p_delta: delta
+    });
+    if (error) {
+      showToast({ type: 'error', title: 'Stock update failed', message: error.message });
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) { showToast({ type: 'error', title: 'Stock update failed', message: 'The bouquet was not updated.' }); return; }
+    const next = Number(row.stock);
+    setBouquets(prev => prev.map(item => item.id === bouquet.id ? { ...item, stock: next, stock_version: row.stock_version } : item));
+  };
 
   useEffect(() => {
     fetchBouquets();
@@ -101,10 +81,9 @@ const AdminBouquets = () => {
   };
 
   const handleToggleVisibility = async (id, currentVal) => {
-    const { error } = await supabase.from('bouquets').update({ is_visible: !currentVal }).eq('id', id);
-    if (!error) {
-      setBouquets(prev => prev.map(b => b.id === id ? { ...b, is_visible: !currentVal } : b));
-    }
+    const { data, error } = await supabase.from('bouquets').update({ is_visible: !currentVal, ...(currentVal ? {} : { archived_at: null }) }).eq('id', id).select().single();
+    if (error || !data) { showToast({ type: 'error', title: 'Visibility update failed', message: error?.message || 'The bouquet was not updated.' }); return; }
+    setBouquets(prev => prev.map(b => b.id === id ? data : b));
   };
 
   const handleToggleFeatured = async (id, currentVal) => {
@@ -120,23 +99,25 @@ const AdminBouquets = () => {
       }
     }
 
-    const { error } = await supabase.from('bouquets').update({ is_featured: !currentVal }).eq('id', id);
-    if (!error) {
-      setBouquets(prev => prev.map(b => b.id === id ? { ...b, is_featured: !currentVal } : b));
-    }
+    const { data, error } = await supabase.from('bouquets').update({ is_featured: !currentVal }).eq('id', id).select().single();
+    if (error || !data) { showToast({ type: 'error', title: 'Featured update failed', message: error?.message || 'The bouquet was not updated.' }); return; }
+    setBouquets(prev => prev.map(b => b.id === id ? data : b));
   };
 
   const handleDelete = async (id) => {
     const confirmed = await showConfirm({
-      title: 'Delete bouquet? ✦',
-      message: 'This will permanently remove this bouquet from your store.',
-      confirmText: 'Yes, delete',
+      title: 'Archive bouquet? ✦',
+      message: 'The bouquet will leave the storefront while preserving order history.',
+      confirmText: 'Yes, archive',
       cancelText: 'Keep it ♡'
     });
     if (!confirmed) return;
-    const { error } = await supabase.from('bouquets').delete().eq('id', id);
-    if (!error) {
-      setBouquets(prev => prev.filter(b => b.id !== id));
+    const archivedAt = new Date().toISOString();
+    const { data, error } = await supabase.from('bouquets').update({ archived_at: archivedAt, is_visible: false }).eq('id', id).select().single();
+    if (!error && data) {
+      setBouquets(prev => prev.map(b => b.id === id ? data : b));
+    } else {
+      showToast({ type: 'error', title: 'Archive failed', message: error?.message || 'The product was not updated.' });
     }
   };
 
@@ -173,13 +154,12 @@ const AdminBouquets = () => {
   const handleModalSubmit = async (e) => {
     e.preventDefault();
     setUploading(true);
-    
     try {
       let imageUrls = formData.images.filter(i => i.trim() !== '');
       
       if (imageFile) {
-        const imageUrl = await uploadImage(imageFile);
-        imageUrls = [imageUrl];
+        const uploaded = await uploadCatalogImage(supabase, 'bouquets', imageFile);
+        imageUrls = [uploaded.publicUrl];
       }
 
       const featuredCount = bouquets.filter(b => b.is_featured && b.id !== editingId).length;
@@ -189,89 +169,36 @@ const AdminBouquets = () => {
           title: 'Oops! ✦',
           message: 'You can only mark up to 3 bouquets as best sellers.'
         });
-        setUploading(false);
-        return;
+        throw new Error('You can only mark up to 3 bouquets as best sellers.');
       }
 
       const payload = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
         price: parseFloat(formData.price),
-        stock: Math.max(0, parseInt(formData.stock, 10) || 0),
-        images: imageUrls
+        images: imageUrls,
+        is_visible: formData.is_visible,
+        is_featured: formData.is_featured,
+        ...(editingId && formData.is_visible ? { archived_at: null } : {})
       };
       
       if (editingId) {
-        let { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select();
+        const { data, error } = await supabase.from('bouquets').update(payload).eq('id', editingId).select().single();
         if (error) {
           console.error("Error updating bouquet:", error);
-          if (isMissingStockSchema(error)) {
-            const retry = await supabase.from('bouquets').update(omitStock(payload)).eq('id', editingId).select();
-            data = retry.data;
-            error = retry.error;
-            if (!error) {
-              showToast({
-                type: 'info',
-                title: 'Bouquet saved',
-                message: 'Stock is not active yet. Run the stock migration in Supabase to enable stock counts.'
-              });
-            }
-          }
-          if (!error) {
-            setBouquets(prev => prev.map(b => b.id === editingId ? { ...data[0], stock: payload.stock } : b));
-            setIsModalOpen(false);
-            setImageFile(null);
-            return;
-          }
-          if (isMissingStockSchema(error)) {
-            showToast({
-              type: 'error',
-              title: 'Stock setup needed',
-              message: 'Run the bouquet stock migration in Supabase, then refresh this page.'
-            });
-            return;
-          }
-          showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to update bouquet: ${error.message}` });
-          return;
+          throw error;
         }
-        if (data) {
-          setBouquets(prev => prev.map(b => b.id === editingId ? data[0] : b));
-        }
+        if (!data) throw new Error('The bouquet was not found or was not updated.');
+        setBouquets(prev => prev.map(b => b.id === editingId ? data : b));
       } else {
-        let { data, error } = await supabase.from('bouquets').insert([payload]).select();
+        const { data, error } = await supabase.from('bouquets').insert([payload]).select().single();
         if (error) {
           console.error("Error inserting bouquet:", error);
-          if (isMissingStockSchema(error)) {
-            const retry = await supabase.from('bouquets').insert([omitStock(payload)]).select();
-            data = retry.data;
-            error = retry.error;
-            if (!error) {
-              showToast({
-                type: 'info',
-                title: 'Bouquet saved',
-                message: 'Stock is not active yet. Run the stock migration in Supabase to enable stock counts.'
-              });
-            }
-          }
-          if (!error) {
-            setBouquets([{ ...data[0], stock: payload.stock }, ...bouquets]);
-            setIsModalOpen(false);
-            setImageFile(null);
-            return;
-          }
-          if (isMissingStockSchema(error)) {
-            showToast({
-              type: 'error',
-              title: 'Stock setup needed',
-              message: 'Run the bouquet stock migration in Supabase, then refresh this page.'
-            });
-            return;
-          }
-          showToast({ type: 'error', title: 'Oops! ✦', message: `Failed to create bouquet: ${error.message}` });
-          return;
+          throw error;
         }
-        if (data) {
-          setBouquets([data[0], ...bouquets]);
-        }
+        if (!data) throw new Error('The bouquet was not created.');
+        setBouquets(prev => [data, ...prev]);
       }
       setIsModalOpen(false);
       setImageFile(null);
@@ -434,7 +361,11 @@ const AdminBouquets = () => {
                       {formatPrice(b.price)}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>
+                      <div className="inline-flex items-center gap-1">
+                        <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-3 w-3" /></button>
+                        <span className="min-w-10 px-2 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>
+                        <button type="button" onClick={() => adjustStock(b, 1)} className="min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-3 w-3" /></button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button 
@@ -502,18 +433,6 @@ const AdminBouquets = () => {
                     value={formData.price} 
                     onChange={e => setFormData({...formData, price: e.target.value})} 
                     className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="1"
-                    value={formData.stock}
-                    onChange={e => setFormData({...formData, stock: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none"
                   />
                 </div>
               </div>

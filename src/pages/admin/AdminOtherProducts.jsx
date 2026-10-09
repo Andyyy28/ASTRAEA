@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Gift } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import { uploadCatalogImage } from '../../lib/catalogImages';
 
 const categories = [
   { value: 'keychain', label: 'Keychain' },
@@ -22,23 +23,6 @@ const emptyForm = {
   category: 'keychain',
   is_visible: true,
   is_available: true
-};
-
-const uploadImage = async (file) => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) throw sessionError;
-  if (!session?.user) {
-    throw new Error('You must be signed in with a real Supabase admin account before uploading images.');
-  }
-
-  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-  const { error } = await supabase.storage
-    .from('other-products')
-    .upload(fileName, file, { cacheControl: '3600', upsert: false });
-  if (error) throw error;
-
-  const { data: urlData } = supabase.storage.from('other-products').getPublicUrl(fileName);
-  return urlData.publicUrl;
 };
 
 const AdminOtherProducts = () => {
@@ -60,7 +44,7 @@ const AdminOtherProducts = () => {
     setStockDrafts(Object.fromEntries(items.map(product => [product.id, Number(product.stock) || 0])));
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('other_products')
@@ -71,11 +55,11 @@ const AdminOtherProducts = () => {
       syncStockDrafts(data);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   useEffect(() => {
     const channel = supabase
@@ -153,48 +137,46 @@ const AdminOtherProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-
     try {
       const existingUrls = imageItems.filter(item => item.existingUrl).map(item => item.existingUrl);
       const uploadedUrls = [];
 
       for (const item of imageItems.filter(item => item.file)) {
-        uploadedUrls.push(await uploadImage(item.file));
+        const uploaded = await uploadCatalogImage(supabase, 'other-products', item.file);
+        uploadedUrls.push(uploaded.publicUrl);
       }
 
-      const stock = Math.max(0, Number(formData.stock) || 0);
       const payload = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        stock,
         category: formData.category,
         images: [...existingUrls, ...uploadedUrls],
         is_visible: formData.is_visible,
-        is_available: stock > 0
+        is_available: formData.is_available !== false
       };
+      if (editingId && formData.is_visible) payload.archived_at = null;
 
       if (editingId) {
         const { data, error } = await supabase
           .from('other_products')
           .update(payload)
           .eq('id', editingId)
-          .select();
+          .select()
+          .single();
         if (error) throw error;
-        if (data) {
-          setProducts(prev => prev.map(product => product.id === editingId ? data[0] : product));
-          setStockDrafts(prev => ({ ...prev, [editingId]: stock }));
-        }
+        if (!data) throw new Error('The product was not found or was not updated.');
+        setProducts(prev => prev.map(product => product.id === editingId ? data : product));
       } else {
         const { data, error } = await supabase
           .from('other_products')
           .insert([payload])
-          .select();
+          .select()
+          .single();
         if (error) throw error;
-        if (data) {
-          setProducts(prev => [data[0], ...prev]);
-          setStockDrafts(prev => ({ ...prev, [data[0].id]: stock }));
-        }
+        if (!data) throw new Error('The product was not created.');
+        setProducts(prev => [data, ...prev]);
+        setStockDrafts(prev => ({ ...prev, [data.id]: Number(data.stock) || 0 }));
       }
 
       setIsModalOpen(false);
@@ -210,22 +192,23 @@ const AdminOtherProducts = () => {
 
   const handleDelete = async (id) => {
     const confirmed = await showConfirm({
-      title: 'Delete this product? ✦',
-      message: 'This will permanently remove it from your store.',
-      confirmText: 'Yes, delete',
+      title: 'Archive this product? ✦',
+      message: 'The product will leave the storefront while preserving order history.',
+      confirmText: 'Yes, archive',
       cancelText: 'Keep it ♡'
     });
     if (!confirmed) return;
 
-    const { error } = await supabase.from('other_products').delete().eq('id', id);
-    if (!error) {
-      setProducts(prev => prev.filter(product => product.id !== id));
+    const archivedAt = new Date().toISOString();
+    const { data, error } = await supabase.from('other_products').update({ archived_at: archivedAt, is_visible: false }).eq('id', id).select().single();
+    if (!error && data) {
+      setProducts(prev => prev.map(product => product.id === id ? data : product));
       setStockDrafts(prev => {
         const next = { ...prev };
         delete next[id];
         return next;
       });
-    }
+    } else showToast({ type: 'error', title: 'Archive failed', message: error?.message || 'The product was not updated.' });
   };
 
   const setStockDraft = (id, value) => {
@@ -234,18 +217,19 @@ const AdminOtherProducts = () => {
 
   const updateProductStock = async (product) => {
     const stock = Math.max(0, Number(stockDrafts[product.id]) || 0);
-    const { data, error } = await supabase
-      .from('other_products')
-      .update({ stock, is_available: stock > 0 })
-      .eq('id', product.id)
-      .select();
+    const { data, error } = await supabase.rpc('set_inventory_stock_with_version', {
+      p_product_type: 'other_product',
+      p_product_id: product.id,
+      p_stock: stock,
+      p_expected_version: Number(product.stock_version) || 1
+    });
 
     if (error) {
       showToast({ type: 'error', title: 'Oops! ✦', message: error.message || 'Failed to update stock.' });
       return;
     }
 
-    if (data?.[0]) setProducts(prev => prev.map(item => item.id === product.id ? data[0] : item));
+    if (data?.[0]) setProducts(prev => prev.map(item => item.id === product.id ? { ...item, stock: data[0].stock, stock_version: data[0].stock_version, is_available: data[0].stock > 0 } : item));
     showToast({ type: 'success', title: 'Stock updated! ✿', message: 'Product stock has been saved.' });
   };
 
@@ -383,11 +367,6 @@ const AdminOtherProducts = () => {
                   <label className={labelClass}>Price {"\u20B1"}</label>
                   <input type="number" required min="0" step="0.01" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} />
                 </div>
-                <div>
-                  <label className={labelClass}>Stock Quantity</label>
-                  <input type="number" min="0" placeholder="0" value={formData.stock} onChange={e => setFormData({ ...formData, stock: Math.max(0, Number(e.target.value) || 0), is_available: Number(e.target.value) > 0 })} className={inputClass} />
-                  <p className="mt-1 text-xs font-heading text-[#6B5560]">Set to 0 if out of stock</p>
-                </div>
                 <div className="md:col-span-2">
                   <label className={labelClass}>Description</label>
                   <textarea rows="4" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className={`${inputClass} min-h-[100px] resize-none`}></textarea>
@@ -400,7 +379,7 @@ const AdminOtherProducts = () => {
                 </div>
                 <div>
                   <label className={labelClass}>Availability</label>
-                  <button type="button" onClick={() => setFormData({ ...formData, stock: formData.is_available ? 0 : Math.max(1, Number(formData.stock) || 1), is_available: !formData.is_available })} className={toggleClass(formData.is_available)}>
+                  <button type="button" onClick={() => setFormData({ ...formData, is_available: !formData.is_available })} className={toggleClass(formData.is_available)}>
                     {formData.is_available ? 'Available' : 'Out of Stock'}
                   </button>
                 </div>

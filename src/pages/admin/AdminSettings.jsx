@@ -22,8 +22,8 @@ const AdminSettings = () => {
       return;
     }
     
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (password.length < 20) {
+      setError('Password must be at least 20 characters.');
       return;
     }
 

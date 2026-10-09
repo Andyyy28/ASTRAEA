@@ -4,42 +4,7 @@ import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Image as ImageIcon, Minus, Plus, Trash2, X } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-
-// Upload image to Supabase Storage, returns the public URL
-const uploadImage = async (file, bucket = 'bouquets') => {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  if (sessionError) {
-    console.error('Auth session error:', sessionError);
-    throw sessionError;
-  }
-  if (!session?.user) {
-    throw new Error('You must be signed in with a real Supabase admin account before uploading images.');
-  }
-
-  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-
-  const { error } = await supabase.storage
-    .from(bucket)
-    .upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false
-    });
-  if (error) {
-    console.log(error);
-    throw error;
-  }
-
-  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-  return urlData.publicUrl;
-};
-
-const getStoragePath = (publicUrl, bucket = 'bouquets') => {
-  if (!publicUrl) return null;
-  const marker = `/storage/v1/object/public/${bucket}/`;
-  const markerIndex = publicUrl.indexOf(marker);
-  if (markerIndex === -1) return null;
-  return publicUrl.slice(markerIndex + marker.length).split('?')[0];
-};
+import { uploadCatalogImage } from '../../lib/catalogImages';
 
 const emptyForms = {
   flower: { name: '', price: '', image_url: '', stock: 0, is_available: true },
@@ -55,7 +20,6 @@ const tabs = [
   ['fillers', 'Fillers & Colors'],
   ['wrappers', 'Wrappers'],
   ['fuzzy', 'Fuzzy Wires'],
-  ['sizes', 'Sizes'],
   ['addons', 'Add-ons'],
 ];
 
@@ -141,30 +105,33 @@ const AdminInventory = () => {
   };
 
   const handleStockChange = async (table, id, currentStock, delta) => {
-    const stock = Math.max(0, (Number(currentStock) || 0) + delta);
-    const { error } = await supabase.from(table).update({ stock }).eq('id', id);
+    const productType = table === 'flowers' ? 'flower' : table === 'fillers' ? 'filler' : table === 'bouquets' ? 'bouquet' : 'other_product';
+    const { data, error } = await supabase.rpc('adjust_inventory_stock', { p_product_type: productType, p_product_id: id, p_delta: delta });
     if (error) {
       showToast({ type: 'error', title: 'Oops!', message: error.message });
       return;
     }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) { showToast({ type: 'error', title: 'Stock update failed', message: 'No inventory row was updated.' }); return; }
+    const stock = Number(row.stock);
     patchLocal(table, prev => prev.map(item => item.id === id ? { ...item, stock } : item));
   };
 
   const handleDelete = async (table, id) => {
     const confirmed = await showConfirm({
-      title: 'Delete item?',
-      message: 'This action cannot be undone.',
-      confirmText: 'Yes, delete',
+      title: 'Disable item?',
+      message: 'This item will become unavailable while keeping existing order records.',
+      confirmText: 'Yes, disable',
       cancelText: 'Keep it',
     });
     if (!confirmed) return;
 
-    const { error } = await supabase.from(table).delete().eq('id', id);
-    if (error) {
-      showToast({ type: 'error', title: 'Oops!', message: 'Error deleting item. It might be referenced in an order.' });
+    const { data, error } = await supabase.from(table).update({ is_available: false }).eq('id', id).select().single();
+    if (error || !data) {
+      showToast({ type: 'error', title: 'Oops!', message: error?.message || 'The item was not updated.' });
       return;
     }
-    patchLocal(table, prev => prev.filter(item => item.id !== id));
+    patchLocal(table, prev => prev.map(item => item.id === id ? data : item));
   };
 
   const openModal = (type, item = null) => {
@@ -173,7 +140,7 @@ const AdminInventory = () => {
     const nextForm = item && !isAddingNestedColor ? {
       key: item.key || '',
       name: item.name || item.material || item.color_name || '',
-      price: item.price ?? '',
+      price: item.price_per_stem ?? item.price ?? '',
       base_price: item.base_price ?? '',
       stems: item.stems || '',
       image_url: item.image_url || '',
@@ -218,16 +185,15 @@ const AdminInventory = () => {
     setUploading(true);
 
     try {
-      const stock = Math.max(0, parseInt(formData.stock, 10) || 0);
       const displayOrder = parseInt(formData.display_order, 10) || 0;
       let saved = false;
       let imageUrl = formData.image_url || null;
-      const oldImageUrl = activeItem?.image_url || null;
+
 
       const imageBucket = modalType.includes('addon') ? 'addons' : 'bouquets';
 
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile, imageBucket);
+        imageUrl = (await uploadCatalogImage(supabase, imageBucket, imageFile)).publicUrl;
       }
 
       if (modalType.includes('flower') && !modalType.includes('color')) {
@@ -235,7 +201,6 @@ const AdminInventory = () => {
           name: formData.name,
           price_per_stem: parseFloat(formData.price) || 0,
           image_url: imageUrl,
-          stock,
           is_available: formData.is_available !== false,
         }, setFlowers);
       } else if (modalType.includes('filler_color')) {
@@ -250,7 +215,6 @@ const AdminInventory = () => {
           name: formData.name,
           price: parseFloat(formData.price) || 0,
           image_url: imageUrl,
-          stock,
           is_available: formData.is_available !== false,
         }, setFillers);
       } else if (modalType.includes('wrapper') && !modalType.includes('color')) {
@@ -302,10 +266,8 @@ const AdminInventory = () => {
       }
 
       if (saved) {
-        const oldPath = imageFile ? getStoragePath(oldImageUrl, imageBucket) : null;
-        if (oldPath) {
-          await supabase.storage.from(imageBucket).remove([oldPath]);
-        }
+        // Retired images are collected after a 24-hour grace period by the
+        // reference-aware cleanup utility, including shared/historical uses.
         closeModal();
       }
     } catch (error) {
@@ -500,22 +462,6 @@ const AdminInventory = () => {
                 </InventoryTable>
               )}
 
-              {activeTab === 'sizes' && (
-                <InventoryTable title="Bouquet Sizes" addText="Add Size" onAdd={() => openModal('add_size')} headers={['Key', 'Name', 'Stems', 'Base Price', 'Order', 'Availability', 'Actions']}>
-                  {orderedSizes.map(size => (
-                    <tr key={size.id}>
-                      <td className="px-4 py-4 font-mono text-xs text-gray-600">{size.key}</td>
-                      <td className="px-4 py-4 font-bold text-gray-800">{size.name}</td>
-                      <td className="px-4 py-4 text-gray-600">{size.stems}</td>
-                      <td className="px-4 py-4 font-medium text-gray-600">{formatPrice(size.base_price)}</td>
-                      <td className="px-4 py-4 text-gray-600">{size.display_order || 0}</td>
-                      <td className="px-4 py-4">{availabilityButton('bouquet_sizes', size)}</td>
-                      <td className="px-4 py-4 text-right">{actions('edit_size', 'bouquet_sizes', size)}</td>
-                    </tr>
-                  ))}
-                </InventoryTable>
-              )}
-
               {activeTab === 'addons' && (
                 <InventoryTable title="Bouquet Add-ons" addText="Add Add-on" onAdd={() => openModal('add_addon')} headers={['Image', 'Key', 'Name', 'Price', 'Order', 'Availability', 'Actions']}>
                   {orderedAddons.map(addon => (
@@ -567,7 +513,6 @@ const AdminInventory = () => {
                 {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || modalType.includes('addon')) ? (
                   <Field label={modalType.includes('addon') ? 'Price' : modalType.includes('flower') ? 'Price Per Stem' : 'Price'}><input type="number" required min="0" step="0.01" value={formData.price || ''} onChange={e => setFormData({ ...formData, price: e.target.value })} className={inputClass} /></Field>
                 ) : null}
-                {modalType.includes('size') && <Field label="Base Price"><input type="number" required min="0" step="0.01" value={formData.base_price || ''} onChange={e => setFormData({ ...formData, base_price: e.target.value })} className={inputClass} /></Field>}
                 {((modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) || (modalType.includes('wrapper') && !modalType.includes('color')) || modalType.includes('addon')) ? (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
@@ -630,9 +575,6 @@ const AdminInventory = () => {
                       className={inputClass}
                     />
                   </div>
-                ) : null}
-                {(modalType.includes('flower') && !modalType.includes('color')) || (modalType.includes('filler') && !modalType.includes('color')) ? (
-                  <Field label="Stock Count"><input type="number" min="0" step="1" value={formData.stock ?? 0} onChange={e => setFormData({ ...formData, stock: e.target.value })} className={inputClass} /></Field>
                 ) : null}
                 {(modalType.includes('size') || modalType.includes('addon') || modalType.includes('fuzzy')) && (
                   <Field label="Display Order"><input type="number" step="1" value={formData.display_order ?? 0} onChange={e => setFormData({ ...formData, display_order: e.target.value })} className={inputClass} /></Field>

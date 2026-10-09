@@ -6,7 +6,7 @@ import { formatPrice } from '../../lib/formatPrice';
 import { Flower2, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 
 const Cart = () => {
-  const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, cartTotal, storageAvailable } = useCart();
   const { showToast } = useNotifications();
   const navigate = useNavigate();
 
@@ -25,14 +25,7 @@ const Cart = () => {
     );
   }
 
-  const handleRemove = async (cartId) => {
-    try {
-      await removeFromCart(cartId);
-    } catch (error) {
-      console.error('Unable to release stock:', error);
-      showToast({ type: 'error', title: 'Oops!', message: 'Could not update stock. Please try again.' });
-    }
-  };
+  const handleRemove = (cartId) => removeFromCart(cartId);
 
   const handleQuantityChange = async (cartId, newQuantity) => {
     try {
@@ -49,10 +42,14 @@ const Cart = () => {
           title: 'Oops!',
           message: `Only ${result.stock} items available ✦`
         });
+      } else if (result?.reason === 'invalid-quantity') {
+        showToast({ type: 'error', title: 'Quantity limit', message: 'Each cart line is limited to 50 items.' });
+      } else if (result?.reason === 'unavailable') {
+        showToast({ type: 'error', title: 'Catalogue unavailable', message: 'We could not verify availability. Please try again.' });
       }
     } catch (error) {
-      console.error('Unable to update stock:', error);
-      showToast({ type: 'error', title: 'Oops!', message: 'Could not update stock. Please try again.' });
+      console.error('Unable to update cart:', error);
+      showToast({ type: 'error', title: 'Oops!', message: 'Could not update the cart. Please try again.' });
     }
   };
 
@@ -60,11 +57,12 @@ const Cart = () => {
     <div className="py-8 md:py-16 pb-28 lg:pb-16 bg-astraea-cream min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="section-heading text-2xl md:text-4xl mb-8 md:mb-10">Your Cart</h1>
+        {!storageAvailable && <p role="alert" className="mb-6 rounded-xl border-2 border-[#F9C74F] bg-[#FFF8D9] px-4 py-3 text-sm text-[#6B5310]">Your browser is blocking local storage, so this cart may be lost if you refresh.</p>}
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="lg:w-2/3 space-y-6">
             {cartItems.map((item) => (
               <div key={item.cartId} className="scrapbook-card washi-strip bg-[#FFFDFE] flex flex-col sm:flex-row gap-6 relative group transition-all">
-                <button onClick={() => handleRemove(item.cartId)} className="absolute top-4 right-4 text-astraea-darkgray/40 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5" /></button>
+                <button aria-label={`Remove ${item.name}`} onClick={() => handleRemove(item.cartId)} className="absolute top-4 right-4 text-astraea-darkgray/40 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5" /></button>
                 <div className="w-full sm:w-32 aspect-[4/3] sm:aspect-auto sm:h-32 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-dashed border-astraea-pink/30">
                   {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center rounded-xl" /> : <Flower2 className="w-12 h-12 text-astraea-pink/40" />}
                 </div>
@@ -93,9 +91,9 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between items-end mt-4 sm:mt-0">
                     <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                      <button onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
+                      <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
                       <span className="w-10 text-center font-bold text-sm">{item.quantity}</span>
-                      <button onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Plus className="w-4 h-4" /></button>
+                      <button aria-label={`Increase quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Plus className="w-4 h-4" /></button>
                     </div>
                     <div className="text-right">
                       <span className="text-sm text-astraea-darkgray/60 block mb-1">Subtotal</span>

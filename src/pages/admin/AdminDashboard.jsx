@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { ShoppingBag, Clock, DollarSign, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import { useNotifications } from '../../context/NotificationContext';
 
 const AdminDashboard = () => {
   const [metrics, setMetrics] = useState({
@@ -15,70 +16,76 @@ const AdminDashboard = () => {
   const [pendingOrders, setPendingOrders] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useNotifications();
+  const requestRef = useRef(null);
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    const { data: ordersData } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (ordersData) {
-      const todayOrders = ordersData.filter(o => new Date(o.created_at) >= today).length;
-      const pend = ordersData.filter(o => o.status === 'pending');
-      const monthOrders = ordersData.filter(o => new Date(o.created_at) >= startOfMonth && o.status !== 'cancelled');
-      const monthRev = ordersData
-        .filter(o => new Date(o.created_at) >= startOfMonth && o.status !== 'cancelled')
-        .reduce((sum, o) => sum + Number(o.total_amount), 0);
-
-      let topBouquet = '-';
-      const monthOrderIds = monthOrders.map(order => order.id);
-      if (monthOrderIds.length > 0) {
-        const { data: itemData } = await supabase
-          .from('order_items')
-          .select('bouquet_id, quantity, bouquets(name)')
-          .in('order_id', monthOrderIds);
-
-        const counts = new Map();
-        itemData?.forEach(item => {
-          const name = item.bouquets?.name || (item.bouquet_id ? 'Ready-Made Bouquet' : 'Custom Bouquet');
-          counts.set(name, (counts.get(name) || 0) + (Number(item.quantity) || 1));
-        });
-        topBouquet = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-      }
-
-      setPendingOrders(pend);
-
-      setMetrics({
-        ordersToday: todayOrders,
-        pendingOrders: pend.length,
-        revenueMonth: monthRev,
-        topBouquet
-      });
+    requestRef.current?.abort();
+    const controller = new AbortController(); requestRef.current = controller;
+    const [summary, pending] = await Promise.all([
+      supabase.rpc('admin_dashboard_summary').abortSignal(controller.signal),
+      supabase.from('orders').select('*').eq('status','pending').order('created_at', { ascending: false }).limit(10).abortSignal(controller.signal)
+    ]);
+    if (controller.signal.aborted) return;
+    if (pending.error) {
+      showToast({ type: 'error', message: 'Dashboard could not load. Please try again.' });
+      setLoading(false); return;
     }
 
+    // The summary RPC is deployed by the latest migration. Keep the admin
+    // dashboard usable during a staged rollout where that function is not yet
+    // available by calculating the headline metrics from the readable orders
+    // table instead.
+    let dashboardSummary = summary.data;
+    if (summary.error || !dashboardSummary) {
+      const ordersResult = await supabase
+        .from('orders')
+        .select('created_at,status,total_amount,is_paid')
+        .order('created_at', { ascending: false })
+        .limit(1000)
+        .abortSignal(controller.signal);
+      if (controller.signal.aborted) return;
+      if (ordersResult.error) {
+        showToast({ type: 'error', message: 'Dashboard could not load. Please try again.' });
+        setLoading(false); return;
+      }
+
+      const now = new Date();
+      const manilaNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+      const today = manilaNow.toDateString();
+      const month = manilaNow.getMonth();
+      const year = manilaNow.getFullYear();
+      const orders = ordersResult.data || [];
+      const inMonth = order => {
+        const date = new Date(order.created_at);
+        const manilaDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+        return manilaDate.getFullYear() === year && manilaDate.getMonth() === month;
+      };
+      dashboardSummary = {
+        ordersToday: orders.filter(order => new Date(new Date(order.created_at).toLocaleString('en-US', { timeZone: 'Asia/Manila' })).toDateString() === today).length,
+        pendingOrders: orders.filter(order => order.status === 'pending').length,
+        revenueMonth: orders.filter(order => inMonth(order) && order.status !== 'cancelled' && order.is_paid).reduce((total, order) => total + (Number(order.total_amount) || 0), 0),
+        topBouquet: '-',
+      };
+    }
+    setMetrics({ ordersToday: 0, pendingOrders: 0, revenueMonth: 0, topBouquet: '-', ...dashboardSummary });
+    setPendingOrders(pending.data || []);
+
     // 2. Fetch Low Stock
-    const [fcRes, filRes, wcRes, otherProductsRes] = await Promise.all([
-      supabase.from('flower_colors').select('id, color_name, flowers(name)').eq('is_available', false),
-      supabase.from('fillers').select('id, name').eq('is_available', false),
-      supabase.from('wrapper_colors').select('id, color_name, wrappers(material)').eq('is_available', false),
+    const [bouquetsRes, flowersRes, fillersRes, otherProductsRes] = await Promise.all([
+      // Keep this query compatible with databases that predate the optional
+      // archived_at column; archived rows are already hidden by is_visible.
+      supabase.from('bouquets').select('id, name, stock').lte('stock', 10).eq('is_visible', true),
+      supabase.from('flowers').select('id, name, stock').lte('stock', 10),
+      supabase.from('fillers').select('id, name, stock').lte('stock', 10),
       supabase.from('other_products').select('id, name, stock').lte('stock', 10).eq('is_visible', true)
     ]);
 
     const outOfStock = [];
-    if (fcRes.data) {
-      fcRes.data.forEach(item => outOfStock.push({ id: item.id, table: 'flower_colors', name: `${item.flowers.name} (${item.color_name})` }));
-    }
-    if (filRes.data) {
-      filRes.data.forEach(item => outOfStock.push({ id: item.id, table: 'fillers', name: item.name }));
-    }
-    if (wcRes.data) {
-      wcRes.data.forEach(item => outOfStock.push({ id: item.id, table: 'wrapper_colors', name: `${item.wrappers.material} (${item.color_name})` }));
+    for (const result of [[bouquetsRes, 'Bouquet'], [flowersRes, 'Flower'], [fillersRes, 'Filler']]) {
+      result[0].data?.forEach(item => outOfStock.push({ id: item.id, table: result[1] === 'Bouquet' ? 'bouquets' : result[1].toLowerCase() + 's', name: item.name, stock: Number(item.stock) || 0, label: result[1] }));
     }
     if (otherProductsRes.data) {
       otherProductsRes.data.forEach(item => outOfStock.push({
@@ -90,50 +97,49 @@ const AdminDashboard = () => {
       }));
     }
     
+    if (controller.signal.aborted) return;
+    if ([bouquetsRes, flowersRes, fillersRes, otherProductsRes].some(r => r.error)) showToast({ type: 'error', message: 'Some stock alerts could not load.' });
     setLowStock(outOfStock);
     setLoading(false);
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
   useEffect(() => {
+    let timer;
+    const refresh = () => { clearTimeout(timer); timer = window.setTimeout(fetchDashboardData, 150); };
     const channel = supabase
       .channel('admin-dashboard-orders-live')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
         () => {
-          window.setTimeout(fetchDashboardData, 150);
+          refresh();
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'order_items' },
         () => {
-          window.setTimeout(fetchDashboardData, 150);
+          refresh();
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'other_products' },
         () => {
-          window.setTimeout(fetchDashboardData, 150);
+          refresh();
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(timer); requestRef.current?.abort();
       supabase.removeChannel(channel);
     };
   }, [fetchDashboardData]);
-
-  const handleMarkAvailable = async (item) => {
-    if (item.table === 'other_products') return;
-    await supabase.from(item.table).update({ is_available: true }).eq('id', item.id);
-    setLowStock(prev => prev.filter(i => i.id !== item.id));
-  };
 
   if (loading) {
     return (
@@ -324,18 +330,7 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
-                    {item.table === 'other_products' ? (
-                      <Link to="/admin/other-products" className="min-h-11 px-4 py-2 bg-[#FFF5F7] text-[#C4658A] text-xs font-bold rounded-xl hover:bg-[#FDDDE6] transition-colors">
-                        Manage
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => handleMarkAvailable(item)}
-                        className="min-h-11 px-4 py-2 bg-green-50 text-green-600 text-xs font-bold rounded-xl hover:bg-green-100 transition-colors"
-                      >
-                        Restocked
-                      </button>
-                    )}
+                    <Link to={item.table === 'other_products' ? '/admin/other-products' : item.table === 'bouquets' ? '/admin/bouquets' : '/admin/inventory'} className="min-h-11 px-4 py-2 bg-green-50 text-green-800 text-xs font-bold rounded-xl">Manage stock</Link>
                   </li>
                 ))}
               </ul>

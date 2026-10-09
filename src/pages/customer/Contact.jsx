@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Mail, MessageCircle, Clock, Globe, AtSign, Check, Phone, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { sendReviewNotification } from '../../lib/telegram';
+import TurnstileWidget from '../../components/TurnstileWidget';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', message: '', rating: 5 });
+  const draftKey = 'astraea_review_draft';
+  const [formData, setFormData] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
+      return saved && typeof saved === 'object' ? { name: String(saved.name || '').slice(0, 120), message: String(saved.message || '').slice(0, 2000), rating: Number.isInteger(Number(saved.rating)) && Number(saved.rating) >= 1 && Number(saved.rating) <= 5 ? Number(saved.rating) : 5 } : { name: '', message: '', rating: 5 };
+    } catch { return { name: '', message: '', rating: 5 }; }
+  });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileKey, setTurnstileKey] = useState(0);
   const heartIcon = String.fromCodePoint(9825);
   const flowerIcon = String.fromCodePoint(10047);
   const starIcon = String.fromCodePoint(9733);
@@ -16,42 +24,39 @@ const Contact = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
+  useEffect(() => {
+    try { localStorage.setItem(draftKey, JSON.stringify(formData)); } catch { /* draft persistence is best effort */ }
+  }, [formData]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-
-    const { error: submitError } = await supabase
-      .from('reviews')
-      .insert({
-        name: formData.name.trim(),
-        message: formData.message.trim(),
-        rating: Number(formData.rating),
-        is_displayed: false,
-        admin_reply: null
-      });
-
-    if (submitError) {
-      setError(submitError.message || 'Could not submit your review. Please try again.');
-      setLoading(false);
+    if (!turnstileToken) {
+      setError('Please complete the security check.');
       return;
     }
+    setLoading(true);
 
-    // Fire-and-forget Telegram notification — never blocks the success state
-    sendReviewNotification({
-      customerName: formData.name.trim(),
-      rating: formData.rating,
-      message: formData.message.trim(),
-    });
-
-    setLoading(false);
-    setSubmitted(true);
-    setFormData({ name: '', message: '', rating: 5 });
+    try {
+      const { error: submitError } = await supabase.functions.invoke('guest-api', {
+        body: { action: 'review', turnstile_token: turnstileToken, name: formData.name.trim(), message: formData.message.trim(), rating: Number(formData.rating) }
+      });
+      if (submitError) throw submitError;
+      setSubmitted(true);
+      setFormData({ name: '', message: '', rating: 5 });
+      try { localStorage.removeItem(draftKey); } catch { /* ignore storage failures */ }
+    } catch (submitError) {
+      setError(submitError.message || 'Could not submit your review. Please try again.');
+    } finally {
+      setLoading(false);
+      setTurnstileToken('');
+      setTurnstileKey(key => key + 1);
+    }
   };
 
   const renderRatingInput = () => (
     <div>
-      <label className="block text-sm font-medium text-[#C4658A] mb-2">Star Rating</label>
+      <span className="block text-sm font-medium text-[#C4658A] mb-2">Star Rating</span>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((rating) => (
           <button
@@ -93,9 +98,10 @@ const Contact = () => {
                     {error}
                   </div>
                 )}
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Full Name</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="kawaii-input" placeholder="Jane Doe" /></div>
-                <div><label className="block text-sm font-medium text-[#C4658A] mb-2">Review / Feedback</label><textarea rows="5" required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="kawaii-input min-h-[100px] resize-none" placeholder="Tell us about your Astraea experience."></textarea></div>
+                <div><label htmlFor="review-name" className="block text-sm font-medium text-[#C4658A] mb-2">Full Name</label><input id="review-name" type="text" maxLength={120} required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="kawaii-input" placeholder="Jane Doe" /></div>
+                <div><label htmlFor="review-message" className="block text-sm font-medium text-[#C4658A] mb-2">Review / Feedback</label><textarea id="review-message" rows="5" maxLength={2000} required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="kawaii-input min-h-[100px] resize-none" placeholder="Tell us about your Astraea experience."></textarea></div>
                 {renderRatingInput()}
+                <TurnstileWidget key={turnstileKey} action="review" onToken={setTurnstileToken} onError={() => { setTurnstileToken(''); setError('Security check unavailable. Please try again.'); }} />
                 <button type="submit" disabled={loading} className="kawaii-btn-primary w-full py-4 text-lg">{loading ? 'Submitting...' : 'Submit Review'}</button>
               </form>
             )}
@@ -117,8 +123,8 @@ const Contact = () => {
               <div className="pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <h4 className="font-bold mb-4">Follow Us</h4>
                 <div className="flex gap-4">
-                  <a href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Globe className="w-6 h-6" /></a>
-                  <a href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><AtSign className="w-6 h-6" /></a>
+                  <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Globe className="w-6 h-6" /></a>
+                  <a aria-label="Astraea Collection Messenger" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><AtSign className="w-6 h-6" /></a>
                 </div>
               </div>
             </div>

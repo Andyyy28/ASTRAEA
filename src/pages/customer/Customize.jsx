@@ -7,7 +7,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, Image as ImageIcon, Minus, Plus, ShoppingBag } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
 
-const steps = ['Size', 'Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
+const steps = ['Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
 const money = formatPrice;
 const stockBadge = 'kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
@@ -57,7 +57,6 @@ const Customize = () => {
   const [addons, setAddons] = useState({});
   const [message, setMessage] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   const selectedAddonOptions = useMemo(
     () => addonOptions.filter(addon => addons[addon.key]),
@@ -149,7 +148,7 @@ const Customize = () => {
   };
 
   const handleNext = () => {
-    if (currentStep === 2) {
+    if (currentStep === 1) {
       const missingColor = Object.keys(selectedFlowers).some(fId => !selectedFlowerColors[fId]);
       if (missingColor) {
         showToast({
@@ -160,7 +159,7 @@ const Customize = () => {
         return;
       }
     }
-    if (currentStep === 3) {
+    if (currentStep === 2) {
       const missingColor = Object.keys(selectedFillers).some(fId => (
         fillerColorsForFiller(fId).length > 0 && !selectedFillerColors[fId]
       ));
@@ -188,7 +187,7 @@ const Customize = () => {
     }
     if (Object.keys(selectedFlowers).length === 0) {
       showToast({ type: 'error', title: 'Oops!', message: 'Please select at least one flower before adding a custom bouquet.' });
-      setCurrentStep(1);
+      setCurrentStep(0);
       return;
     }
 
@@ -294,25 +293,6 @@ const Customize = () => {
       case 0:
         return (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">What size bouquet?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              {sizeOptions.map(size => (
-                <div
-                  key={size.id}
-                  onClick={() => setSelectedSize(size)}
-                  className={`cursor-pointer rounded-2xl p-4 md:p-6 border-2 transition-all ${selectedSize?.id === size.id ? 'border-astraea-pink bg-astraea-pink/5 shadow-md' : 'border-astraea-rosegold/30 hover:border-astraea-pink/50'}`}
-                >
-                  <h3 className="font-heading text-2xl font-bold mb-2">{size.name}</h3>
-                  <p className="text-astraea-darkgray/70 mb-4">{size.stems}</p>
-                  <p className="font-bold text-astraea-pink text-xl">+{money(size.base_price)} base</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your flowers</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {dbFlowers.map(f => {
@@ -336,10 +316,10 @@ const Customize = () => {
             </div>
           </div>
         );
-      case 2: {
+      case 1: {
         const selectedFlowerObjs = dbFlowers.filter(f => selectedFlowers[f.id] > 0);
         if (selectedFlowerObjs.length === 0) {
-          return <div className="py-12 text-center animate-fade-in"><p className="text-astraea-darkgray/70">You didn't select any flowers. Go back to Step 2 to choose some!</p></div>;
+          return <div className="py-12 text-center animate-fade-in"><p className="text-astraea-darkgray/70">You didn't select any flowers. Go back to the Flowers step to choose some!</p></div>;
         }
         return (
           <div className="space-y-8 animate-fade-in">
@@ -369,7 +349,7 @@ const Customize = () => {
           </div>
         );
       }
-      case 3:
+      case 2:
         return (
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Add some fillers</h2>
@@ -425,7 +405,7 @@ const Customize = () => {
             </div>
           </div>
         );
-      case 4: {
+      case 3: {
         const activeWrapperColors = selectedWrapper ? dbWrapperColors.filter(wc => wc.wrapper_id === selectedWrapper) : [];
         return (
           <div className="space-y-8 animate-fade-in">
@@ -479,7 +459,7 @@ const Customize = () => {
           </div>
         );
       }
-      case 5:
+      case 4:
         return (
           <div className="space-y-8 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Final touches</h2>
@@ -523,12 +503,12 @@ const Customize = () => {
           {/* Steps Indicator Skeleton */}
           <div className="mb-8 md:mb-12 overflow-x-auto pb-4 md:pb-8 pt-2 px-2">
             <div className="flex items-center min-w-max justify-center md:justify-start">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <React.Fragment key={i}>
                   <div className="flex flex-col items-center relative">
                     <Skeleton className="w-8 h-8 rounded-full" />
                   </div>
-                  {i < 6 && <div className="w-12 sm:w-20 h-1 mx-2 bg-astraea-rosegold/30" />}
+                  {i < 5 && <div className="w-12 sm:w-20 h-1 mx-2 bg-astraea-rosegold/30" />}
                 </React.Fragment>
               ))}
             </div>
@@ -536,7 +516,7 @@ const Customize = () => {
 
           <div className="flex flex-col lg:flex-row gap-8 animate-fade-in">
             {/* Left box skeleton */}
-            <div className="lg:w-2/3 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl border border-astraea-rosegold/20 min-h-[500px] flex flex-col justify-between shadow-sm">
+            <div className="bg-white p-4 sm:p-8 lg:p-10 rounded-2xl border border-astraea-rosegold/20 min-h-[500px] flex flex-col justify-between shadow-sm">
               <div className="space-y-6">
                 <Skeleton className="w-48 h-8 mb-6" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -555,20 +535,6 @@ const Customize = () => {
               </div>
             </div>
 
-            {/* Right SummaryPanel skeleton */}
-            <div className="hidden lg:block lg:w-1/3 bg-astraea-darkgray p-6 rounded-2xl space-y-6 shadow-lg">
-              <Skeleton className="w-32 h-6 bg-white/10" />
-              <div className="space-y-4">
-                <div className="flex justify-between pb-2 border-b border-white/10">
-                  <Skeleton className="w-12 h-4 bg-white/10" />
-                  <Skeleton className="w-24 h-4 bg-white/10" />
-                </div>
-              </div>
-              <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-center">
-                <Skeleton className="w-12 h-6 bg-white/10" />
-                <Skeleton className="w-24 h-8 bg-white/10" />
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -594,8 +560,8 @@ const Customize = () => {
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-2/3 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
+        <div className="flex flex-col gap-8">
+          <div className="bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
             <div className="flex-grow">{renderStepContent()}</div>
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-12 pt-6 border-t border-astraea-rosegold/20">
               <button onClick={handleBack} disabled={currentStep === 0} className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'}`}>
@@ -609,102 +575,10 @@ const Customize = () => {
             </div>
           </div>
 
-          <div className="hidden lg:block lg:w-1/3">
-            <SummaryPanel
-              selectedSize={selectedSize}
-              selectedFlowers={selectedFlowers}
-              selectedFlowerColors={selectedFlowerColors}
-              dbFlowerColors={dbFlowerColors}
-              dbFlowers={dbFlowers}
-              selectedFillers={selectedFillers}
-              selectedFillerColors={selectedFillerColors}
-              dbFillerColors={dbFillerColors}
-              dbFillers={dbFillers}
-              selectedWrapper={selectedWrapper}
-              selectedWrapperColorId={selectedWrapperColorId}
-              dbWrapperColors={dbWrapperColors}
-              dbWrappers={dbWrappers}
-              selectedAddonOptions={selectedAddonOptions}
-              calculateTotal={calculateTotal}
-            />
-          </div>
         </div>
       </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs text-white/70">Custom Bouquet</p>
-            <p className="font-bold text-xl text-astraea-pink">{money(calculateTotal())}</p>
-          </div>
-          <button onClick={() => setIsSummaryOpen(true)} className="min-h-11 px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">View Summary</button>
-        </div>
-      </div>
-
-      {isSummaryOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 lg:hidden" onClick={() => setIsSummaryOpen(false)}>
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto bg-astraea-darkgray text-white p-6 rounded-t-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-heading text-2xl font-bold text-astraea-pink">Your Bouquet</h3>
-              <button onClick={() => setIsSummaryOpen(false)} className="min-h-11 min-w-11 text-white text-2xl">x</button>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize?.name}</span></div>
-              <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Flowers</span><span>{Object.values(selectedFlowers).reduce((sum, qty) => sum + qty, 0)} stems</span></div>
-              <div className="flex justify-between pt-4"><span className="text-white/80 text-lg">Total</span><span className="font-bold text-3xl text-astraea-pink">{money(calculateTotal())}</span></div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-
-const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, selectedFillerColors, dbFillerColors, dbFillers, selectedWrapper, selectedWrapperColorId, dbWrapperColors, dbWrappers, selectedAddonOptions, calculateTotal }) => (
-  <div className="bg-astraea-darkgray text-white p-6 rounded-2xl sticky top-28 shadow-lg">
-    <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
-    <div className="space-y-4 text-sm font-medium">
-      {selectedSize && <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize.name} ({money(selectedSize.base_price)})</span></div>}
-      {Object.keys(selectedFlowers).length > 0 && (
-        <div className="border-b border-white/10 pb-2">
-          <span className="text-white/80 block mb-2">Flowers</span>
-          {Object.entries(selectedFlowers).map(([fId, qty]) => {
-            const f = dbFlowers.find(x => x.id === fId);
-            const colorName = getSelectedColorName(selectedFlowerColors[fId], dbFlowerColors, fId, f?.name);
-            const color = colorName ? ` - ${colorName}` : '';
-            return f ? <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span>{money(Number(f.price_per_stem || 0) * qty)}</span></div> : null;
-          })}
-        </div>
-      )}
-      {Object.keys(selectedFillers).length > 0 && (
-        <div className="border-b border-white/10 pb-2">
-          <span className="text-white/80 block mb-2">Fillers</span>
-          {Object.entries(selectedFillers).map(([fId, qty]) => {
-            const f = dbFillers.find(x => x.id === fId);
-            const colorName = getSelectedFillerColorName(selectedFillerColors[fId], dbFillerColors, fId);
-            const color = colorName ? ` - ${colorName}` : '';
-            return f ? <div key={fId} className="flex justify-between text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span>{money(Number(f.price || 0) * qty)}</span></div> : null;
-          })}
-        </div>
-      )}
-      {selectedWrapper && (
-        <div className="flex justify-between border-b border-white/10 pb-2">
-          <span className="text-white/80">Wrapper</span>
-          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColorId ? ` (${getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors)})` : ''}</span>
-        </div>
-      )}
-      {selectedAddonOptions.length > 0 && (
-        <div className="border-b border-white/10 pb-2">
-          <span className="text-white/80 block mb-2">Add-ons</span>
-          {selectedAddonOptions.map(addon => <div key={addon.key} className="flex justify-between text-white/90 ml-2 mb-1"><span>{addon.name}</span><span>{money(addon.price)}</span></div>)}
-        </div>
-      )}
-    </div>
-    <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-end">
-      <span className="text-white/80 text-lg">Total</span>
-      <span className="font-bold text-3xl text-astraea-pink">{money(calculateTotal())}</span>
-    </div>
-  </div>
-);
 
 export default Customize;

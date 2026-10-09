@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
@@ -11,9 +11,11 @@ const formatDelivery = (method) => method === 'pickup' ? 'Store Pickup' : 'Deliv
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const { showToast } = useNotifications();
+  const requestRef = useRef(null);
   
   // Filters & Pagination
   const [search, setSearch] = useState('');
@@ -26,9 +28,35 @@ const AdminOrders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  const fetchOrders = useCallback(async () => {
+    requestRef.current?.abort();
+    const controller = new AbortController(); requestRef.current = controller;
+    setLoading(true);
+    let query = supabase.from('orders').select('*', { count: 'exact' });
+    if (search.trim()) {
+      const term = search.trim().slice(0, 160).replace(/[^\p{L}\p{N} -]/gu, ' ');
+      query = query.or(`customer_name.ilike.%${term}%,reference_number.ilike.%${term}%`);
+    }
+    if (statusFilter !== 'All') query = query.eq('status', statusFilter.toLowerCase());
+    if (typeFilter !== 'All Types') query = query.eq('order_type', typeFilter === 'Ready-Made' ? 'ready-made' : typeFilter === 'Custom' ? 'custom' : 'other-product');
+    if (dateFrom) query = query.gte('created_at', `${dateFrom}T00:00:00+08:00`);
+    if (dateTo) {
+      const end = new Date(`${dateTo}T00:00:00+08:00`);
+      end.setUTCDate(end.getUTCDate() + 1);
+      query = query.lt('created_at', end.toISOString());
+    }
+    const { data, count, error } = await query
+      .order(sortConfig.key, { ascending: sortConfig.direction === 'asc' })
+      .order('id', { ascending: true })
+      .abortSignal(controller.signal)
+      .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
+    if (controller.signal.aborted) return;
+    if (error) { setOrders([]); setTotalCount(0); showToast({ type: 'error', title: 'Orders unavailable', message: error.message || 'Could not load orders.' }); }
+    else { setOrders(data || []); setTotalCount(count || 0); }
+    setLoading(false);
+  }, [search, statusFilter, typeFilter, dateFrom, dateTo, sortConfig, currentPage, showToast]);
+
+  useEffect(() => { const timer = setTimeout(fetchOrders, 200); return () => { clearTimeout(timer); requestRef.current?.abort(); }; }, [fetchOrders]);
 
   useEffect(() => {
     const channel = supabase
@@ -36,17 +64,8 @@ const AdminOrders = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          setOrders(prev => {
-            if (payload.eventType === 'DELETE') {
-              return prev.filter(order => order.id !== payload.old?.id);
-            }
-            if (!payload.new?.id) return prev;
-            const exists = prev.some(order => order.id === payload.new.id);
-            return exists
-              ? prev.map(order => order.id === payload.new.id ? { ...order, ...payload.new } : order)
-              : [payload.new, ...prev];
-          });
+        () => {
+          fetchOrders();
         }
       )
       .subscribe();
@@ -54,14 +73,7 @@ const AdminOrders = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  const fetchOrders = async () => {
-    setLoading(true);
-    const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-    if (data) setOrders(data);
-    setLoading(false);
-  };
+  }, [fetchOrders]);
 
   const handleStatusChange = async (order, status) => {
     if (status === order.status) return;
@@ -73,7 +85,7 @@ const AdminOrders = () => {
     if (error) {
       showToast({ type: 'error', title: 'Oops!', message: error.message || 'Could not update order status.' });
     } else if (data) {
-      setOrders(prev => prev.map(item => item.id === order.id ? data : item));
+      await fetchOrders();
     }
     setUpdatingId(null);
   };
@@ -84,54 +96,18 @@ const AdminOrders = () => {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
-  // Derived state
-  let filteredOrders = [...orders];
-
-  if (search) {
-    filteredOrders = filteredOrders.filter(o => 
-      o.customer_name.toLowerCase().includes(search.toLowerCase()) || 
-      o.reference_number.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-
-  if (statusFilter !== 'All') {
-    filteredOrders = filteredOrders.filter(o => o.status.toLowerCase() === statusFilter.toLowerCase());
-  }
-
-  if (typeFilter !== 'All Types') {
-    const typeVal = typeFilter === 'Ready-Made' ? 'ready-made' : 'custom';
-    filteredOrders = filteredOrders.filter(o => o.order_type === typeVal);
-  }
-
-  if (dateFrom) {
-    filteredOrders = filteredOrders.filter(o => new Date(o.created_at) >= new Date(dateFrom));
-  }
-  if (dateTo) {
-    // Add 1 day to include the whole "To" day
-    const toDate = new Date(dateTo);
-    toDate.setDate(toDate.getDate() + 1);
-    filteredOrders = filteredOrders.filter(o => new Date(o.created_at) < toDate);
-  }
-
-  // Sorting
-  filteredOrders.sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
+  const currentOrders = orders;
+  const typeLabel = (value) => ({ 'ready-made': 'Ready-Made', custom: 'Custom', 'other-product': 'Other Product' }[value] || value || 'Unknown');
 
   const getStatusBadge = (status) => {
     switch(status) {
       case 'pending': return <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold capitalize">Pending</span>;
       case 'confirmed': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
       case 'being-made': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
-      case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
       case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
       case 'completed': return <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
       case 'cancelled': return <span className="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold capitalize">Cancelled</span>;
@@ -150,6 +126,7 @@ const AdminOrders = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input 
               type="text" 
+              aria-label="Search orders"
               placeholder="Search by customer name or reference..." 
               value={search}
               onChange={(e) => {setSearch(e.target.value); setCurrentPage(1);}}
@@ -157,6 +134,7 @@ const AdminOrders = () => {
             />
           </div>
           <select 
+            aria-label="Filter by status"
             value={statusFilter}
             onChange={(e) => {setStatusFilter(e.target.value); setCurrentPage(1);}}
             className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
@@ -170,6 +148,7 @@ const AdminOrders = () => {
             <option>Cancelled</option>
           </select>
           <select 
+            aria-label="Filter by product type"
             value={typeFilter}
             onChange={(e) => {setTypeFilter(e.target.value); setCurrentPage(1);}}
             className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-astraea-pink"
@@ -177,12 +156,14 @@ const AdminOrders = () => {
             <option>All Types</option>
             <option>Ready-Made</option>
             <option>Custom</option>
+            <option>Other Products</option>
           </select>
         </div>
         <div className="flex flex-col md:flex-row gap-4 md:items-center">
           <span className="text-sm font-medium text-gray-600 flex items-center"><Filter className="w-4 h-4 mr-2" /> Date Range:</span>
           <input 
             type="date" 
+            aria-label="From date in Manila"
             value={dateFrom}
             onChange={(e) => {setDateFrom(e.target.value); setCurrentPage(1);}}
             className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
@@ -190,6 +171,7 @@ const AdminOrders = () => {
           <span className="text-gray-400 hidden md:inline">to</span>
           <input 
             type="date" 
+            aria-label="Through date in Manila"
             value={dateTo}
             onChange={(e) => {setDateTo(e.target.value); setCurrentPage(1);}}
             className="w-full md:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-astraea-pink"
@@ -236,7 +218,7 @@ const AdminOrders = () => {
                 {getStatusBadge(order.status)}
               </div>
               <div className="flex justify-between text-sm">
-                <span className="capitalize text-gray-500">{order.order_type}</span>
+                <span className="text-gray-500">{typeLabel(order.order_type)}</span>
                 <span className="font-bold">{formatPrice(order.total_amount)}</span>
               </div>
               <Link to={`/admin/orders/${order.id}`} className="min-h-11 flex items-center justify-center w-full px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
@@ -295,10 +277,10 @@ const AdminOrders = () => {
                   <tr key={order.id} className="hover:bg-[#FCFAFB]/60 transition-colors duration-200">
                     <td className="px-6 py-5 font-bold text-astraea-pink">{order.reference_number}</td>
                     <td className="px-6 py-5 font-semibold text-gray-700">{order.customer_name}</td>
-                    <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
+                    <td className="px-6 py-5 text-gray-500">{typeLabel(order.order_type)}</td>
                     <td className="px-6 py-5 text-gray-500">{formatDelivery(order.delivery_method)}</td>
                     <td className="px-6 py-5 font-bold text-gray-700">{formatPrice(order.total_amount)}</td>
-                    <td className="px-6 py-5 text-gray-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                    <td className="px-6 py-5 text-gray-500">{new Date(order.created_at).toLocaleDateString('en-PH', { timeZone: 'Asia/Manila' })}</td>
                     <td className="px-6 py-5">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-5">
                       {order.is_paid 
@@ -309,13 +291,14 @@ const AdminOrders = () => {
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <select
+                          aria-label={`Status of ${order.reference_number}`}
                           value={order.status}
                           onChange={(e) => handleStatusChange(order, e.target.value)}
-                          disabled={updatingId === order.id}
+                          disabled={updatingId === order.id || ['completed', 'cancelled'].includes(order.status)}
                           className="border border-gray-200 bg-white rounded-xl px-3 py-2 text-xs font-bold text-gray-600 focus:outline-none focus:ring-2 focus:ring-astraea-pink disabled:opacity-60"
                         >
                           {statusOptions.map(status => (
-                            <option key={status} value={status}>{status.replace('-', ' ')}</option>
+                            <option key={status} value={status} disabled={status !== 'cancelled' && statusOptions.indexOf(status) < statusOptions.indexOf(order.status)}>{status.replace('-', ' ')}</option>
                           ))}
                         </select>
                       <Link to={`/admin/orders/${order.id}`} className="px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100 inline-block">
@@ -331,13 +314,14 @@ const AdminOrders = () => {
         </div>
         
         {/* Pagination */}
-        {!loading && filteredOrders.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="px-8 py-5 border-t border-gray-50 flex items-center justify-between bg-[#FCFAFB]">
             <span className="text-sm font-medium text-gray-500">
-              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+              Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} orders
             </span>
             <div className="flex space-x-2">
               <button 
+                aria-label="Previous page"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
@@ -345,6 +329,7 @@ const AdminOrders = () => {
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
+                aria-label="Next page"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
@@ -355,6 +340,11 @@ const AdminOrders = () => {
           </div>
         )}
       </div>
+      {!loading && totalCount > 0 && <div className="md:hidden flex items-center justify-between gap-3">
+        <button className="kawaii-btn-outline" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button className="kawaii-btn-outline" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+      </div>}
     </div>
   );
 };

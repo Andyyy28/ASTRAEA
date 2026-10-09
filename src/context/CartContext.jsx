@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { reserveBouquetStock, releaseBouquetStock } from '../lib/bouquetStock';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { readCart, writeCart, normalizeCartItem, newCartId } from '../lib/cartStorage';
 
 const CartContext = createContext();
-
 export const useCart = () => useContext(CartContext);
 
 const buildItemSignature = (item) => {
@@ -31,51 +30,44 @@ const buildItemSignature = (item) => {
 };
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem('astraea_cart');
-      return saved ? JSON.parse(saved) : [];
-    } catch (error) {
-      console.warn('Unable to load saved cart:', error);
-      localStorage.removeItem('astraea_cart');
-      return [];
-    }
-  });
+  const [cartItems, setCartItems] = useState(readCart);
+  const itemsRef = useRef(cartItems);
+  const [storageAvailable, setStorageAvailable] = useState(true);
+  const commit = useCallback(items => { itemsRef.current = items; setCartItems(items); }, []);
+  useEffect(() => { setStorageAvailable(writeCart(cartItems)); }, [cartItems]);
 
-  useEffect(() => {
-    localStorage.setItem('astraea_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  const addToCart = async (item) => {
-    const quantity = Math.max(1, Number(item.quantity) || 1);
-    const incoming = {
-      ...item,
-      quantity,
-      reserved_quantity: item.item_type === 'bouquet' ? quantity : 0
-    };
+  const addToCart = useCallback(async (item) => {
+    const incoming = normalizeCartItem(item);
+    if (!incoming) return { ok: false, reason: 'invalid-item' };
+    const quantity = incoming.quantity;
     const incomingSignature = buildItemSignature(incoming);
-    let newStock = null;
 
+    // Stock is advisory while browsing. The quote and checkout transaction
+    // recheck availability atomically; cart edits never mutate inventory.
     if (incoming.item_type === 'bouquet' && incoming.bouquet_id) {
-      newStock = await reserveBouquetStock(incoming.bouquet_id, quantity);
-      if (newStock === null) {
-        return { ok: false, reason: 'out-of-stock' };
-      }
+      const { data, error } = await supabase.from('bouquets').select('stock, is_visible').eq('id', incoming.bouquet_id).abortSignal(AbortSignal.timeout(10000)).maybeSingle();
+      const stock = Number(data?.stock) || 0;
+      if (error) return { ok: false, reason: 'unavailable' };
+      if (!data?.is_visible || stock < quantity) return { ok: false, reason: 'out-of-stock', stock };
+      const existing = itemsRef.current.filter(i => i.bouquet_id === incoming.bouquet_id).reduce((n, i) => n + i.quantity, 0);
+      if (existing + quantity > stock) return { ok: false, reason: 'limit-reached', stock };
     }
 
     if (incoming.item_type === 'other_product' && incoming.other_product_id) {
       const { data, error } = await supabase
         .from('other_products')
-        .select('stock, is_available')
+        .select('stock, is_available, is_visible')
         .eq('id', incoming.other_product_id)
+        .abortSignal(AbortSignal.timeout(10000))
         .single();
 
       const availableStock = Number(data?.stock) || 0;
-      if (error || !data || !data.is_available || availableStock <= 0) {
+      if (error) return { ok: false, reason: 'unavailable' };
+      if (!data || !data.is_available || !data.is_visible || availableStock <= 0) {
         return { ok: false, reason: 'out-of-stock', stock: availableStock };
       }
 
-      const alreadyInCart = cartItems
+      const alreadyInCart = itemsRef.current
         .filter(current => current.item_type === 'other_product' && current.other_product_id === incoming.other_product_id)
         .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
 
@@ -84,62 +76,49 @@ export const CartProvider = ({ children }) => {
       }
     }
 
-    setCartItems(prev => {
-      const existingIndex = prev.findIndex(current => buildItemSignature(current) === incomingSignature);
+    const prev = itemsRef.current;
+    const existingIndex = prev.findIndex(current => buildItemSignature(current) === incomingSignature);
+    if (existingIndex >= 0 && prev[existingIndex].quantity + quantity > 50) return { ok: false, reason: 'invalid-quantity' };
+    if (existingIndex < 0 && prev.length >= 50) return { ok: false, reason: 'invalid-quantity' };
+    commit(existingIndex >= 0
+      ? prev.map((current, index) => index === existingIndex ? { ...current, quantity: current.quantity + quantity } : current)
+      : [...prev, { ...incoming, cartId: newCartId() }]);
 
-      if (existingIndex !== -1) {
-        return prev.map((current, index) => (
-          index === existingIndex
-            ? {
-                ...current,
-                quantity: (current.quantity || 1) + quantity,
-                reserved_quantity: (current.reserved_quantity || 0) + incoming.reserved_quantity
-              }
-            : current
-        ));
-      }
-
-      return [...prev, { ...incoming, cartId: Date.now().toString() }];
-    });
-
-    return { ok: true, stock: newStock };
-  };
-
-  const removeFromCart = async (cartId) => {
-    const item = cartItems.find(current => current.cartId === cartId);
-    if (item?.item_type === 'bouquet' && item.bouquet_id && item.reserved_quantity > 0) {
-      await releaseBouquetStock(item.bouquet_id, item.reserved_quantity);
-    }
-    setCartItems(prev => prev.filter(item => item.cartId !== cartId));
     return { ok: true };
-  };
+  }, [commit]);
 
-  const updateQuantity = async (cartId, newQuantity) => {
-    const item = cartItems.find(current => current.cartId === cartId);
+  const removeFromCart = useCallback(async (cartId) => {
+    commit(itemsRef.current.filter(item => item.cartId !== cartId));
+    return { ok: true };
+  }, [commit]);
+
+  const updateQuantity = useCallback(async (cartId, newQuantity) => {
+    const item = itemsRef.current.find(current => current.cartId === cartId);
     if (!item) return { ok: false };
 
+    newQuantity = Number(newQuantity);
+    if (!Number.isInteger(newQuantity) || newQuantity > 50) return { ok: false, reason: 'invalid-quantity' };
     if (newQuantity < 1) {
-      if (item.item_type === 'bouquet' && item.bouquet_id && item.reserved_quantity > 0) {
-        await releaseBouquetStock(item.bouquet_id, item.reserved_quantity);
-      }
-      setCartItems(prev => prev.filter(item => item.cartId !== cartId));
+      commit(itemsRef.current.filter(item => item.cartId !== cartId));
       return { ok: true };
     }
 
-    if (item.item_type === 'other_product' && item.other_product_id) {
+    if (newQuantity > item.quantity && item.item_type !== 'custom') {
       const { data, error } = await supabase
-        .from('other_products')
-        .select('stock, is_available')
-        .eq('id', item.other_product_id)
+        .from(item.item_type === 'bouquet' ? 'bouquets' : 'other_products')
+        .select('*')
+        .eq('id', item.bouquet_id || item.other_product_id)
+        .abortSignal(AbortSignal.timeout(10000))
         .single();
 
       const availableStock = Number(data?.stock) || 0;
-      if (error || !data || !data.is_available || availableStock <= 0) {
+      if (error) return { ok: false, reason: 'unavailable' };
+      if (!data || data.is_available === false || !data.is_visible || availableStock <= 0) {
         return { ok: false, reason: 'out-of-stock', stock: availableStock };
       }
 
-      const otherCartQuantity = cartItems
-        .filter(current => current.cartId !== cartId && current.item_type === 'other_product' && current.other_product_id === item.other_product_id)
+      const otherCartQuantity = itemsRef.current
+        .filter(current => current.cartId !== cartId && current.item_type === item.item_type && (current.bouquet_id || current.other_product_id) === (item.bouquet_id || item.other_product_id))
         .reduce((total, current) => total + (Number(current.quantity) || 1), 0);
 
       if (otherCartQuantity + newQuantity > availableStock) {
@@ -147,39 +126,15 @@ export const CartProvider = ({ children }) => {
       }
     }
 
-    const currentQuantity = item.quantity || 1;
-    const difference = newQuantity - currentQuantity;
-    const reservedQuantity = item.reserved_quantity || 0;
-    let nextReservedQuantity = reservedQuantity;
-    let newStock = null;
+    commit(itemsRef.current.map(item => item.cartId === cartId ? { ...item, quantity: newQuantity } : item));
 
-    if (item.item_type === 'bouquet' && item.bouquet_id && difference > 0) {
-      newStock = await reserveBouquetStock(item.bouquet_id, difference);
-      if (newStock === null) {
-        return { ok: false, reason: 'out-of-stock' };
-      }
-      nextReservedQuantity = reservedQuantity + difference;
-    }
+    return { ok: true };
+  }, [commit]);
 
-    if (item.item_type === 'bouquet' && item.bouquet_id && difference < 0) {
-      const releaseQuantity = Math.min(Math.abs(difference), reservedQuantity);
-      if (releaseQuantity > 0) {
-        newStock = await releaseBouquetStock(item.bouquet_id, releaseQuantity);
-      }
-      nextReservedQuantity = Math.max(0, reservedQuantity - releaseQuantity);
-    }
+  const clearCart = useCallback(() => commit([]), [commit]);
 
-    setCartItems(prev =>
-      prev.map(item => item.cartId === cartId ? { ...item, quantity: newQuantity, reserved_quantity: nextReservedQuantity } : item)
-    );
-
-    return { ok: true, stock: newStock };
-  };
-
-  const clearCart = () => setCartItems([]);
-
-  const cartCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
-  const cartTotal = cartItems.reduce((total, item) => total + ((item.price || item.subtotal) * (item.quantity || 1)), 0);
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (
     <CartContext.Provider value={{
@@ -189,7 +144,8 @@ export const CartProvider = ({ children }) => {
       updateQuantity,
       clearCart,
       cartCount,
-      cartTotal
+      cartTotal,
+      storageAvailable
     }}>
       {children}
     </CartContext.Provider>

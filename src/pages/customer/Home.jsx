@@ -99,6 +99,8 @@ const Home = () => {
 
           <div className="home-hero-desktop-photo relative min-h-[420px] overflow-hidden lg:-ml-24 lg:min-h-full">
             <img
+              fetchPriority="high"
+              decoding="async"
               src="/home-hero.jpeg"
               alt="Colorful handmade fuzzy wire bouquets"
               className="h-full w-full object-cover object-center"
@@ -197,7 +199,7 @@ const Home = () => {
                 <div key={bouquet.id} className={`group scrapbook-card overflow-hidden ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip w-full max-w-[20rem] flex-1 basis-[18rem]`}>
                   <div className="aspect-[4/5] bg-astraea-blush flex items-center justify-center relative rounded-[16px] overflow-hidden">
                     {image ? (
-                      <img src={image} alt={bouquet.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={image} alt={bouquet.name} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
                         <Heart className="w-12 h-12 text-astraea-pink/30" />

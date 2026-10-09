@@ -33,9 +33,12 @@ const TrackOrder = () => {
     setOrderItems([]);
 
     try {
-      const { data, error: orderError } = await supabase.rpc('track_order', {
-        p_reference: searchQuery,
-        p_verification: verification
+      const { data, error: orderError } = await supabase.functions.invoke('guest-api', {
+        body: {
+          action: 'track',
+          reference: searchQuery,
+          verification
+        }
       });
       if (orderError) throw orderError;
       if (data?.order) {
@@ -59,15 +62,15 @@ const TrackOrder = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="section-heading text-2xl md:text-4xl mb-4">Track Your Order</h1>
-          <p className="font-accent text-2xl text-astraea-rosegold">Enter your reference number and your email or phone number to check its status.</p>
+          <p className="font-accent text-2xl text-astraea-rosegold">Enter your reference number and your Facebook account or phone number to check its status.</p>
         </div>
         <div className="max-w-2xl mx-auto mb-16">
           <form onSubmit={handleTrack} className="space-y-4">
             <div className="flex relative rounded-2xl overflow-hidden scrapbook-card bg-[#FFFDFE]">
               <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none"><Search className="h-5 w-5 text-astraea-darkgray/40" /></div>
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Reference number, e.g. AC-2026-AB12CD34" className="kawaii-input pl-14" required />
+              <label htmlFor="order-reference" className="sr-only">Order reference number</label><input id="order-reference" type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Reference number, e.g. AC-2026-AB12CD34" className="kawaii-input pl-14" required />
             </div>
-            <input type="text" value={verification} onChange={(e) => setVerification(e.target.value)} placeholder="Email address or contact number used at checkout" className="kawaii-input" required />
+            <label htmlFor="order-verification" className="sr-only">Facebook account or contact number used at checkout</label><input id="order-verification" type="text" value={verification} onChange={(e) => setVerification(e.target.value)} placeholder="Facebook account or contact number used at checkout" className="kawaii-input" required />
             <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4">{loading ? <Skeleton className="w-16 h-4 bg-white/30" /> : 'Track'}</button>
           </form>
           {error && <div className="mt-6 p-4 bg-[#FDDDE6] text-[#C4658A] rounded-xl border-2 border-dashed border-astraea-pink text-center animate-fade-in">{error}</div>}
@@ -111,7 +114,7 @@ const TrackOrder = () => {
                   {orderItems.map(item => (
                     <div key={item.id} className="flex justify-between items-start border-b border-dashed border-astraea-pink/20 pb-4">
                       <div>
-                        <p className="font-bold text-astraea-darkgray">{item.quantity}x {item.item_type === 'custom' ? 'Custom Bouquet' : 'Ready-Made Bouquet'}</p>
+                        <p className="font-bold text-astraea-darkgray">{item.quantity}x {item.item_name || (item.item_type === 'custom' ? 'Custom Bouquet' : item.item_type === 'other_product' ? 'Other Product' : 'Ready-Made Bouquet')}</p>
                         {item.size && <p className="text-sm text-astraea-darkgray/70">Size: {item.size}</p>}
                       </div>
                       <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914]">{formatPrice(item.subtotal)}</span>
