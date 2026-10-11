@@ -1,9 +1,17 @@
-import { Link } from 'react-router-dom';
+import { useLayoutEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Download } from 'lucide-react';
 
 const storefront = 'https://astraeacollection.vercel.app/';
 
 export default function Share() {
+  const { key } = useLocation();
+
+  useLayoutEffect(() => {
+    // Footer navigation must reveal the QR instead of retaining the old scroll position.
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [key]);
+
   return <section className="max-w-xl mx-auto px-4 py-12 text-center">
     <h1 className="section-heading text-3xl mb-4">Scan, design, enjoy</h1>
     <p>Scan this code to open Astraea Collection on your phone, browse flowers and create a bouquet.</p>
