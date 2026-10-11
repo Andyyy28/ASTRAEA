@@ -294,7 +294,7 @@ const Customize = () => {
         return (
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Pick your flowers</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {dbFlowers.map(f => {
                 const qty = selectedFlowers[f.id] || 0;
                 return (
@@ -354,7 +354,7 @@ const Customize = () => {
           <div className="space-y-6 animate-fade-in">
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Add some fillers</h2>
             <p className="text-astraea-darkgray/70 -mt-4">This step is completely optional.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               {dbFillers.map(f => {
                 const qty = selectedFillers[f.id] || 0;
                 const availableColors = fillerColorsForFiller(f.id);
@@ -560,8 +560,8 @@ const Customize = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-8">
-          <div className="bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8 items-start">
+          <div id="bouquet-options" className="min-w-0 scroll-mt-28 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
             <div className="flex-grow">{renderStepContent()}</div>
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-12 pt-6 border-t border-astraea-rosegold/20">
               <button onClick={handleBack} disabled={currentStep === 0} className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'}`}>
@@ -575,10 +575,81 @@ const Customize = () => {
             </div>
           </div>
 
+          <aside id="bouquet-summary" aria-label="Bouquet price summary" className="min-w-0 scroll-mt-28 lg:sticky lg:top-28">
+            <SummaryPanel selectedSize={selectedSize}
+              selectedFlowers={selectedFlowers}
+              selectedFlowerColors={selectedFlowerColors}
+              dbFlowerColors={dbFlowerColors}
+              dbFlowers={dbFlowers}
+              selectedFillers={selectedFillers}
+              selectedFillerColors={selectedFillerColors}
+              dbFillerColors={dbFillerColors}
+              dbFillers={dbFillers}
+              selectedWrapper={selectedWrapper}
+              selectedWrapperColorId={selectedWrapperColorId}
+              dbWrapperColors={dbWrapperColors}
+              dbWrappers={dbWrappers}
+              selectedAddonOptions={selectedAddonOptions}
+              calculateTotal={calculateTotal} />
+            <a href="#bouquet-options" className="kawaii-btn-outline mt-4 lg:hidden">Continue customizing</a>
+          </aside>
+        </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div><p className="text-xs text-white/70">Estimated total</p><p className="font-bold text-xl text-astraea-pink" aria-live="polite" aria-atomic="true">{money(calculateTotal())}</p></div>
+          <a href="#bouquet-summary" className="min-h-11 inline-flex items-center px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">View Summary</a>
         </div>
       </div>
     </div>
   );
 };
+
+const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, selectedFillerColors, dbFillerColors, dbFillers, selectedWrapper, selectedWrapperColorId, dbWrapperColors, dbWrappers, selectedAddonOptions, calculateTotal }) => (
+  <div className="bg-astraea-darkgray text-white p-6 rounded-2xl shadow-lg">
+    <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
+    <div className="space-y-4 text-sm font-medium">
+      {selectedSize && <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize.name} ({money(selectedSize.base_price)})</span></div>}
+      {Object.keys(selectedFlowers).length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Flowers</span>
+          {Object.entries(selectedFlowers).map(([fId, qty]) => {
+            const f = dbFlowers.find(x => x.id === fId);
+            const colorName = getSelectedColorName(selectedFlowerColors[fId], dbFlowerColors, fId, f?.name);
+            const color = colorName ? ` - ${colorName}` : '';
+            return f ? <div key={fId} className="flex justify-between gap-3 text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span className="shrink-0">{money(Number(f.price_per_stem || 0) * qty)}</span></div> : null;
+          })}
+        </div>
+      )}
+      {Object.keys(selectedFillers).length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Fillers</span>
+          {Object.entries(selectedFillers).map(([fId, qty]) => {
+            const f = dbFillers.find(x => x.id === fId);
+            const colorName = getSelectedFillerColorName(selectedFillerColors[fId], dbFillerColors, fId);
+            const color = colorName ? ` - ${colorName}` : '';
+            return f ? <div key={fId} className="flex justify-between gap-3 text-white/90 ml-2 mb-1"><span>{qty}x {f.name}{color}</span><span className="shrink-0">{money(Number(f.price || 0) * qty)}</span></div> : null;
+          })}
+        </div>
+      )}
+      {selectedWrapper && (
+        <div className="flex justify-between border-b border-white/10 pb-2">
+          <span className="text-white/80">Wrapper</span>
+          <span>{dbWrappers.find(w => w.id === selectedWrapper)?.material}{selectedWrapperColorId ? ` (${getSelectedWrapperColorName(selectedWrapperColorId, dbWrapperColors)})` : ''}</span>
+        </div>
+      )}
+      {selectedAddonOptions.length > 0 && (
+        <div className="border-b border-white/10 pb-2">
+          <span className="text-white/80 block mb-2">Add-ons</span>
+          {selectedAddonOptions.map(addon => <div key={addon.key} className="flex justify-between gap-3 text-white/90 ml-2 mb-1"><span>{addon.name}</span><span className="shrink-0">{money(addon.price)}</span></div>)}
+        </div>
+      )}
+    </div>
+    <div className="mt-8 pt-4 border-t border-white/20 flex justify-between items-end">
+      <span className="text-white/80 text-lg">Estimated total</span>
+      <span className="font-bold text-3xl text-astraea-pink" aria-live="polite" aria-atomic="true">{money(calculateTotal())}</span>
+    </div>
+  </div>
+);
 
 export default Customize;
