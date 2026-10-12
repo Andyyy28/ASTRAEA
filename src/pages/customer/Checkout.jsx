@@ -314,8 +314,7 @@ const Checkout = () => {
               {formData.payment_method === 'gcash' ? (
                 <div className="space-y-4">
                   <div className="rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
-                    {/* TODO: Replace with actual GCash QR code image path so it is easy to swap in the real QR image. */}
-                    <img src="/gcash.jpeg" alt="GCash QR code" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
+                    <img src="/gcash.jpeg?v=20261012" alt="GCash QR code" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
                   </div>
                   <div>
                     <label htmlFor="payment-proof" className="block text-sm font-medium text-[#C4658A] mb-2">Upload Proof of Payment *</label>
