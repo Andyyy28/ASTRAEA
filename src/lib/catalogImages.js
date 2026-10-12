@@ -20,6 +20,16 @@ export const uploadCatalogImage = async (supabase, bucket, file) => {
   return { objectPath, publicUrl: data.publicUrl };
 };
 
+// Keep existing images and new uploads in the order shown in the editor.
+export const uploadCatalogImages = async (supabase, bucket, items) => {
+  for (const item of items) if (item.file) validateCatalogImage(item.file);
+  const urls = [];
+  for (const item of items) {
+    urls.push(item.file ? (await uploadCatalogImage(supabase, bucket, item.file)).publicUrl : item.existingUrl);
+  }
+  return urls;
+};
+
 export const getStoragePath = (url, bucket) => {
   if (!url || typeof url !== 'string') return null;
   const marker = `/storage/v1/object/public/${bucket}/`;

@@ -1,26 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { useNotifications } from '../../context/NotificationContext';
 import { Plus, Minus, Edit2, Trash2, X, Image as ImageIcon, Heart } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import { uploadCatalogImage } from '../../lib/catalogImages';
+import { uploadCatalogImages, validateCatalogImage } from '../../lib/catalogImages';
 
-// Upload image to Supabase Storage, returns the public URL
 const AdminBouquets = () => {
   const [bouquets, setBouquets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [imageFile, setImageFile] = useState(null); // Track the actual file for upload
+  const [imageItems, setImageItems] = useState([]);
+  const [imageUrl, setImageUrl] = useState('');
+  const previewUrls = useRef(new Set());
+
+  useEffect(() => {
+    const urls = previewUrls.current;
+    return () => { urls.forEach(url => URL.revokeObjectURL(url)); };
+  }, []);
+
+  const clearImages = () => {
+    previewUrls.current.forEach(url => URL.revokeObjectURL(url));
+    previewUrls.current.clear();
+    setImageItems([]);
+    setImageUrl('');
+  };
+
+  const closeModal = () => {
+    if (uploading) return;
+    setIsModalOpen(false);
+    clearImages();
+  };
+
+  const addImageFiles = (files) => {
+    if (uploading) return;
+    try {
+      const selected = Array.from(files || []);
+      selected.forEach(validateCatalogImage);
+      const added = selected.map(file => {
+        const preview = URL.createObjectURL(file);
+        previewUrls.current.add(preview);
+        return { id: crypto.randomUUID(), file, preview };
+      });
+      setImageItems(prev => [...prev, ...added]);
+    } catch (error) {
+      showToast({ type: 'error', title: 'Invalid photo', message: error.message });
+    }
+  };
+
+  const removeImage = (id) => {
+    const item = imageItems.find(image => image.id === id);
+    if (previewUrls.current.delete(item?.preview)) URL.revokeObjectURL(item.preview);
+    setImageItems(prev => prev.filter(image => image.id !== id));
+  };
+
+  const addImageUrl = () => {
+    try {
+      const url = new URL(imageUrl.trim());
+      if (!['https:', 'http:'].includes(url.protocol)) throw new Error('Invalid URL');
+      setImageItems(prev => [...prev, { id: crypto.randomUUID(), preview: url.href, existingUrl: url.href }]);
+      setImageUrl('');
+    } catch {
+      showToast({ type: 'error', title: 'Invalid image URL', message: 'Enter a full HTTP or HTTPS image URL.' });
+    }
+  };
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     category: 'Romantic',
     price: '',
     stock: 0,
-    images: [''],
     is_visible: true,
     is_featured: false
   });
@@ -122,6 +173,8 @@ const AdminBouquets = () => {
   };
 
   const openModal = (bouquet = null) => {
+    clearImages();
+    setImageItems((bouquet?.images || []).filter(Boolean).map(url => ({ id: crypto.randomUUID(), preview: url, existingUrl: url })));
     if (bouquet) {
       setFormData({
         name: bouquet.name,
@@ -129,7 +182,6 @@ const AdminBouquets = () => {
         category: bouquet.category,
         price: bouquet.price,
         stock: bouquet.stock || 0,
-        images: bouquet.images && bouquet.images.length > 0 ? bouquet.images : [''],
         is_visible: bouquet.is_visible,
         is_featured: bouquet.is_featured
       });
@@ -141,27 +193,23 @@ const AdminBouquets = () => {
         category: 'Romantic',
         price: '',
         stock: 0,
-        images: [''],
         is_visible: true,
         is_featured: false
       });
       setEditingId(null);
     }
     setIsModalOpen(true);
-    setImageFile(null);
   };
 
   const handleModalSubmit = async (e) => {
     e.preventDefault();
+    if (uploading) return;
+    if (imageUrl.trim()) {
+      showToast({ type: 'error', title: 'Add your image URL', message: 'Click Add URL to include it, or clear the URL before saving.' });
+      return;
+    }
     setUploading(true);
     try {
-      let imageUrls = formData.images.filter(i => i.trim() !== '');
-      
-      if (imageFile) {
-        const uploaded = await uploadCatalogImage(supabase, 'bouquets', imageFile);
-        imageUrls = [uploaded.publicUrl];
-      }
-
       const featuredCount = bouquets.filter(b => b.is_featured && b.id !== editingId).length;
       if (formData.is_featured && featuredCount >= 3) {
         showToast({
@@ -172,6 +220,7 @@ const AdminBouquets = () => {
         throw new Error('You can only mark up to 3 bouquets as best sellers.');
       }
 
+      const imageUrls = await uploadCatalogImages(supabase, 'bouquets', imageItems);
       const payload = {
         name: formData.name,
         description: formData.description,
@@ -201,7 +250,7 @@ const AdminBouquets = () => {
         setBouquets(prev => [data, ...prev]);
       }
       setIsModalOpen(false);
-      setImageFile(null);
+      clearImages();
     } catch (error) {
       console.error('Bouquet save error:', error);
       showToast({
@@ -265,6 +314,14 @@ const AdminBouquets = () => {
                   <p className="font-bold text-gray-800 text-base">{b.name}</p>
                   <span className="inline-flex mt-1 px-2 py-0.5 bg-[#FDDDE6] text-[#C4658A] rounded text-xs font-medium">{b.stock || 0} in stock</span>
                   <p className="font-bold text-astraea-pink">{formatPrice(b.price)}</p>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-[#F4BFCF] bg-[#FCFAFB] p-3">
+                  <span className="text-sm font-semibold text-gray-700">Stock</span>
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-4 w-4" /></button>
+                    <span className="min-w-8 text-center font-bold text-[#C4658A]" aria-live="polite">{b.stock || 0}</span>
+                    <button type="button" onClick={() => adjustStock(b, 1)} className="min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-4 w-4" /></button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <button
@@ -409,7 +466,7 @@ const AdminBouquets = () => {
               <h3 className="font-bold text-xl text-gray-800">
                 {editingId ? 'Edit Bouquet' : 'Add New Bouquet'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5" /></button>
+              <button onClick={closeModal} disabled={uploading} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5" /></button>
             </div>
             
             <form onSubmit={handleModalSubmit} className="space-y-4 overflow-y-auto pr-2 flex-grow">
@@ -462,71 +519,31 @@ const AdminBouquets = () => {
                 ></textarea>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bouquet Image</label>
-                
-                {/* Drag and Drop / File Browser */}
-                <div 
-                  className="border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-6 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[160px] hover:bg-astraea-blush/10"
-                  onClick={() => document.getElementById('image-upload').click()}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const file = e.dataTransfer.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                      setImageFile(file);
-                      setFormData({...formData, images: [URL.createObjectURL(file)]});
-                    }
-                  }}
-                >
-                  <input 
-                    type="file" 
-                    id="image-upload" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        setImageFile(file);
-                        setFormData({...formData, images: [URL.createObjectURL(file)]});
-                      }
-                    }}
-                  />
-                  
-                  {formData.images[0] ? (
-                    <div className="relative group w-32 h-32 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                      <img src={formData.images[0]} alt="Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
-                        Change Image
-                      </div>
+              <fieldset disabled={uploading} className="space-y-3">
+                <legend className="text-sm font-medium text-gray-700">Bouquet Photos</legend>
+                <p className="text-xs text-gray-500">Add multiple photos. The first photo is the cover shown in the shop.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {imageItems.map((item, index) => (
+                    <div key={item.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                      <img src={item.preview} alt={'Bouquet photo ' + (index + 1)} className="w-full h-full object-cover" />
+                      {index === 0 && <span className="absolute bottom-2 left-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700">Cover photo</span>}
+                      <button type="button" aria-label={'Remove photo ' + (index + 1)} onClick={() => removeImage(item.id)} className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-white text-gray-700 flex items-center justify-center shadow"><X className="w-5 h-5" /></button>
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <ImageIcon className="w-8 h-8 text-gray-400 mx-auto" />
-                      <p className="text-sm font-medium text-gray-600">Drag & drop or click to upload</p>
-                      <p className="text-xs text-gray-400">Supports PNG, JPG, JPEG</p>
-                    </div>
-                  )}
+                  ))}
                 </div>
-
-                <div className="relative flex py-3 items-center">
-                  <div className="flex-grow border-t border-gray-200"></div>
-                  <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">or use image URL</span>
-                  <div className="flex-grow border-t border-gray-200"></div>
+                <label onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); addImageFiles(e.dataTransfer.files); }} className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-astraea-pink rounded-xl p-6 cursor-pointer hover:bg-astraea-blush/20 text-center">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-600">Add photos — drag & drop or choose files</span>
+                  <span className="text-xs text-gray-500">JPEG, PNG or WebP, up to 10 MiB each</span>
+                  <input type="file" multiple accept="image/jpeg,image/png,image/webp" aria-label="Add bouquet photos" onChange={e => { addImageFiles(e.target.files); e.target.value = ''; }} className="max-w-full text-sm" />
+                </label>
+                <label htmlFor="bouquet-image-url" className="block text-xs font-semibold text-gray-500">Or add an image URL</label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input id="bouquet-image-url" type="url" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://example.com/image.jpg" className="min-w-0 flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-astraea-pink" />
+                  <button type="button" onClick={addImageUrl} disabled={uploading || !imageUrl.trim()} className="min-h-11 px-4 rounded-lg bg-astraea-pink text-white font-bold disabled:opacity-50">Add URL</button>
                 </div>
+              </fieldset>
 
-                <input 
-                  type="url" 
-                  value={imageFile ? '' : (formData.images[0] || '')} 
-                  onChange={e => {
-                    setImageFile(null); // Clear file if user types a URL instead
-                    setFormData({...formData, images: [e.target.value]});
-                  }} 
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-astraea-pink focus:border-astraea-pink outline-none" 
-                />
-              </div>
-              
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-2">
                 <label className="flex items-center cursor-pointer">
                   <input 
@@ -551,7 +568,7 @@ const AdminBouquets = () => {
               <div className="mt-8 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:justify-end gap-3">
                 <button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)} 
+                  onClick={closeModal} disabled={uploading}
                   className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
                 >
                   Cancel
