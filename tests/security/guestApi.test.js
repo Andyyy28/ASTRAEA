@@ -50,6 +50,31 @@ test('guest API restricts origins and requires server-verified Turnstile', async
   assert.equal(f.inserts.length, 0);
 });
 
+test('a verified checkout token starts a private checkout session', async () => {
+  const f = fixture();
+  const response = await f.handler(request({ action: 'start-checkout', turnstile_token: 'captcha-test-token' }));
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.session_id, id);
+  assert.match(body.session_token, /^[0-9a-f-]{72}$/);
+  assert.equal(f.inserts[0][0], 'checkout_sessions');
+  assert.match(f.inserts[0][1].token_hash, /^[0-9a-f]{64}$/);
+  assert.equal(JSON.stringify(body).includes('token_hash'), false);
+});
+
+test('Cloudflare secret/service errors are distinguished from invalid customer tokens', async () => {
+  for (const [cloudflareCode, expectedStatus, expectedCode] of [
+    ['invalid-input-secret', 503, 'turnstile_not_configured'],
+    ['internal-error', 503, 'turnstile_unavailable'],
+    ['timeout-or-duplicate', 403, 'turnstile_failed'],
+  ]) {
+    const verifyHandler = createGuestApiHandler({ getEnv: key => env[key], createClient: () => ({}), fetchImpl: async () => new Response(JSON.stringify({ success: false, 'error-codes': [cloudflareCode] })) });
+    const response = await verifyHandler(request({ action: 'start-checkout', turnstile_token: 'captcha-test-token' }));
+    assert.equal(response.status, expectedStatus);
+    assert.equal((await response.json()).error, expectedCode);
+  }
+});
+
 test('rate-limit identifiers are hashed and ignore forwarding headers', async () => {
   const f = fixture();
   await f.handler(request({ action: 'track', reference: 'AC-TEST', verification: '09123456789' }, { 'x-forwarded-for': 'attacker-A' }));

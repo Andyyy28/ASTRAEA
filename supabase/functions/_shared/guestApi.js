@@ -57,6 +57,11 @@ async function verifyTurnstile(token, env, fetchImpl = fetch, expectedAction = n
     });
     const result = await response.json();
     const expectedHostname = env('TURNSTILE_EXPECTED_HOSTNAME');
+    const errorCodes = Array.isArray(result['error-codes']) ? result['error-codes'] : [];
+    if (errorCodes.some(code => ['missing-input-secret', 'invalid-input-secret'].includes(code))) {
+      throw new HttpError(503, 'turnstile_not_configured');
+    }
+    if (errorCodes.includes('internal-error')) throw new HttpError(503, 'turnstile_unavailable');
     if (!response.ok || result.success !== true || (expectedHostname && result.hostname !== expectedHostname) || (expectedAction && result.action !== expectedAction)) {
       throw new HttpError(403, 'turnstile_failed');
     }

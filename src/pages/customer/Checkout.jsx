@@ -9,6 +9,7 @@ import Skeleton from '../../components/Skeleton';
 import TurnstileWidget from '../../components/TurnstileWidget';
 import { todayKeyInManila, isPastBusinessDate } from '../../lib/businessTime';
 import { clearPendingCheckout, newRequestUuid, readPendingCheckout, writePendingCheckout } from '../../lib/checkoutRecovery';
+import { invokeGuestApi } from '../../lib/guestApi';
 
 const Checkout = () => {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -147,14 +148,14 @@ const Checkout = () => {
       const selectionKey = JSON.stringify({ items: orderItems, deliveryMethod });
       let draft = checkoutDraft;
       if (!draft || draft.selectionKey !== selectionKey || Date.parse(draft.expires_at) <= Date.now()) {
-        const { data: sessionData, error: sessionError } = await supabase.functions.invoke('guest-api', {
-          body: { action: 'start-checkout', turnstile_token: turnstileToken }
-        });
-        if (sessionError || !sessionData?.session_id || !sessionData?.session_token) throw new Error('Security verification failed. Please try again.');
-        const { data: quoteData, error: quoteError } = await supabase.functions.invoke('guest-api', {
-          body: { action: 'quote', session_id: sessionData.session_id, session_token: sessionData.session_token, items: orderItems, delivery_method: deliveryMethod }
-        });
-        if (quoteError || !quoteData?.quote_token || !quoteData?.expires_at) throw new Error('The quote could not be created. Please refresh and try again.');
+        const sessionData = await invokeGuestApi(supabase,
+          { action: 'start-checkout', turnstile_token: turnstileToken },
+          'Checkout could not connect to the store. Please try again.');
+        if (!sessionData?.session_id || !sessionData?.session_token) throw new Error('Your checkout session could not be started. Please try again.');
+        const quoteData = await invokeGuestApi(supabase,
+          { action: 'quote', session_id: sessionData.session_id, session_token: sessionData.session_token, items: orderItems, delivery_method: deliveryMethod },
+          'The quote could not be created. Please try again.');
+        if (!quoteData?.quote_token || !quoteData?.expires_at) throw new Error('The quote could not be created. Please try again.');
         draft = { ...sessionData, ...quoteData, selectionKey };
         setCheckoutDraft(draft);
         setServerQuote(quoteData);
@@ -180,8 +181,8 @@ const Checkout = () => {
         proofForm.append('session_id', draft.session_id);
         proofForm.append('session_token', draft.session_token);
         proofForm.append('file', paymentProofFile);
-        const { data: proofData, error: proofError } = await supabase.functions.invoke('guest-api', { body: proofForm });
-        if (proofError || proofData?.uploaded !== true) throw new Error('The payment proof could not be uploaded. Please try again.');
+        const proofData = await invokeGuestApi(supabase, proofForm, 'The payment proof could not be uploaded. Please try again.');
+        if (proofData?.uploaded !== true) throw new Error('The payment proof could not be uploaded. Please try again.');
 
       }
 
