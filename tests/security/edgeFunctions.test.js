@@ -22,6 +22,7 @@ function workerFixture({ queueError = null, telegramOk = true, ack = true } = {}
   const client = {
     rpc: async (name, params) => {
       calls.push([name, params]);
+      if (name === 'authorize_notification_worker') return { data: false, error: null };
       if (name === 'claim_notification_events') return { data: [{ id, entity_id: id, event_type: 'order.created', claim_token: claim, attempts: 1 }], error: queueError };
       return { data: name === 'complete_notification_event' ? ack : true, error: null };
     },
@@ -37,6 +38,28 @@ test('worker rejects unauthorized access and caller payloads before database wor
   const f = workerFixture(); assert.equal((await f.handler(workerRequest('wrong'))).status, 401);
   const req = new Request(`${project}/worker`, { method: 'POST', headers: { authorization: `Bearer ${secret}` }, body: '{"entity_id":"attacker"}' });
   assert.equal((await f.handler(req)).status, 400); assert.equal(f.calls.length, 0); assert.equal(f.sends.length, 0);
+});
+test('worker accepts the empty JSON transport used by the scheduler', async () => {
+  const f = workerFixture();
+  const request = new Request(`${project}/worker`, { method: 'POST', headers: { authorization: `Bearer ${secret}`, 'content-type': 'application/json' }, body: '{}' });
+  assert.equal((await f.handler(request)).status, 200);
+  assert.equal(f.sends.length, 1);
+});
+test('dry run verifies the Telegram bot/chat without claiming or sending an event', async () => {
+  const f = workerFixture();
+  const request = new Request(`${project}/worker?dry_run=true`, { method: 'POST', headers: { authorization: `Bearer ${secret}` } });
+  const response = await f.handler(request);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ready: true });
+  assert.equal(f.calls.length, 0);
+  assert.deepEqual(f.sends.map(([url]) => url.split('/').at(-1)), ['getMe', 'getChat']);
+});
+test('Vault authorization uses a hash and rejects unknown scheduler credentials', async () => {
+  const f = workerFixture();
+  assert.equal((await f.handler(workerRequest('unknown-worker-token-at-least-32-characters'))).status, 401);
+  assert.equal(f.sends.length, 0);
+  assert.equal(f.calls[0][0], 'authorize_notification_worker');
+  assert.match(f.calls[0][1].p_token_hash, /^[a-f0-9]{64}$/);
 });
 test('worker loads canonical records and acknowledges only successful Telegram sends', async () => {
   const f = workerFixture(); const res = await f.handler(workerRequest()); assert.equal(res.status, 200); assert.equal(res.headers.get('cache-control'), 'no-store');

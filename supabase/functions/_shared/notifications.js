@@ -1,4 +1,4 @@
-import { HttpError, bearerToken, errorResponse, jsonResponse, secureEquals } from './http.js';
+import { HttpError, bearerToken, errorResponse, jsonResponse, readJson, secureEquals } from './http.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const escape = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -83,19 +83,58 @@ async function sendTelegram(fetchImpl, token, chatId, text) {
   }
 }
 
+async function verifyTelegramConfiguration(fetchImpl, token, chatId) {
+  for (const [method, body] of [['getMe', {}], ['getChat', { chat_id: chatId }]]) {
+    try {
+      const response = await fetchImpl(`https://api.telegram.org/bot${token}/${method}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body), signal: AbortSignal.timeout(5000),
+      });
+      const result = await response.json();
+      if (!response.ok || result.ok !== true) throw new HttpError(503, method === 'getMe' ? 'telegram_bot_unavailable' : 'telegram_chat_unavailable');
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(503, 'telegram_unavailable');
+    }
+  }
+}
+
 export function createNotificationHandler({ getEnv, createClient, fetchImpl = fetch }) {
   return async request => {
     try {
       if (request.method !== 'POST') throw new HttpError(405, 'method_not_allowed');
+      if (!getEnv('SUPABASE_URL') || !getEnv('SUPABASE_SERVICE_ROLE_KEY')) throw new HttpError(503, 'worker_service_not_configured');
+      const presented = bearerToken(request);
       const secret = getEnv('NOTIFICATION_WORKER_SECRET');
-      if (!secret || secret.length < 32) throw new HttpError(503, 'worker_not_configured');
-      if (!await secureEquals(bearerToken(request), secret)) throw new HttpError(401, 'unauthorized');
-      if (request.body) throw new HttpError(400, 'body_not_allowed');
+      let client;
+      const directAuth = secret?.length >= 32 && await secureEquals(presented, secret);
+      if (!directAuth) {
+        // The scheduler credential stays in Vault. Only its hash is submitted
+        // to a service-role-only verifier; plaintext never leaves the server.
+        if (presented.length < 32) throw new HttpError(401, 'unauthorized');
+        client = createClient();
+        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(presented));
+        const tokenHash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+        const { data: authorized, error: authError } = await client.rpc('authorize_notification_worker', { p_token_hash: tokenHash });
+        if (authError) throw new HttpError(503, 'worker_auth_unavailable');
+        if (authorized !== true) throw new HttpError(401, 'unauthorized');
+      }
+      // pg_net sends an empty JSON object; arbitrary event payloads stay denied.
+      if (request.body) {
+        if (!request.headers.get('content-type')?.startsWith('application/json') || Object.keys(await readJson(request)).length) throw new HttpError(400, 'body_not_allowed');
+      }
       // No browser payload or entity ID is accepted; only the durable queue is used.
       const token = getEnv('TELEGRAM_BOT_TOKEN');
       const chatId = getEnv('TELEGRAM_CHAT_ID');
-      if (!token || !chatId || !getEnv('SUPABASE_URL') || !getEnv('SUPABASE_SERVICE_ROLE_KEY')) throw new HttpError(503, 'worker_not_configured');
-      const client = createClient();
+      if (!token || !chatId) return jsonResponse(503, {
+        error: 'telegram_not_configured',
+        missing: [!token && 'TELEGRAM_BOT_TOKEN', !chatId && 'TELEGRAM_CHAT_ID'].filter(Boolean),
+      });
+      if (new URL(request.url).searchParams.get('dry_run') === 'true') {
+        await verifyTelegramConfiguration(fetchImpl, token, chatId);
+        return jsonResponse(200, { ready: true });
+      }
+      client ??= createClient();
       const { data: events, error } = await client.rpc('claim_notification_events', { p_limit: 5, p_lease_seconds: 120 });
       if (error || !Array.isArray(events) || events.length > 5) throw new HttpError(503, 'outbox_unavailable');
       let delivered = 0;
