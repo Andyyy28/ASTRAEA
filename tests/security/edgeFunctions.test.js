@@ -61,6 +61,19 @@ test('Vault authorization uses a hash and rejects unknown scheduler credentials'
   assert.equal(f.calls[0][0], 'authorize_notification_worker');
   assert.match(f.calls[0][1].p_token_hash, /^[a-f0-9]{64}$/);
 });
+test('authenticated dry runs diagnose setting names without exposing secret values', async () => {
+  const handler = createNotificationHandler({
+    getEnv: key => ({ ...env, TELEGRAM_BOT_TOKEN: '', TELEGRAM_CHAT_ID: '' })[key],
+    getEnvNames: () => ['VITE_TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHATID', 'OTHER_SECRET'],
+    createClient: () => { throw new Error('Dry run must not claim events'); },
+  });
+  const response = await handler(new Request(`${project}/worker?dry_run=true`, { method: 'POST', headers: { authorization: `Bearer ${secret}` } }));
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    error: 'telegram_not_configured', missing: ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'],
+    configured_telegram_setting_names: ['TELEGRAM_CHATID', 'VITE_TELEGRAM_BOT_TOKEN'],
+  });
+});
 test('worker loads canonical records and acknowledges only successful Telegram sends', async () => {
   const f = workerFixture(); const res = await f.handler(workerRequest()); assert.equal(res.status, 200); assert.equal(res.headers.get('cache-control'), 'no-store');
   assert.equal((await res.json()).delivered, 1); assert.match(f.sends[0][1].text, /Stored bouquet/);

@@ -99,7 +99,7 @@ async function verifyTelegramConfiguration(fetchImpl, token, chatId) {
   }
 }
 
-export function createNotificationHandler({ getEnv, createClient, fetchImpl = fetch }) {
+export function createNotificationHandler({ getEnv, getEnvNames = () => [], createClient, fetchImpl = fetch }) {
   return async request => {
     try {
       if (request.method !== 'POST') throw new HttpError(405, 'method_not_allowed');
@@ -129,6 +129,9 @@ export function createNotificationHandler({ getEnv, createClient, fetchImpl = fe
       if (!token || !chatId) return jsonResponse(503, {
         error: 'telegram_not_configured',
         missing: [!token && 'TELEGRAM_BOT_TOKEN', !chatId && 'TELEGRAM_CHAT_ID'].filter(Boolean),
+        ...(new URL(request.url).searchParams.get('dry_run') === 'true' ? {
+          configured_telegram_setting_names: getEnvNames().filter(name => /telegram/i.test(name)).sort().slice(0, 20),
+        } : {}),
       });
       if (new URL(request.url).searchParams.get('dry_run') === 'true') {
         await verifyTelegramConfiguration(fetchImpl, token, chatId);
