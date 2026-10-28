@@ -72,13 +72,13 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-30 border-b-2 border-dashed border-[#F58AB6]/70 bg-[#FFE7EF]/95 shadow-[0_8px_22px_rgba(249,168,201,0.12)] backdrop-blur-xl animate-fade-in transition-all">
+    <nav className="skeuo-chrome sticky top-0 z-30 border-b-2 border-dashed border-[#F58AB6]/70 bg-[#FFE7EF]/95 shadow-[0_8px_22px_rgba(249,168,201,0.12)] backdrop-blur-xl animate-fade-in transition-all">
       <div className="pointer-events-none absolute inset-x-0 bottom-[-18px] hidden h-8 items-center justify-center md:flex">
         <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
         <span className="relative mx-5 h-8 w-12">
-          <span className="absolute left-1 top-2 h-5 w-5 rotate-45 rounded-br-full rounded-tl-full border-2 border-[#F58AB6]"></span>
-          <span className="absolute right-1 top-2 h-5 w-5 -rotate-45 rounded-bl-full rounded-tr-full border-2 border-[#F58AB6]"></span>
-          <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F58AB6]"></span>
+          <span className="skeuo-surface absolute left-1 top-2 h-5 w-5 rotate-45 rounded-br-full rounded-tl-full border-2 border-[#F58AB6]"></span>
+          <span className="skeuo-surface absolute right-1 top-2 h-5 w-5 -rotate-45 rounded-bl-full rounded-tr-full border-2 border-[#F58AB6]"></span>
+          <span className="skeuo-surface absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F58AB6]"></span>
         </span>
         <div className="h-px flex-1 border-t-2 border-dashed border-[#F58AB6]/80"></div>
       </div>
@@ -99,7 +99,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-[15px] font-bold transition-all hover:bg-white/80 hover:text-astraea-pink xl:px-5 xl:text-[16px]
+                aria-current={isActive(link.path) ? 'page' : undefined}
+                className={`skeuo-button whitespace-nowrap rounded-full px-4 py-2.5 text-[15px] font-bold transition-all hover:bg-white/80 hover:text-astraea-pink xl:px-5 xl:text-[16px]
                   ${isActive(link.path) ? 'bg-white text-astraea-pink shadow-[0_2px_0px_#F9A8C9,0_12px_24px_rgba(249,168,201,0.16)] ring-1 ring-[#F4BFCF]' : 'text-astraea-darkgray'}`}
               >
                 {link.name}
@@ -110,11 +111,11 @@ const Navbar = () => {
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             <Link
               to="/cart"
-              className="relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-astraea-pink bg-white/80 text-astraea-darkgray shadow-[2px_2px_0px_#F9A8C9] transition-colors hover:text-astraea-pink"
+              className="skeuo-button relative flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-astraea-pink bg-white/80 text-astraea-darkgray shadow-[2px_2px_0px_#F9A8C9] transition-colors hover:text-astraea-pink"
             >
               <ShoppingCart className="h-6 w-6" />
               {cartCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-astraea-pink rounded-full border-2 border-white">
+                <span className="skeuo-surface absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-astraea-pink rounded-full border-2 border-white">
                   {cartCount}
                 </span>
               )}
@@ -124,7 +125,7 @@ const Navbar = () => {
               <button
                 ref={menuButtonRef}
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-[12px] border-2 border-[#F4BFCF] bg-white px-[10px] py-2 text-[#E891B8] shadow-[2px_2px_0px_#F9A8C9] focus:outline-none"
+                className="skeuo-button flex min-h-11 min-w-11 items-center justify-center rounded-[12px] border-2 border-[#F4BFCF] bg-white px-[10px] py-2 text-[#E891B8] shadow-[2px_2px_0px_#F9A8C9] focus:outline-none"
                 aria-label={isOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={isOpen}
                 aria-controls="mobile-navigation"
@@ -163,11 +164,11 @@ const Navbar = () => {
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
-          className={`absolute left-0 top-0 z-50 flex h-[100dvh] w-[80vw] max-w-[300px] flex-col overflow-hidden bg-[#FDDDE6] shadow-[4px_0px_20px_rgba(249,168,201,0.4)] transition-transform duration-300 ease-out ${
+          className={`skeuo-chrome absolute left-0 top-0 z-50 flex h-[100dvh] w-[80vw] max-w-[300px] flex-col overflow-hidden bg-[#FDDDE6] shadow-[4px_0px_20px_rgba(249,168,201,0.4)] transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="border-b-2 border-dashed border-[#E891B8] bg-[#F9A8C9] px-5 pb-4 pt-6">
+          <div className="shrink-0 border-b-2 border-dashed border-[#E891B8] bg-[#F9A8C9] px-5 pb-4 pt-6">
             <div className="flex items-start justify-between gap-4">
               <div className="font-heading flex items-center gap-2 text-[18px] font-bold text-[#DE3163]">
                 <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
@@ -176,7 +177,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#E891B8] bg-white text-[18px] text-[#E891B8]"
+                className="skeuo-button flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#E891B8] bg-white text-[18px] text-[#E891B8]"
                 aria-label="Close menu"
               >
                 {String.fromCodePoint(215)}
@@ -184,7 +185,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          <nav className="min-h-0 flex-1 overflow-y-auto py-2">
+          <nav className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-5">
             {navLinks.map((link) => {
               const Icon = link.icon;
 
@@ -192,8 +193,9 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
+                  aria-current={isActive(link.path) ? 'page' : undefined}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 border-b border-dashed border-[#F4BFCF] px-5 py-[14px] font-heading text-[16px] font-semibold text-[#3D2C35] transition-colors ${
+                  className={`skeuo-button flex shrink-0 items-center gap-3 rounded-2xl border-b border-dashed border-[#F4BFCF] px-4 py-[14px] font-heading text-[16px] font-semibold text-[#3D2C35] transition-colors ${
                     isActive(link.path)
                       ? 'border-l-[3px] border-l-[#F9A8C9] bg-[#FDDDE6] text-[#E891B8]'
                       : 'bg-transparent hover:bg-[#FFF5F7] hover:text-[#E891B8]'
@@ -202,7 +204,7 @@ const Navbar = () => {
                   <span className="relative grid h-7 w-7 shrink-0 place-items-center text-[#E06591]">
                     <Icon className="h-6 w-6" strokeWidth={2.2} />
                     {link.accent === 'flower' && (
-                      <span className="absolute -bottom-1 -right-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-[#FDDDE6] font-heading text-[13px] leading-none text-[#E06591]">
+                      <span className="skeuo-surface absolute -bottom-1 -right-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-[#FDDDE6] font-heading text-[13px] leading-none text-[#E06591]">
                         {flowerIcon}
                       </span>
                     )}

@@ -147,7 +147,7 @@ const AdminDashboard = () => {
         {/* Metrics Row Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 flex items-center gap-3">
+            <div key={i} className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100 flex items-center gap-3">
               <Skeleton className="w-12 h-12 md:w-14 md:h-14 rounded-2xl" />
               <div className="space-y-2 flex-grow">
                 <Skeleton className="w-16 h-3" />
@@ -160,7 +160,7 @@ const AdminDashboard = () => {
         {/* Grid Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Pending Orders Table Skeleton */}
-          <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
+          <div className="skeuo-surface lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
             <div className="flex justify-between items-center mb-6">
               <Skeleton className="w-36 h-6" />
               <Skeleton className="w-16 h-4" />
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Low Stock Alerts Skeleton */}
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
+          <div className="skeuo-surface bg-white rounded-3xl border border-gray-100 p-6 space-y-4">
             <div className="flex items-center mb-6">
               <Skeleton className="w-10 h-10 rounded-xl mr-3" />
               <Skeleton className="w-28 h-6" />
@@ -213,8 +213,8 @@ const AdminDashboard = () => {
       
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center shadow-inner">
+        <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="skeuo-surface w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center shadow-inner">
             <ShoppingBag className="w-6 h-6 text-blue-500" />
           </div>
           <div>
@@ -223,8 +223,8 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3 relative">
-          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl flex items-center justify-center shadow-inner">
+        <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3 relative">
+          <div className="skeuo-surface w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl flex items-center justify-center shadow-inner">
             <Clock className="w-6 h-6 text-yellow-500" />
           </div>
           <div>
@@ -233,14 +233,14 @@ const AdminDashboard = () => {
           </div>
           {metrics.pendingOrders > 0 && (
             <span className="absolute top-6 right-6 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+              <span className="skeuo-surface animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+              <span className="skeuo-surface relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
             </span>
           )}
         </div>
         
-        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl flex items-center justify-center shadow-inner">
+        <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="skeuo-surface w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl flex items-center justify-center shadow-inner">
             <DollarSign className="w-6 h-6 text-green-500" />
           </div>
           <div>
@@ -249,8 +249,8 @@ const AdminDashboard = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl flex items-center justify-center shadow-inner">
+        <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-astraea-pink/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="skeuo-surface w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl flex items-center justify-center shadow-inner">
             <TrendingUp className="w-6 h-6 text-purple-500" />
           </div>
           <div>
@@ -263,7 +263,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Pending Orders Table */}
-        <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-astraea-pink/5 overflow-hidden flex flex-col">
+        <div className="skeuo-surface lg:col-span-2 bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-astraea-pink/5 overflow-hidden flex flex-col">
           <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-white">
             <h2 className="font-extrabold text-xl text-astraea-darkgray">Pending Orders</h2>
             <Link to="/admin/orders" className="text-sm font-bold text-astraea-pink hover:text-astraea-pink/80 transition-colors">View All</Link>
@@ -288,7 +288,7 @@ const AdminDashboard = () => {
                       <td className="px-6 py-5 capitalize text-gray-500">{order.order_type}</td>
                       <td className="px-6 py-5 font-bold text-gray-700">{formatPrice(order.total_amount)}</td>
                       <td className="px-6 py-5">
-                      <Link to={`/admin/orders/${order.id}`} className="min-h-11 inline-flex items-center px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
+                      <Link to={`/admin/orders/${order.id}`} className="skeuo-button min-h-11 inline-flex items-center px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                           View
                         </Link>
                       </td>
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
               </table>
             ) : (
               <div className="flex flex-col items-center justify-center p-12 text-center h-full bg-white">
-                <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <div className="skeuo-surface w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
                   <CheckCircle2 className="w-8 h-8 text-green-400" />
                 </div>
                 <h3 className="font-extrabold text-xl text-gray-700">All caught up!</h3>
@@ -309,9 +309,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-astraea-pink/5 flex flex-col">
+        <div className="skeuo-surface bg-white rounded-3xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-astraea-pink/5 flex flex-col">
           <div className="p-6 border-b border-gray-50 flex items-center">
-            <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center mr-3 shadow-inner">
+            <div className="skeuo-surface w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center mr-3 shadow-inner">
               <AlertCircle className="w-5 h-5 text-red-500" />
             </div>
             <h2 className="font-extrabold text-xl text-astraea-darkgray">Low Stock</h2>
@@ -325,18 +325,18 @@ const AdminDashboard = () => {
                       <span className="text-sm font-semibold text-gray-700">{item.name}</span>
                       {item.label && (
                         <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-[#E8D5F5] px-2 py-0.5 text-xs font-bold text-[#7B4FA8]">{item.label}</span>
+                          <span className="skeuo-surface rounded-full bg-[#E8D5F5] px-2 py-0.5 text-xs font-bold text-[#7B4FA8]">{item.label}</span>
                           <span className="text-xs font-bold text-[#C4658A]">{item.stock} left</span>
                         </div>
                       )}
                     </div>
-                    <Link to={item.table === 'other_products' ? '/admin/other-products' : item.table === 'bouquets' ? '/admin/bouquets' : '/admin/inventory'} className="min-h-11 px-4 py-2 bg-green-50 text-green-800 text-xs font-bold rounded-xl">Manage stock</Link>
+                    <Link to={item.table === 'other_products' ? '/admin/other-products' : item.table === 'bouquets' ? '/admin/bouquets' : '/admin/inventory'} className="skeuo-button min-h-11 px-4 py-2 bg-green-50 text-green-800 text-xs font-bold rounded-xl">Manage stock</Link>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="flex flex-col items-center justify-center p-8 text-center h-full">
-                <div className="w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <div className="skeuo-surface w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
                   <CheckCircle2 className="w-6 h-6 text-green-400" />
                 </div>
                 <p className="text-base font-bold text-green-600">Inventory is healthy</p>

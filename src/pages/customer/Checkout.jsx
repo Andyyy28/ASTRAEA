@@ -207,12 +207,12 @@ const Checkout = () => {
     return (
       <div className="min-h-screen bg-astraea-cream py-8 md:py-20 flex justify-center items-center px-4 animate-fade-in">
         <div className="scrapbook-card washi-strip max-w-2xl w-full p-8 md:p-12 text-center bg-[#FFFDFE]">
-          <div className="w-24 h-24 bg-astraea-mint rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#A8DFC9] border-2 border-dashed border-astraea-mint">
+          <div className="skeuo-surface w-24 h-24 bg-astraea-mint rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_#A8DFC9] border-2 border-dashed border-astraea-mint">
             <CheckCircle2 className="w-12 h-12 text-[#2D7A5F]" />
           </div>
           <h1 className="section-heading text-2xl md:text-4xl mb-2">Order Placed!</h1>
           <p className="font-accent text-3xl text-astraea-rosegold mb-4">Thank you, {formData.customer_name}!</p>
-          <div className="inline-block bg-[#FFF3CC] border-2 border-[#F9C74F] rounded-xl px-4 py-2 mb-8 shadow-[3px_3px_0px_#F9C74F]">
+          <div className="skeuo-surface inline-block bg-[#FFF3CC] border-2 border-[#F9C74F] rounded-xl px-4 py-2 mb-8 shadow-[3px_3px_0px_#F9C74F]">
             <p className="text-sm text-[#8B6914] font-bold uppercase tracking-wide">Your Reference Number</p>
             <p className="font-accent text-4xl text-[#8B6914]">{orderPlaced}</p>
           </div>
@@ -234,7 +234,7 @@ const Checkout = () => {
         <h1 className="section-heading text-2xl mb-4">Confirm your checkout</h1>
         <p role="status" className="mb-4">An earlier attempt for {pendingCheckout.body.order.customer_name} is awaiting confirmation. Retry the same request safely, even if its quote has expired. Please do not place another order until this attempt is resolved.</p>
         {Number.isFinite(Number(pendingCheckout.total)) && <p className="mb-4">Quoted total: {formatPrice(pendingCheckout.total)}</p>}
-        <form onSubmit={handleSubmit}><button type="submit" disabled={loading} className="kawaii-btn-primary w-full">{loading ? 'Checking…' : 'Retry previous checkout'}</button></form>
+        <form onSubmit={handleSubmit}><button type="submit" disabled={loading} className="skeuo-button kawaii-btn-primary w-full">{loading ? 'Checking…' : 'Retry previous checkout'}</button></form>
         <Link to="/contact" className="block mt-4 underline">Contact the store if confirmation remains unavailable</Link>
       </div>
     );
@@ -270,9 +270,9 @@ const Checkout = () => {
           <div className="lg:w-2/3 space-y-6 md:space-y-8 order-1 lg:order-1">
             <div className="scrapbook-card washi-strip bg-[#FFFDFE]">
               <h3 className="section-heading text-xl md:text-2xl mb-6">Delivery Method</h3>
-              <div className="flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
-                <button type="button" onClick={() => { setDeliveryMethod('pickup'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`kawaii-btn flex-1 ${deliveryMethod === 'pickup' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Store className="w-5 h-5 mr-2" />Store Pickup</button>
-                <button type="button" onClick={() => { setDeliveryMethod('delivery'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`kawaii-btn flex-1 ${deliveryMethod === 'delivery' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Truck className="w-5 h-5 mr-2" />Delivery</button>
+              <div className="skeuo-surface flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
+                <button type="button" aria-pressed={deliveryMethod === 'pickup'} onClick={() => { setDeliveryMethod('pickup'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`skeuo-button kawaii-btn flex-1 ${deliveryMethod === 'pickup' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Store className="w-5 h-5 mr-2" />Store Pickup</button>
+                <button type="button" aria-pressed={deliveryMethod === 'delivery'} onClick={() => { setDeliveryMethod('delivery'); setCheckoutDraft(null); setServerQuote(null); setRequestUuid(newRequestUuid()); }} className={`skeuo-button kawaii-btn flex-1 ${deliveryMethod === 'delivery' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}><Truck className="w-5 h-5 mr-2" />Delivery</button>
               </div>
             </div>
 
@@ -287,14 +287,15 @@ const Checkout = () => {
 
             <div className="scrapbook-card washi-strip bg-[#FFFDFE] space-y-6">
               <h3 className="section-heading text-xl md:text-2xl mb-2">Payment Method</h3>
-              <div className="flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
+              <div className="skeuo-surface flex bg-astraea-blush/30 rounded-full p-1 border-2 border-dashed border-astraea-pink/30">
                 <button
                   type="button"
                   onClick={() => {
                     setFormData(prev => ({ ...prev, payment_method: 'gcash' }));
                     setErrors(prev => ({ ...prev, payment_method: '' }));
                   }}
-                  className={`kawaii-btn flex-1 ${formData.payment_method === 'gcash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
+                  aria-pressed={formData.payment_method === 'gcash'}
+                  className={`skeuo-button kawaii-btn flex-1 ${formData.payment_method === 'gcash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Pay Online (GCash)
@@ -305,7 +306,8 @@ const Checkout = () => {
                     setFormData(prev => ({ ...prev, payment_method: 'cash' }));
                     setErrors(prev => ({ ...prev, payment_method: '' , payment_proof: '' }));
                   }}
-                  className={`kawaii-btn flex-1 ${formData.payment_method === 'cash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
+                  aria-pressed={formData.payment_method === 'cash'}
+                  className={`skeuo-button kawaii-btn flex-1 ${formData.payment_method === 'cash' ? 'bg-white text-astraea-pink' : 'bg-transparent text-astraea-darkgray/60 shadow-none border-transparent'}`}
                 >
                   <Banknote className="w-5 h-5 mr-2" />
                   Pay with Cash
@@ -314,7 +316,7 @@ const Checkout = () => {
               {errors.payment_method && <p className={errorClass}>{errors.payment_method}</p>}
               {formData.payment_method === 'gcash' ? (
                 <div className="space-y-4">
-                  <div className="rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
+                  <div className="skeuo-surface rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
                     <img src="/gcash.jpeg?v=20261012" alt="GCash QR code" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
                   </div>
                   <div>
@@ -329,7 +331,7 @@ const Checkout = () => {
                     {errors.payment_proof && <p className={errorClass}>{errors.payment_proof}</p>}
                   </div>
                   {paymentProofPreview && (
-                    <div className="rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
+                    <div className="skeuo-surface rounded-2xl bg-white border-2 border-dashed border-astraea-pink/30 p-4">
                       <img src={paymentProofPreview} alt="Proof of payment preview" className="w-full max-w-sm mx-auto rounded-xl object-contain" />
                     </div>
                   )}
@@ -374,9 +376,9 @@ const Checkout = () => {
               </div>
               <div className="border-t border-dashed border-astraea-pink/30 pt-4 mb-8 flex justify-between items-end">
                 <span className="font-bold text-xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(displayedTotal)}</span>
+                <span className="skeuo-surface inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(displayedTotal)}</span>
               </div>
-              <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
+              <button type="submit" disabled={loading} className="skeuo-button kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
                 {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />{pendingCheckout ? 'Retry Order' : 'Place Order'}</>}
               </button>
               <div className="mt-8 flex justify-center">

@@ -57,21 +57,21 @@ const Cart = () => {
     <div className="py-8 md:py-16 pb-28 lg:pb-16 bg-astraea-cream min-h-screen animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="section-heading text-2xl md:text-4xl mb-8 md:mb-10">Your Cart</h1>
-        {!storageAvailable && <p role="alert" className="mb-6 rounded-xl border-2 border-[#F9C74F] bg-[#FFF8D9] px-4 py-3 text-sm text-[#6B5310]">Your browser is blocking local storage, so this cart may be lost if you refresh.</p>}
+        {!storageAvailable && <p role="alert" className="skeuo-surface mb-6 rounded-xl border-2 border-[#F9C74F] bg-[#FFF8D9] px-4 py-3 text-sm text-[#6B5310]">Your browser is blocking local storage, so this cart may be lost if you refresh.</p>}
         <div className="flex flex-col lg:flex-row gap-10">
           <div className="lg:w-2/3 space-y-6">
             {cartItems.map((item) => (
               <div key={item.cartId} className="scrapbook-card washi-strip bg-[#FFFDFE] flex flex-col sm:flex-row gap-6 relative group transition-all">
                 <button aria-label={`Remove ${item.name}`} onClick={() => handleRemove(item.cartId)} className="absolute top-4 right-4 text-astraea-darkgray/40 hover:text-red-500 transition-colors"><Trash2 className="w-5 h-5" /></button>
-                <div className="w-full sm:w-32 aspect-[4/3] sm:aspect-auto sm:h-32 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-dashed border-astraea-pink/30">
+                <div className="skeuo-surface w-full sm:w-32 aspect-[4/3] sm:aspect-auto sm:h-32 bg-astraea-blush rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border-2 border-dashed border-astraea-pink/30">
                   {item.image ? <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center rounded-xl" /> : <Flower2 className="w-12 h-12 text-astraea-pink/40" />}
                 </div>
                 <div className="flex-grow flex flex-col justify-between">
                   <div>
                     <h3 className="font-heading font-bold text-xl text-astraea-darkgray mb-1 pr-8">{item.name}</h3>
-                    <p className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914] mb-3">{formatPrice(item.price)}</p>
+                    <p className="skeuo-surface inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-2xl text-[#8B6914] mb-3">{formatPrice(item.price)}</p>
                     {item.item_type === 'custom' && item.custom_details && (
-                      <div className="text-sm text-astraea-darkgray/70 space-y-1 mb-4 bg-astraea-blush/30 p-3 rounded-xl border-2 border-dashed border-astraea-pink/20">
+                      <div className="skeuo-surface text-sm text-astraea-darkgray/70 space-y-1 mb-4 bg-astraea-blush/30 p-3 rounded-xl border-2 border-dashed border-astraea-pink/20">
                         <p><span className="font-medium">Size:</span> {item.custom_details.size?.name}</p>
                         {item.custom_details.flowers?.map((f, i) => <p key={i}>• {f.quantity}x {f.name} {f.color ? `(${f.color})` : ''}</p>)}
                         {item.custom_details.fillers?.map((f, i) => (
@@ -90,10 +90,10 @@ const Cart = () => {
                     )}
                   </div>
                   <div className="flex justify-between items-end mt-4 sm:mt-0">
-                    <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                      <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
+                    <div className="skeuo-surface flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full bg-white shadow-[3px_3px_0px_#F9A8C9]">
+                      <button aria-label={`Decrease quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity - 1)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
                       <span className="w-10 text-center font-bold text-sm">{item.quantity}</span>
-                      <button aria-label={`Increase quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Plus className="w-4 h-4" /></button>
+                      <button aria-label={`Increase quantity of ${item.name}`} onClick={() => handleQuantityChange(item.cartId, item.quantity + 1)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Plus className="w-4 h-4" /></button>
                     </div>
                     <div className="text-right">
                       <span className="text-sm text-astraea-darkgray/60 block mb-1">Subtotal</span>
@@ -113,9 +113,9 @@ const Cart = () => {
               </div>
               <div className="border-t border-dashed border-astraea-pink/30 pt-4 mb-8 flex justify-between items-end">
                 <span className="font-bold text-lg">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(cartTotal)}</span>
+                <span className="skeuo-surface inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(cartTotal)}</span>
               </div>
-              <button onClick={() => navigate('/checkout')} className="kawaii-btn-primary w-full min-h-11 flex items-center justify-center py-4 text-lg">Proceed to Checkout <ArrowRight className="w-5 h-5 ml-2" /></button>
+              <button onClick={() => navigate('/checkout')} className="skeuo-button kawaii-btn-primary w-full min-h-11 flex items-center justify-center py-4 text-lg">Proceed to Checkout <ArrowRight className="w-5 h-5 ml-2" /></button>
               <Link to="/shop" className="block text-center mt-6 text-sm font-medium text-astraea-darkgray/60 hover:text-astraea-pink transition-colors">Continue Shopping</Link>
             </div>
           </div>

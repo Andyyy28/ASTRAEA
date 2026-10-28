@@ -125,7 +125,7 @@ const ShopDetail = () => {
                 <Skeleton className="w-24 h-24 rounded-xl" />
               </div>
             </div>
-            <div className="md:w-1/2 flex flex-col p-4 md:p-6 bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px]">
+            <div className="skeuo-surface md:w-1/2 flex flex-col p-4 md:p-6 bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px]">
               <Skeleton className="w-24 h-6 mb-4" />
               <Skeleton className="w-3/4 h-10 mb-4" />
               <Skeleton className="w-36 h-12 mb-6" />
@@ -163,7 +163,7 @@ const ShopDetail = () => {
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, idx) => (
-                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
+                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} aria-pressed={activeImage === idx} onClick={() => setActiveImage(idx)} className={`skeuo-button w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
                     <img src={img} alt={`Thumbnail ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
                   </button>
                 ))}
@@ -176,7 +176,7 @@ const ShopDetail = () => {
               {isOutOfStock ? 'Out of Stock' : `${stock} in stock`}
             </span>
             <h1 className="section-heading text-2xl md:text-4xl mb-4">{bouquet.name}</h1>
-            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(bouquet.price)}</p>
+            <p className="skeuo-surface inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(bouquet.price)}</p>
             <div className="prose prose-pink text-astraea-darkgray/80 mb-8 max-w-none"><p>{bouquet.description}</p></div>
             <div className="space-y-6 mb-10">
               <div>
@@ -185,19 +185,19 @@ const ShopDetail = () => {
               </div>
               <div>
                 <label htmlFor="bouquet-quantity" className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
-                <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
+                <div className="skeuo-surface flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
+                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="skeuo-button min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
                   <span id="bouquet-quantity" aria-live="polite" className="w-12 text-center font-bold text-lg">{quantity}</span>
-                  <button type="button" aria-label="Increase quantity" onClick={() => setQuantity(Math.min(stock, quantity + 1))} disabled={isOutOfStock || quantity >= stock} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"><Plus className="w-5 h-5" /></button>
+                  <button type="button" aria-label="Increase quantity" onClick={() => setQuantity(Math.min(stock, quantity + 1))} disabled={isOutOfStock || quantity >= stock} className="skeuo-button min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"><Plus className="w-5 h-5" /></button>
                 </div>
               </div>
             </div>
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-6 pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <span className="section-heading text-xl md:text-2xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(bouquet.price * quantity)}</span>
+                <span className="skeuo-surface inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(bouquet.price * quantity)}</span>
               </div>
-              <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary transform-gpu w-full py-4 text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
+              <button onClick={handleAddToCart} disabled={isOutOfStock} className="skeuo-button kawaii-btn-primary transform-gpu w-full py-4 text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
             </div>
           </div>
         </div>

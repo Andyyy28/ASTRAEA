@@ -234,13 +234,13 @@ const AdminOtherProducts = () => {
   };
 
   const visibilityBadge = (product) => (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-heading border ${product.is_visible ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#F1EFE8] border-[#D3D1C7] text-[#5F5E5A]'}`}>
+    <span className={`skeuo-surface px-2 py-0.5 rounded-full text-xs font-heading border ${product.is_visible ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#F1EFE8] border-[#D3D1C7] text-[#5F5E5A]'}`}>
       {product.is_visible ? 'Visible' : 'Hidden'}
     </span>
   );
 
   const availabilityBadge = (product) => (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-heading border ${product.is_available ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]'}`}>
+    <span className={`skeuo-surface px-2 py-0.5 rounded-full text-xs font-heading border ${product.is_available ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]'}`}>
       {product.is_available ? 'Available' : 'Out of Stock'}
     </span>
   );
@@ -248,12 +248,12 @@ const AdminOtherProducts = () => {
   const stockBadge = (stockValue) => {
     const stock = Number(stockValue) || 0;
     if (stock > 10) {
-      return <span className="inline-flex w-fit rounded-full border border-[#A8DFC9] bg-[#D5F0E8] px-2 py-0.5 text-xs font-bold text-[#2D7A5F]">✿ In Stock ({stock} left)</span>;
+      return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#A8DFC9] bg-[#D5F0E8] px-2 py-0.5 text-xs font-bold text-[#2D7A5F]">✿ In Stock ({stock} left)</span>;
     }
     if (stock > 0) {
-      return <span className="inline-flex w-fit rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-2 py-0.5 text-xs font-bold text-[#8B6914]">⚠ Low Stock ({stock} left)</span>;
+      return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-2 py-0.5 text-xs font-bold text-[#8B6914]">⚠ Low Stock ({stock} left)</span>;
     }
-    return <span className="inline-flex w-fit rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-2 py-0.5 text-xs font-bold text-[#C4658A]">✦ Out of Stock</span>;
+    return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-2 py-0.5 text-xs font-bold text-[#C4658A]">✦ Out of Stock</span>;
   };
 
   return (
@@ -263,7 +263,7 @@ const AdminOtherProducts = () => {
           <h1 className="text-2xl md:text-3xl font-bold font-heading text-[#3D2C35]">✿ Other Products</h1>
           <p className="text-sm font-heading text-[#6B5560] mt-1">Manage keychains, accessories and more ♡</p>
         </div>
-        <button onClick={() => openModal()} className="kawaii-btn-primary min-h-11 px-5 py-3 rounded-full">
+        <button onClick={() => openModal()} className="skeuo-button kawaii-btn-primary min-h-11 px-5 py-3 rounded-full">
           <Plus className="w-5 h-5 mr-2" /> Add New Product
         </button>
       </div>
@@ -271,7 +271,7 @@ const AdminOtherProducts = () => {
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <div key={item} className="bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] overflow-hidden flex flex-col">
+            <div key={item} className="skeuo-surface bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] overflow-hidden flex flex-col">
               <Skeleton className="aspect-[3/4] w-full rounded-none" />
               <div className="p-3 space-y-2">
                 <Skeleton className="h-4 w-3/4" />
@@ -286,11 +286,11 @@ const AdminOtherProducts = () => {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No other products found.</div>
+        <div className="skeuo-surface bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No other products found.</div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {products.map(product => (
-            <div key={product.id} className="bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] shadow-[4px_4px_0px_#F9A8C9] overflow-hidden flex flex-col">
+            <div key={product.id} className="skeuo-surface bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] shadow-[4px_4px_0px_#F9A8C9] overflow-hidden flex flex-col">
               <div className="aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden">
                 {product.images?.[0] ? (
                   <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover object-top" />
@@ -300,26 +300,26 @@ const AdminOtherProducts = () => {
               </div>
               <div className="p-3 flex flex-col flex-grow">
                 <h3 className="font-heading font-bold text-sm text-[#3D2C35] line-clamp-1">{product.name}</h3>
-                <p className="inline-block w-fit px-2 py-0.5 mt-2 rounded-lg bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-lg leading-tight text-[#8B6914]">{formatPrice(product.price)}</p>
+                <p className="skeuo-surface inline-block w-fit px-2 py-0.5 mt-2 rounded-lg bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-lg leading-tight text-[#8B6914]">{formatPrice(product.price)}</p>
                 <div className="mt-2">{stockBadge(product.stock)}</div>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-heading border bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8]">
+                  <span className="skeuo-surface px-2 py-0.5 rounded-full text-xs font-heading border bg-[#E8D5F5] border-[#C9A8E8] text-[#7B4FA8]">
                     {categoryLabels[product.category] || 'Other'}
                   </span>
                   {visibilityBadge(product)}
                   {availabilityBadge(product)}
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-1">
-                  <button type="button" onClick={() => setStockDraft(product.id, (stockDrafts[product.id] ?? product.stock ?? 0) - 1)} className="min-h-8 min-w-8 rounded-full border-2 border-[#F4BFCF] bg-white text-[#C4658A] font-bold">-</button>
+                  <button type="button" onClick={() => setStockDraft(product.id, (stockDrafts[product.id] ?? product.stock ?? 0) - 1)} className="skeuo-button min-h-8 min-w-8 rounded-full border-2 border-[#F4BFCF] bg-white text-[#C4658A] font-bold">-</button>
                   <input type="number" min="0" value={stockDrafts[product.id] ?? (Number(product.stock) || 0)} onChange={e => setStockDraft(product.id, e.target.value)} className="h-8 w-14 rounded-lg border-2 border-[#F4BFCF] text-center text-sm font-bold outline-none focus:border-[#F9A8C9]" />
-                  <button type="button" onClick={() => setStockDraft(product.id, (stockDrafts[product.id] ?? product.stock ?? 0) + 1)} className="min-h-8 min-w-8 rounded-full border-2 border-[#F4BFCF] bg-white text-[#C4658A] font-bold">+</button>
-                  <button type="button" onClick={() => updateProductStock(product)} className="min-h-8 rounded-full bg-[#F9A8C9] px-3 text-xs font-bold text-white shadow-[2px_2px_0px_#E891B8]">Update</button>
+                  <button type="button" onClick={() => setStockDraft(product.id, (stockDrafts[product.id] ?? product.stock ?? 0) + 1)} className="skeuo-button min-h-8 min-w-8 rounded-full border-2 border-[#F4BFCF] bg-white text-[#C4658A] font-bold">+</button>
+                  <button type="button" onClick={() => updateProductStock(product)} className="skeuo-button min-h-8 rounded-full bg-[#F9A8C9] px-3 text-xs font-bold text-white shadow-[2px_2px_0px_#E891B8]">Update</button>
                 </div>
                 <div className="mt-auto pt-4 flex gap-2">
-                  <button onClick={() => openModal(product)} className="kawaii-btn-outline flex-1 min-h-10 text-xs text-[#C4658A] rounded-full">
+                  <button onClick={() => openModal(product)} className="skeuo-button kawaii-btn-outline flex-1 min-h-10 text-xs text-[#C4658A] rounded-full">
                     <Edit2 className="w-4 h-4 mr-1" /> Edit
                   </button>
-                  <button onClick={() => handleDelete(product.id)} className="kawaii-btn-outline flex-1 min-h-10 text-xs text-[#C4658A] border-[#F4BFCF] hover:bg-[#FFF5F7] rounded-full">
+                  <button onClick={() => handleDelete(product.id)} className="skeuo-button kawaii-btn-outline flex-1 min-h-10 text-xs text-[#C4658A] border-[#F4BFCF] hover:bg-[#FFF5F7] rounded-full">
                     <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </button>
                 </div>
@@ -331,11 +331,11 @@ const AdminOtherProducts = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-[rgba(61,44,53,0.45)] z-[60] flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-dashed border-[#F4BFCF] rounded-[24px] shadow-[6px_6px_0px_#F9A8C9] w-[600px] max-w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto p-6">
-            <div className="h-2 bg-[#F9A8C9] rounded mb-4"></div>
+          <div className="skeuo-surface bg-white border-2 border-dashed border-[#F4BFCF] rounded-[24px] shadow-[6px_6px_0px_#F9A8C9] w-[600px] max-w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto p-6">
+            <div className="skeuo-surface h-2 bg-[#F9A8C9] rounded mb-4"></div>
             <div className="flex justify-between items-center mb-5">
               <h2 className="text-lg font-bold font-heading text-[#3D2C35]">✿ {editingId ? 'Edit Product' : 'Add New Product'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="kawaii-btn-outline min-h-9 px-3 rounded-full text-[#C4658A]"><X className="w-4 h-4" /></button>
+              <button onClick={() => setIsModalOpen(false)} className="skeuo-button kawaii-btn-outline min-h-9 px-3 rounded-full text-[#C4658A]"><X className="w-4 h-4" /></button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -343,14 +343,14 @@ const AdminOtherProducts = () => {
                 <label className={labelClass}>✿ Product Photos</label>
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {imageItems.map((item, index) => (
-                    <div key={`${item.preview}-${index}`} className="relative aspect-square rounded-xl overflow-hidden border-2 border-[#F4BFCF] bg-astraea-blush">
+                    <div key={`${item.preview}-${index}`} className="skeuo-inset relative aspect-square rounded-xl overflow-hidden border-2 border-[#F4BFCF] bg-astraea-blush">
                       <img src={item.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover object-top" />
-                      <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 w-7 h-7 rounded-full bg-[#F9A8C9] text-white flex items-center justify-center shadow">
+                      <button type="button" onClick={() => removeImage(index)} className="skeuo-button absolute top-1 right-1 w-7 h-7 rounded-full bg-[#F9A8C9] text-white flex items-center justify-center shadow">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
-                  <label className="aspect-square rounded-xl border-2 border-dashed border-[#F4BFCF] bg-[#FFF5F7] flex flex-col items-center justify-center cursor-pointer text-[#C4658A]">
+                  <label className="skeuo-surface aspect-square rounded-xl border-2 border-dashed border-[#F4BFCF] bg-[#FFF5F7] flex flex-col items-center justify-center cursor-pointer text-[#C4658A]">
                     <ImageIcon className="w-6 h-6 mb-2 text-[#F9A8C9]" />
                     <span className="text-sm font-heading">Add Photos</span>
                     <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -392,8 +392,8 @@ const AdminOtherProducts = () => {
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t-2 border-dashed border-[#F4BFCF]">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="kawaii-btn-outline min-h-11 px-6 rounded-full">Cancel</button>
-                <button type="submit" disabled={saving} className="kawaii-btn-primary min-h-11 px-6 rounded-full disabled:opacity-70">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="skeuo-button kawaii-btn-outline min-h-11 px-6 rounded-full">Cancel</button>
+                <button type="submit" disabled={saving} className="skeuo-button kawaii-btn-primary min-h-11 px-6 rounded-full disabled:opacity-70">
                   {saving ? 'Saving...' : '♡ Save Product'}
                 </button>
               </div>

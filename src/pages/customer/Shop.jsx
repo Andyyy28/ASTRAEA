@@ -149,8 +149,9 @@ const Shop = () => {
             {categories.map(cat => (
               <button
                 key={cat}
+                aria-pressed={categoryFilter === cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`kawaii-btn min-h-11 px-4 py-2 text-sm font-bold ${categoryFilter === cat ? 'bg-astraea-pink text-white' : 'bg-white text-astraea-darkgray'}`}
+                className={`skeuo-button kawaii-btn min-h-11 px-4 py-2 text-sm font-bold ${categoryFilter === cat ? 'bg-astraea-pink text-white' : 'bg-white text-astraea-darkgray'}`}
               >
                 {cat}
               </button>
@@ -187,7 +188,7 @@ const Shop = () => {
             <p className="text-astraea-darkgray/60 mt-2 text-center max-w-sm">
               We couldn't find any bouquets matching your current filters. Try selecting "All" categories.
             </p>
-            <button onClick={() => setCategoryFilter('All')} className="kawaii-btn-primary mt-6 min-h-11 px-6 py-2 text-sm">
+            <button onClick={() => setCategoryFilter('All')} className="skeuo-button kawaii-btn-primary mt-6 min-h-11 px-6 py-2 text-sm">
               Clear Filters
             </button>
           </div>
@@ -209,7 +210,7 @@ const Shop = () => {
                   </span>
                 </div>
 
-                <div className="w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-t-[12px]">
+                <div className="skeuo-surface w-full aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden rounded-t-[12px]">
                   {bouquet.images?.[0] ? (
                     <img
                       src={bouquet.images[0]}
@@ -226,7 +227,7 @@ const Shop = () => {
 
                 <div className="p-2 md:p-4 flex flex-col flex-grow">
                   <h3 className="font-heading font-bold text-sm text-astraea-darkgray mb-2 line-clamp-1">{bouquet.name}</h3>
-                  <p className="inline-flex w-fit px-2 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-sm text-[#8B6914] mb-3">
+                  <p className="skeuo-surface inline-flex w-fit px-2 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-sm text-[#8B6914] mb-3">
                     {formatPrice(bouquet.price)}
                   </p>
                   <div className="mt-auto flex flex-col space-y-2">
@@ -236,7 +237,7 @@ const Shop = () => {
                     <button
                       onClick={() => handleAddToCart(bouquet)}
                       disabled={normalizeStock(bouquet.stock) === 0}
-                      className="kawaii-btn-primary transform-gpu min-h-11 w-full py-1.5 text-center text-xs hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                      className="skeuo-button kawaii-btn-primary transform-gpu min-h-11 w-full py-1.5 text-center text-xs hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     >
                       Add to Cart
                     </button>

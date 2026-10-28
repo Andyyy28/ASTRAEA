@@ -47,20 +47,21 @@ const FAQ = () => {
           <h1 className="font-heading text-2xl md:text-4xl font-bold text-astraea-darkgray mb-4">
             Frequently Asked Questions
           </h1>
-          <div className="w-24 h-1 bg-astraea-pink mx-auto mt-6 rounded-full"></div>
+          <div className="skeuo-surface w-24 h-1 bg-astraea-pink mx-auto mt-6 rounded-full"></div>
         </div>
 
         <div className="space-y-4">
           {faqs.map((faq, idx) => (
             <div 
               key={idx} 
-              className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
+              className={`skeuo-surface bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${
                 openIndex === idx ? 'border-astraea-pink shadow-md' : 'border-astraea-rosegold/20 hover:border-astraea-pink/50'
               }`}
             >
               <button 
+                aria-expanded={openIndex === idx}
                 onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
-                className="w-full min-h-12 text-left px-4 md:px-6 py-4 md:py-5 flex justify-between items-center gap-4 focus:outline-none"
+                className="skeuo-button w-full min-h-12 text-left px-4 md:px-6 py-4 md:py-5 flex justify-between items-center gap-4 focus:outline-none"
               >
                 <span className={`font-bold text-base md:text-lg ${openIndex === idx ? 'text-astraea-pink' : 'text-astraea-darkgray'}`}>
                   {faq.q}

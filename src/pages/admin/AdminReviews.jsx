@@ -137,7 +137,7 @@ const AdminReviews = () => {
       {loading ? (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-4 md:p-6 space-y-6">
+            <div key={item} className="skeuo-surface bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden p-4 md:p-6 space-y-6">
               <div className="flex justify-between items-start">
                 <div className="space-y-2 flex-1 max-w-[200px]">
                   <Skeleton className="h-6 w-3/4" />
@@ -168,7 +168,7 @@ const AdminReviews = () => {
           ))}
         </div>
       ) : reviews.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-10 text-center">
+        <div className="skeuo-surface bg-white rounded-2xl shadow-sm border border-gray-200 p-10 text-center">
           <MessageSquareReply className="w-12 h-12 mx-auto text-astraea-pink/50 mb-4" />
           <h2 className="text-xl font-bold text-gray-800">No reviews yet</h2>
           <p className="text-gray-500 mt-2">New customer feedback from the Contact page will appear here.</p>
@@ -176,7 +176,7 @@ const AdminReviews = () => {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           {reviews.map((review) => (
-            <article key={review.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <article key={review.id} className="skeuo-surface bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-4 md:p-6 border-b border-gray-100 bg-[#FFFDFE] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold text-gray-800 break-words">{review.name}</h2>
@@ -187,7 +187,7 @@ const AdminReviews = () => {
                     ))}
                   </div>
                 </div>
-                <span className={`inline-flex items-center self-start rounded-full border-2 px-3 py-1 text-xs font-bold ${review.is_displayed ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]'}`}>
+                <span className={`skeuo-surface inline-flex items-center self-start rounded-full border-2 px-3 py-1 text-xs font-bold ${review.is_displayed ? 'bg-[#D5F0E8] border-[#A8DFC9] text-[#2D7A5F]' : 'bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A]'}`}>
                   {review.is_displayed ? 'Displayed' : 'Hidden'}
                 </span>
               </div>
@@ -211,7 +211,7 @@ const AdminReviews = () => {
                     type="button"
                     onClick={() => toggleDisplayed(review)}
                     disabled={savingId === review.id}
-                    className="kawaii-btn-outline flex-1 justify-center px-4 py-3 text-sm"
+                    className="skeuo-button kawaii-btn-outline flex-1 justify-center px-4 py-3 text-sm"
                   >
                     {review.is_displayed ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
                     {review.is_displayed ? 'Hide' : 'Show'}
@@ -220,7 +220,7 @@ const AdminReviews = () => {
                     type="button"
                     onClick={() => saveReply(review)}
                     disabled={savingId === review.id}
-                    className="kawaii-btn-primary flex-1 justify-center px-4 py-3 text-sm"
+                    className="skeuo-button kawaii-btn-primary flex-1 justify-center px-4 py-3 text-sm"
                   >
                     <MessageSquareReply className="w-4 h-4 mr-2" />
                     Save Reply
@@ -229,7 +229,7 @@ const AdminReviews = () => {
                     type="button"
                     onClick={() => deleteReview(review)}
                     disabled={savingId === review.id}
-                    className="min-h-11 rounded-full border-2 border-[#F9A8C9] bg-[#FFF5F7] px-4 py-3 text-sm font-bold text-[#C4658A] hover:bg-[#FDDDE6] transition-colors flex items-center justify-center"
+                    className="skeuo-button min-h-11 rounded-full border-2 border-[#F9A8C9] bg-[#FFF5F7] px-4 py-3 text-sm font-bold text-[#C4658A] hover:bg-[#FDDDE6] transition-colors flex items-center justify-center"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete

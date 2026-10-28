@@ -63,8 +63,8 @@ const Home = () => {
             <div className="home-hero-mobile-edge absolute inset-y-0 right-0 w-32 bg-gradient-to-r from-[#FFE7EF] via-[#FFE7EF]/85 to-transparent sm:w-44 lg:w-52"></div>
 
             <div className="relative z-10 w-full max-w-[720px] space-y-6 text-left">
-              <div className="inline-flex items-center gap-3 rounded-full border-2 border-dashed border-[#DE3163]/75 bg-white/70 px-6 py-3 shadow-[0_8px_20px_rgba(232,145,184,0.16)]">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-[#DE3163] text-base text-white">
+              <div className="skeuo-surface inline-flex items-center gap-3 rounded-full border-2 border-dashed border-[#DE3163]/75 bg-white/70 px-6 py-3 shadow-[0_8px_20px_rgba(232,145,184,0.16)]">
+                <span className="skeuo-surface grid h-7 w-7 place-items-center rounded-full bg-[#DE3163] text-base text-white">
                   <Heart className="h-4 w-4 fill-current" />
                 </span>
                 <span className="font-accent text-[clamp(1.4rem,2vw,2.1rem)] text-[#DE3163]">cute flower shop</span>
@@ -76,10 +76,10 @@ const Home = () => {
               </h1>
 
               <div className="flex w-28 items-center gap-2">
-                <span className="h-1.5 flex-1 rounded-full bg-[#DE3163]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
-                <span className="h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
+                <span className="skeuo-surface h-1.5 flex-1 rounded-full bg-[#DE3163]"></span>
+                <span className="skeuo-surface h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
+                <span className="skeuo-surface h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
+                <span className="skeuo-surface h-2.5 w-2.5 rounded-full bg-[#DE3163]"></span>
               </div>
 
               <p className="max-w-[14ch] font-accent text-[clamp(2.2rem,3vw,4.2rem)] leading-[1.05] text-[#DE3163]">
@@ -136,7 +136,7 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="mx-auto w-fit rotate-[-3deg] rounded-[18px] border-2 border-dashed border-astraea-pink/45 bg-white/75 px-8 py-4 font-accent text-3xl font-bold leading-tight text-astraea-rosegold shadow-[5px_5px_0px_rgba(249,168,201,0.35)] lg:mx-0">
+            <div className="skeuo-surface mx-auto w-fit rotate-[-3deg] rounded-[18px] border-2 border-dashed border-astraea-pink/45 bg-white/75 px-8 py-4 font-accent text-3xl font-bold leading-tight text-astraea-rosegold shadow-[5px_5px_0px_rgba(249,168,201,0.35)] lg:mx-0">
               ♡ Made with love,
               <span className="block">just for you</span>
             </div>
@@ -148,17 +148,17 @@ const Home = () => {
           </div>
 
           <div className="animate-float-up-down relative mx-auto w-full max-w-[560px]">
-            <div className="absolute left-[30%] top-[-16px] z-20 h-12 w-44 rotate-[1deg] rounded-sm bg-[#FFE1A8]/90 shadow-[0_4px_16px_rgba(232,145,184,0.18)] before:absolute before:inset-0 before:bg-[radial-gradient(#fff_1.2px,transparent_1.2px)] before:bg-[length:16px_12px] before:opacity-70"></div>
-            <div className="absolute -right-3 bottom-0 h-[88%] w-[82%] rotate-[4deg] rounded-[22px] bg-[#F8AEBE]/65 shadow-[8px_14px_22px_rgba(232,145,184,0.25)]"></div>
-            <div className="relative rotate-[1deg] rounded-[24px] bg-white p-4 pb-16 shadow-[0_24px_45px_rgba(96,53,70,0.18)] ring-2 ring-astraea-pink/15">
-              <div className="aspect-[4/3.7] overflow-hidden rounded-[14px] bg-astraea-blush">
+            <div className="skeuo-surface absolute left-[30%] top-[-16px] z-20 h-12 w-44 rotate-[1deg] rounded-sm bg-[#FFE1A8]/90 shadow-[0_4px_16px_rgba(232,145,184,0.18)] before:absolute before:inset-0 before:bg-[radial-gradient(#fff_1.2px,transparent_1.2px)] before:bg-[length:16px_12px] before:opacity-70"></div>
+            <div className="skeuo-surface absolute -right-3 bottom-0 h-[88%] w-[82%] rotate-[4deg] rounded-[22px] bg-[#F8AEBE]/65 shadow-[8px_14px_22px_rgba(232,145,184,0.25)]"></div>
+            <div className="skeuo-surface relative rotate-[1deg] rounded-[24px] bg-white p-4 pb-16 shadow-[0_24px_45px_rgba(96,53,70,0.18)] ring-2 ring-astraea-pink/15">
+              <div className="skeuo-inset aspect-[4/3.7] overflow-hidden rounded-[14px] bg-astraea-blush">
                 <img src={violetBouquetFeature} alt="Violet fuzzy wire bouquet" className="h-full w-full object-cover object-center" />
               </div>
               <p className="absolute bottom-5 left-0 right-0 text-center font-accent text-3xl font-bold text-astraea-rosegold">
                 ♡
               </p>
             </div>
-            <div className="absolute -bottom-4 right-2 z-20 grid h-20 w-20 place-items-center rounded-full border-4 border-white bg-[#F9A8C9] text-4xl text-white shadow-[3px_5px_0px_rgba(232,145,184,0.45)]">
+            <div className="skeuo-surface absolute -bottom-4 right-2 z-20 grid h-20 w-20 place-items-center rounded-full border-4 border-white bg-[#F9A8C9] text-4xl text-white shadow-[3px_5px_0px_rgba(232,145,184,0.45)]">
               ✿
             </div>
           </div>
@@ -197,7 +197,7 @@ const Home = () => {
 
                 return (
                 <div key={bouquet.id} className={`group scrapbook-card overflow-hidden ${bouquet.id % 2 === 0 ? 'scrapbook-card-tilt-left' : 'scrapbook-card-tilt-right'} washi-strip w-full max-w-[20rem] flex-1 basis-[18rem]`}>
-                  <div className="aspect-[4/5] bg-astraea-blush flex items-center justify-center relative rounded-[16px] overflow-hidden">
+                  <div className="skeuo-surface aspect-[4/5] bg-astraea-blush flex items-center justify-center relative rounded-[16px] overflow-hidden">
                     {image ? (
                       <img src={image} alt={bouquet.name} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
@@ -209,7 +209,7 @@ const Home = () => {
                   </div>
                   <div className="p-4 md:p-6 space-y-4">
                     <h3 className="font-heading font-bold text-base md:text-lg text-astraea-darkgray line-clamp-1">{bouquet.name}</h3>
-                    <p className="inline-flex items-center px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914]">{formatPrice(bouquet.price)}</p>
+                    <p className="skeuo-surface inline-flex items-center px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-xl text-[#8B6914]">{formatPrice(bouquet.price)}</p>
                     <Link to={`/shop/${bouquet.id}`} className="kawaii-btn-outline min-h-11 flex items-center justify-center w-full py-2 text-center">
                       View
                     </Link>
@@ -229,21 +229,21 @@ const Home = () => {
           </div>
           <div className="flex flex-col md:flex-row gap-8 md:gap-12 text-center">
             <div className="space-y-6 flex flex-col items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
+              <div className="skeuo-surface w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
                 <CheckCircle className="w-10 h-10" />
               </div>
               <h3 className="font-heading text-2xl font-bold">1. Browse or Customize</h3>
               <p className="text-astraea-darkgray/80">Choose from our ready-made bestsellers or build your own dream bouquet from scratch.</p>
             </div>
             <div className="space-y-6 flex flex-col items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
+              <div className="skeuo-surface w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
                 <Package className="w-10 h-10" />
               </div>
               <h3 className="font-heading text-2xl font-bold">2. Place Your Order</h3>
               <p className="text-astraea-darkgray/80">Select your preferred delivery method, convenient pickup or doorstep delivery.</p>
             </div>
             <div className="space-y-6 flex flex-col items-center">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
+              <div className="skeuo-surface w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink text-astraea-pink">
                 <Truck className="w-10 h-10" />
               </div>
               <h3 className="font-heading text-2xl font-bold">3. Receive Forever Flowers</h3>
@@ -285,7 +285,7 @@ const Home = () => {
                     "{review.message}"
                   </p>
                   {review.admin_reply && (
-                    <div className="mb-5 rounded-2xl border-2 border-dashed border-astraea-pink/30 bg-astraea-blush/30 p-4 text-sm text-astraea-darkgray/80">
+                    <div className="skeuo-surface mb-5 rounded-2xl border-2 border-dashed border-astraea-pink/30 bg-astraea-blush/30 p-4 text-sm text-astraea-darkgray/80">
                       <p className="font-bold text-[#C4658A] mb-1">Astraea replied:</p>
                       <p>{review.admin_reply}</p>
                     </div>

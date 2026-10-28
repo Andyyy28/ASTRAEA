@@ -32,8 +32,8 @@ const AdminLayout = () => {
     return (
       <div className="min-h-screen md:h-screen bg-astraea-cream flex flex-col md:flex-row text-astraea-darkgray overflow-hidden">
         {/* Sidebar Skeleton (Desktop) */}
-        <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 border-r-2 border-dashed border-astraea-pink md:h-screen p-6 space-y-6">
-          <div className="h-10 flex items-center bg-white/80 rounded-full px-3 border border-dashed border-astraea-pink/30">
+        <aside className="skeuo-chrome hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 border-r-2 border-dashed border-astraea-pink md:h-screen p-6 space-y-6">
+          <div className="skeuo-surface h-10 flex items-center bg-white/80 rounded-full px-3 border border-dashed border-astraea-pink/30">
             <Skeleton className="w-full h-6" />
           </div>
           <div className="flex-1 space-y-3">
@@ -47,7 +47,7 @@ const AdminLayout = () => {
         {/* Main Content Skeleton */}
         <div className="flex-1 flex flex-col">
           {/* Topbar */}
-          <header className="h-16 md:h-20 bg-astraea-cream/85 border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10">
+          <header className="skeuo-chrome h-16 md:h-20 bg-astraea-cream/85 border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10">
             <Skeleton className="w-36 h-8" />
             <Skeleton className="w-48 h-10 rounded-full" />
           </header>
@@ -85,9 +85,9 @@ const AdminLayout = () => {
     <div className="min-h-screen md:h-screen bg-astraea-cream flex flex-col md:flex-row text-astraea-darkgray md:overflow-hidden">
       
       {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
+      <aside className="skeuo-chrome hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
         <div className="min-h-24 flex items-center px-6 py-4 border-b border-dashed border-astraea-pink/30">
-          <Link to="/" className="w-full text-xl font-extrabold leading-tight tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-3 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
+          <Link to="/" className="skeuo-button w-full text-xl font-extrabold leading-tight tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-3 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
             <img src="/web_logo.png" alt="Astraea Collection logo" className="h-11 w-11 shrink-0 rounded-full object-cover" /> <span>Astraea Admin</span>
           </Link>
         </div>
@@ -100,7 +100,8 @@ const AdminLayout = () => {
                 <li key={item.name}>
                   <Link
                     to={item.path}
-                    className={`flex items-center px-4 py-3 rounded-full font-semibold transition-all duration-300 border-2 border-transparent ${
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`skeuo-button flex items-center px-4 py-3 rounded-full font-semibold transition-all duration-300 border-2 border-transparent ${
                       isActive ? 'bg-white text-astraea-pink border-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray hover:bg-white/70 hover:border-dashed hover:border-astraea-pink/50'
                     }`}
                   >
@@ -116,7 +117,7 @@ const AdminLayout = () => {
         <div className="p-6 border-t border-dashed border-astraea-pink/30">
           <button 
             onClick={logout}
-            className="kawaii-btn kawaii-btn-outline w-full justify-start text-astraea-darkgray"
+            className="skeuo-button kawaii-btn kawaii-btn-outline w-full justify-start text-astraea-darkgray"
           >
             <LogOut className="w-5 h-5 mr-2 text-astraea-pink" />
             Logout
@@ -128,11 +129,11 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col min-w-0 md:h-screen md:min-h-0 md:overflow-hidden">
         
         {/* Topbar (Mobile & Desktop) */}
-        <header className="min-h-20 md:min-h-24 py-2 md:py-3 bg-astraea-cream/85 backdrop-blur-xl border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
+        <header className="skeuo-chrome min-h-20 md:min-h-24 py-2 md:py-3 bg-astraea-cream/85 backdrop-blur-xl border-b-2 border-dashed border-astraea-pink/30 flex items-center justify-between px-4 sm:px-10 z-10 sticky top-0">
           <div className="flex items-center md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray mr-2 rounded-full bg-white/80 border border-dashed border-astraea-pink/40"
+              className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray mr-2 rounded-full bg-white/80 border border-dashed border-astraea-pink/40"
               aria-label="Open admin menu"
             >
               <Menu className="w-6 h-6" />
@@ -150,11 +151,11 @@ const AdminLayout = () => {
           </div>
 
           <div className="flex items-center">
-            <div className="hidden sm:flex items-center bg-white/80 px-4 py-2 rounded-full shadow-[2px_2px_0px_#F9A8C9] border border-dashed border-astraea-pink/30 mr-4">
-              <div className="w-2 h-2 rounded-full bg-green-400 mr-2"></div>
+            <div className="skeuo-surface hidden sm:flex items-center bg-white/80 px-4 py-2 rounded-full shadow-[2px_2px_0px_#F9A8C9] border border-dashed border-astraea-pink/30 mr-4">
+              <div className="skeuo-surface w-2 h-2 rounded-full bg-green-400 mr-2"></div>
               <span className="text-sm font-semibold text-astraea-darkgray">{user.email}</span>
             </div>
-            <button onClick={logout} className="md:hidden text-astraea-darkgray hover:text-red-500">
+            <button onClick={logout} className="skeuo-button md:hidden text-astraea-darkgray hover:text-red-500">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -172,7 +173,7 @@ const AdminLayout = () => {
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2">
               <img src="/web_logo.png" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" /> Astraea Admin
             </Link>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray rounded-full bg-white/80 border border-dashed border-astraea-pink/40" aria-label="Close admin menu">
+            <button onClick={() => setIsMobileMenuOpen(false)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray rounded-full bg-white/80 border border-dashed border-astraea-pink/40" aria-label="Close admin menu">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -184,8 +185,9 @@ const AdminLayout = () => {
                   <li key={item.name}>
                     <Link
                       to={item.path}
+                      aria-current={isActive ? 'page' : undefined}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`min-h-12 flex items-center px-4 py-3 rounded-full font-semibold border-2 border-transparent ${isActive ? 'bg-white text-astraea-pink border-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray'}`}
+                      className={`skeuo-button min-h-12 flex items-center px-4 py-3 rounded-full font-semibold border-2 border-transparent ${isActive ? 'bg-white text-astraea-pink border-astraea-pink shadow-[2px_2px_0px_#F9A8C9]' : 'text-astraea-darkgray'}`}
                     >
                       <item.icon className={`w-5 h-5 mr-4 ${isActive ? 'text-astraea-pink' : 'text-astraea-darkgray/50'}`} />
                       {item.name}
@@ -199,7 +201,7 @@ const AdminLayout = () => {
                 setIsMobileMenuOpen(false);
                 logout();
               }}
-              className="mt-6 kawaii-btn kawaii-btn-outline w-full justify-start text-astraea-darkgray"
+              className="skeuo-button mt-6 kawaii-btn kawaii-btn-outline w-full justify-start text-astraea-darkgray"
             >
               <LogOut className="w-5 h-5 mr-2 text-astraea-pink" />
               Logout

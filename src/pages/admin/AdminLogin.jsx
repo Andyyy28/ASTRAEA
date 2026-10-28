@@ -39,9 +39,9 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen bg-astraea-blush/30 flex items-center justify-center p-4">
-      <div className="bg-white max-w-md w-full p-8 rounded-3xl shadow-xl border border-astraea-rosegold/20 animate-fade-in text-center">
+      <div className="skeuo-surface bg-white max-w-md w-full p-8 rounded-3xl shadow-xl border border-astraea-rosegold/20 animate-fade-in text-center">
         
-        <div className="w-16 h-16 bg-astraea-blush rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="skeuo-surface w-16 h-16 bg-astraea-blush rounded-full flex items-center justify-center mx-auto mb-6">
           <Lock className="w-8 h-8 text-astraea-pink" />
         </div>
         
@@ -49,7 +49,7 @@ const AdminLogin = () => {
         <h2 className="text-astraea-darkgray/70 font-medium tracking-widest uppercase text-sm mb-8">Admin Panel</h2>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium text-left break-words">
+          <div className="skeuo-surface mb-6 p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium text-left break-words">
             {error}
           </div>
         )}
@@ -92,7 +92,7 @@ const AdminLogin = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="flex-1 py-4 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
+              className="skeuo-button flex-1 py-4 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
             >
               {loading ? <Skeleton className="w-16 h-5 bg-white/30" /> : 'Login'}
             </button>

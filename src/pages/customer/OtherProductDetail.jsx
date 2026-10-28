@@ -17,9 +17,9 @@ const categoryLabels = {
 const getStock = (product) => Number(product?.stock) || 0;
 
 const StockStatusBadge = ({ stock }) => {
-  if (stock > 10) return <span className="inline-flex w-fit rounded-full border border-[#A8DFC9] bg-[#D5F0E8] px-3 py-1 text-sm font-bold text-[#2D7A5F]">✿ In Stock</span>;
-  if (stock > 0) return <span className="inline-flex w-fit rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-3 py-1 text-sm font-bold text-[#8B6914]">⚠ Only {stock} left!</span>;
-  return <span className="inline-flex w-fit rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-3 py-1 text-sm font-bold text-[#C4658A]">✦ Out of Stock</span>;
+  if (stock > 10) return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#A8DFC9] bg-[#D5F0E8] px-3 py-1 text-sm font-bold text-[#2D7A5F]">✿ In Stock</span>;
+  if (stock > 0) return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#F9C74F] bg-[#FFF3CC] px-3 py-1 text-sm font-bold text-[#8B6914]">⚠ Only {stock} left!</span>;
+  return <span className="skeuo-surface inline-flex w-fit rounded-full border border-[#F9A8C9] bg-[#FDDDE6] px-3 py-1 text-sm font-bold text-[#C4658A]">✦ Out of Stock</span>;
 };
 
 const OtherProductDetail = () => {
@@ -137,7 +137,7 @@ const OtherProductDetail = () => {
                 <Skeleton className="w-24 h-24 rounded-xl" />
               </div>
             </div>
-            <div className="md:w-1/2 flex flex-col p-4 md:p-6 bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px]">
+            <div className="skeuo-surface md:w-1/2 flex flex-col p-4 md:p-6 bg-[#FFFDFE]/95 border-2 border-dashed border-[#F4BFCF] rounded-[20px]">
               <Skeleton className="w-24 h-6 mb-4" />
               <Skeleton className="w-3/4 h-10 mb-4" />
               <Skeleton className="w-36 h-12 mb-6" />
@@ -175,7 +175,7 @@ const OtherProductDetail = () => {
             {images.length > 1 && (
               <div className="flex gap-4 overflow-x-auto pb-2">
                 {images.map((img, idx) => (
-                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} onClick={() => setActiveImage(idx)} className={`w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
+                  <button type="button" aria-label={`View image ${idx + 1}`} key={idx} aria-pressed={activeImage === idx} onClick={() => setActiveImage(idx)} className={`skeuo-button w-24 h-24 rounded-xl flex-shrink-0 overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-astraea-pink opacity-100 shadow-[3px_3px_0px_#F9A8C9]' : 'border-dashed border-astraea-pink/30 opacity-60 hover:opacity-100'}`}>
                     <img src={img} alt={`Thumbnail ${idx + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover object-top rounded-xl" />
                   </button>
                 ))}
@@ -187,7 +187,7 @@ const OtherProductDetail = () => {
               {categoryLabels[product.category] || 'Other'}
             </span>
             <h1 className="font-heading font-bold text-2xl md:text-4xl text-astraea-darkgray mb-4">{product.name}</h1>
-            <p className="inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(product.price)}</p>
+            <p className="skeuo-surface inline-flex w-fit px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914] mb-6">{formatPrice(product.price)}</p>
             <div className="mb-6"><StockStatusBadge stock={stock} /></div>
             <div className="prose prose-pink text-astraea-darkgray/80 mb-6 max-w-none"><p>{product.description}</p></div>
             <span className={`kawaii-badge w-max mb-6 ${isOutOfStock ? 'bg-[#FCE8EE] border-[#F4BFCF] text-[#C4658A]' : 'bg-[#D5F0E8] border-[#A8DFC9] text-[#1F5D46] shadow-[2px_2px_0px_#A8DFC9]'}`}>
@@ -200,8 +200,8 @@ const OtherProductDetail = () => {
               </div>
               <div>
                 <label htmlFor="other-product-quantity" className="block text-sm font-medium text-[#C4658A] mb-2">Quantity</label>
-                <div className="flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
-                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
+                <div className="skeuo-surface flex items-center border-2 border-dashed border-astraea-pink/40 rounded-full w-max bg-white shadow-[3px_3px_0px_#F9A8C9]">
+                  <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="skeuo-button min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-5 h-5" /></button>
                   <span id="other-product-quantity" aria-live="polite" className="w-12 text-center font-bold text-lg">{quantity}</span>
                   <button type="button" aria-label="Increase quantity"
                     onClick={() => {
@@ -212,7 +212,7 @@ const OtherProductDetail = () => {
                       setQuantity(quantity + 1);
                     }}
                     disabled={isOutOfStock || quantity >= stock}
-                    className="min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"
+                    className="skeuo-button min-h-11 min-w-11 p-3 text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300 disabled:cursor-not-allowed"
                   ><Plus className="w-5 h-5" /></button>
                 </div>
               </div>
@@ -220,9 +220,9 @@ const OtherProductDetail = () => {
             <div className="mt-auto">
               <div className="flex justify-between items-center mb-6 pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <span className="section-heading text-xl md:text-2xl">Total</span>
-                <span className="inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(product.price * quantity)}</span>
+                <span className="skeuo-surface inline-flex px-3 py-1 rounded-xl bg-[#FFF3CC] border-2 border-[#F9C74F] font-accent text-4xl text-[#8B6914]">{formatPrice(product.price * quantity)}</span>
               </div>
-              <button onClick={handleAddToCart} disabled={isOutOfStock} className="kawaii-btn-primary transform-gpu w-full py-4 text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
+              <button onClick={handleAddToCart} disabled={isOutOfStock} className="skeuo-button kawaii-btn-primary transform-gpu w-full py-4 text-lg hover:-translate-y-1 hover:scale-[1.02] active:translate-y-[2px] active:scale-[0.98] disabled:bg-gray-200 disabled:border-gray-300 disabled:text-gray-500 disabled:shadow-[3px_3px_0px_#D1D5DB] disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:cursor-not-allowed">Add to Cart</button>
             </div>
           </div>
         </div>

@@ -284,23 +284,23 @@ const AdminInventory = () => {
   const availabilityButton = (table, item, disabledText = 'Unavailable') => (
     <button
       onClick={() => handleToggleAvailability(table, item.id, item.is_available)}
-      className={`${softBadge} ${item.is_available ? 'bg-[#D5F0E8] text-[#2D7A5F] hover:bg-[#A8DFC9]' : 'bg-[#FDDDE6] text-[#C4658A] hover:bg-[#F4BFCF]'}`}
+      className={`skeuo-button ${softBadge} ${item.is_available ? 'bg-[#D5F0E8] text-[#2D7A5F] hover:bg-[#A8DFC9]' : 'bg-[#FDDDE6] text-[#C4658A] hover:bg-[#F4BFCF]'}`}
     >
       {item.is_available ? 'Available' : disabledText}
     </button>
   );
 
   const imagePreview = (item, label) => (
-    <div className="h-12 w-12 overflow-hidden rounded-xl border border-astraea-rosegold/30 bg-astraea-blush/40 flex items-center justify-center text-[10px] text-astraea-pink/60">
+    <div className="skeuo-surface h-12 w-12 overflow-hidden rounded-xl border border-astraea-rosegold/30 bg-astraea-blush/40 flex items-center justify-center text-[10px] text-astraea-pink/60">
       {item.image_url ? <img src={item.image_url} alt={label} className="h-full w-full object-cover" /> : 'Image'}
     </div>
   );
 
   const stockControls = (table, item) => (
     <div className="flex items-center gap-2">
-      <button onClick={() => handleStockChange(table, item.id, item.stock, -1)} className="min-h-11 min-w-11 rounded-full border border-astraea-rosegold/40 text-astraea-pink hover:bg-astraea-blush/40"><Minus className="mx-auto h-4 w-4" /></button>
-      <span className="inline-flex min-w-12 justify-center rounded-full bg-[#FDDDE6] px-3 py-1 text-xs font-bold text-[#C4658A]">{item.stock || 0}</span>
-      <button onClick={() => handleStockChange(table, item.id, item.stock, 1)} className="min-h-11 min-w-11 rounded-full border border-astraea-rosegold/40 text-astraea-pink hover:bg-astraea-blush/40"><Plus className="mx-auto h-4 w-4" /></button>
+      <button onClick={() => handleStockChange(table, item.id, item.stock, -1)} className="skeuo-button min-h-11 min-w-11 rounded-full border border-astraea-rosegold/40 text-astraea-pink hover:bg-astraea-blush/40"><Minus className="mx-auto h-4 w-4" /></button>
+      <span className="skeuo-surface inline-flex min-w-12 justify-center rounded-full bg-[#FDDDE6] px-3 py-1 text-xs font-bold text-[#C4658A]">{item.stock || 0}</span>
+      <button onClick={() => handleStockChange(table, item.id, item.stock, 1)} className="skeuo-button min-h-11 min-w-11 rounded-full border border-astraea-rosegold/40 text-astraea-pink hover:bg-astraea-blush/40"><Plus className="mx-auto h-4 w-4" /></button>
     </div>
   );
 
@@ -309,7 +309,7 @@ const AdminInventory = () => {
       key={item.id}
       onClick={() => handleToggleAvailability(table, item.id, item.is_available)}
       onDoubleClick={onEdit}
-      className={`relative min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${item.is_available ? 'border-gray-300' : 'border-[#C4658A] opacity-50'}`}
+      className={`skeuo-button relative min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border shadow-sm transition-all hover:scale-110 ${item.is_available ? 'border-gray-300' : 'border-[#C4658A] opacity-50'}`}
       style={{ backgroundColor: item.hex_code }}
       title={`${item.color_name} - ${item.is_available ? 'Available' : 'Unavailable'} (double-click to edit)`}
     >
@@ -319,8 +319,8 @@ const AdminInventory = () => {
 
   const actions = (editType, table, item) => (
     <div className="flex justify-end gap-1">
-      <button onClick={() => openModal(editType, item)} className="px-3 py-2 text-xs font-bold text-astraea-pink rounded-lg hover:bg-astraea-blush/40">Edit</button>
-      <button onClick={() => handleDelete(table, item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+      <button onClick={() => openModal(editType, item)} className="skeuo-button px-3 py-2 text-xs font-bold text-astraea-pink rounded-lg hover:bg-astraea-blush/40">Edit</button>
+      <button onClick={() => handleDelete(table, item.id)} className="skeuo-button p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
     </div>
   );
 
@@ -329,19 +329,20 @@ const AdminInventory = () => {
       <div className="space-y-6 animate-fade-in fade-in-content">
         <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Inventory Management</h1>
 
-        <div className="flex overflow-x-auto border-b border-gray-200 bg-white px-2 pt-2 rounded-t-xl">
+        <div className="skeuo-surface flex overflow-x-auto border-b border-gray-200 bg-white px-2 pt-2 rounded-t-xl">
           {tabs.map(([key, label]) => (
             <button
               key={key}
+              aria-pressed={activeTab === key}
               onClick={() => setActiveTab(key)}
-              className={`min-h-11 whitespace-nowrap px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === key ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              className={`skeuo-button min-h-11 whitespace-nowrap px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === key ? 'border-astraea-pink text-astraea-pink' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
               {label}
             </button>
           ))}
         </div>
 
-        <div className="bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-4 md:p-6 min-h-[500px]">
+        <div className="skeuo-surface bg-white rounded-b-xl shadow-sm border border-t-0 border-gray-200 p-4 md:p-6 min-h-[500px]">
           {loading ? (
             <div className="space-y-6 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
@@ -398,7 +399,7 @@ const AdminInventory = () => {
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
                           {flowerColors.filter(c => c.flower_id === f.id).map(c => colorChip('flower_colors', c, () => openModal('edit_flower_color', c)))}
-                          <button onClick={() => openModal('add_flower_color', f)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
+                          <button onClick={() => openModal('add_flower_color', f)} className="skeuo-button min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right">{actions('edit_flower', 'flowers', f)}</td>
@@ -419,7 +420,7 @@ const AdminInventory = () => {
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
                           {fillerColors.filter(c => c.filler_id === f.id).map(c => colorChip('filler_colors', c, () => openModal('edit_filler_color', c)))}
-                          <button onClick={() => openModal('add_filler_color', f)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
+                          <button onClick={() => openModal('add_filler_color', f)} className="skeuo-button min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right">{actions('edit_filler', 'fillers', f)}</td>
@@ -438,7 +439,7 @@ const AdminInventory = () => {
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
                           {wrapperColors.filter(c => c.wrapper_id === w.id).map(c => colorChip('wrapper_colors', c, () => openModal('edit_wrapper_color', c)))}
-                          <button onClick={() => openModal('add_wrapper_color', w)} className="min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
+                          <button onClick={() => openModal('add_wrapper_color', w)} className="skeuo-button min-w-11 min-h-11 w-11 h-11 md:w-8 md:h-8 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-astraea-pink hover:border-astraea-pink transition-colors"><Plus className="w-4 h-4" /></button>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right">{actions('edit_wrapper', 'wrappers', w)}</td>
@@ -483,10 +484,10 @@ const AdminInventory = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[92vh] sm:max-h-[calc(100vh-2rem)] sm:max-w-md animate-fade-in shadow-xl flex flex-col overflow-hidden">
+          <div className="skeuo-surface bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[92vh] sm:max-h-[calc(100vh-2rem)] sm:max-w-md animate-fade-in shadow-xl flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-100">
               <h3 className="font-bold text-lg text-gray-800">{modalType.startsWith('edit_') ? 'Edit Item' : 'Add Item'}</h3>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <button onClick={closeModal} className="skeuo-button text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
 
             <form onSubmit={handleModalSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -516,7 +517,7 @@ const AdminInventory = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
                     <div
-                      className="border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-5 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[150px] hover:bg-astraea-blush/10"
+                      className="skeuo-surface border-2 border-dashed border-gray-200 hover:border-astraea-pink rounded-xl p-5 text-center cursor-pointer transition-all duration-300 bg-gray-50 flex flex-col items-center justify-center min-h-[150px] hover:bg-astraea-blush/10"
                       onClick={() => document.getElementById('inventory-image-upload').click()}
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={(e) => {
@@ -542,7 +543,7 @@ const AdminInventory = () => {
                         }}
                       />
                       {formData.image_url ? (
-                        <div className="relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                        <div className="skeuo-inset relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
                           <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
                             Change Image
@@ -578,14 +579,14 @@ const AdminInventory = () => {
                 {(modalType.includes('size') || modalType.includes('addon') || modalType.includes('fuzzy')) && (
                   <Field label="Display Order"><input type="number" step="1" value={formData.display_order ?? 0} onChange={e => setFormData({ ...formData, display_order: e.target.value })} className={inputClass} /></Field>
                 )}
-                <label className="flex items-center gap-3 rounded-xl border border-astraea-rosegold/20 p-3 text-sm font-bold text-gray-700">
+                <label className="skeuo-surface flex items-center gap-3 rounded-xl border border-astraea-rosegold/20 p-3 text-sm font-bold text-gray-700">
                   <input type="checkbox" checked={formData.is_available !== false} onChange={e => setFormData({ ...formData, is_available: e.target.checked })} className="w-5 h-5 accent-astraea-pink" />
                   Available
                 </label>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-end gap-3 border-t border-gray-100 bg-white p-4 sm:p-6">
-                <button type="button" onClick={closeModal} className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100">Cancel</button>
-                <button type="submit" disabled={uploading} className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 hover:shadow-md disabled:opacity-70 flex items-center justify-center gap-2">
+                <button type="button" onClick={closeModal} className="skeuo-button min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100">Cancel</button>
+                <button type="submit" disabled={uploading} className="skeuo-button min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 hover:shadow-md disabled:opacity-70 flex items-center justify-center gap-2">
                   {uploading ? (
                     <Skeleton className="w-16 h-5 bg-white/30" />
                   ) : 'Save'}
@@ -603,7 +604,7 @@ const InventoryTable = ({ title, addText, onAdd, headers, children }) => (
   <div>
     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
       <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-      <button onClick={onAdd} className="min-h-11 flex items-center justify-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
+      <button onClick={onAdd} className="skeuo-button min-h-11 flex items-center justify-center px-4 py-2 bg-astraea-pink text-white rounded-xl text-sm font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5">
         <Plus className="w-4 h-4 mr-1" /> {addText}
       </button>
     </div>

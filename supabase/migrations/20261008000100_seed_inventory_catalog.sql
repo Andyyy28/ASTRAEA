@@ -8,7 +8,7 @@ BEGIN
     SELECT * FROM (VALUES
       ('Stargazer', 135::numeric), ('Sundrop', 135), ('Lotus', 95),
       ('Sunflower v1', 75), ('Sunflower v2', 50), ('Tulip', 75),
-      ('Lavender v1', 40), ('Lavender v2', 25), ('Daisy', 40),
+      ('Daisy', 40),
       ('Rose v1', 80), ('Rose v2', 45), ('Gerbera v1', 55),
       ('Gerbera v2', 165), ('Hibiscus', 75), ('Tiger Lily', 65),
       ('Lily', 65), ('Anthurium', 65), ('Poppy', 60)
@@ -25,7 +25,7 @@ BEGIN
 
   FOR item IN
     SELECT * FROM (VALUES
-      ('Spirals', 5::numeric), ('Pecan', 15), ('Heart', 15),
+      ('Lavender v1', 40::numeric), ('Lavender v2', 25), ('Spirals', 5), ('Pecan', 15), ('Heart', 15),
       ('Snake Leaves', 23), ('Hydrangea', 25), ('Eucalyptus', 25),
       ('Mini Daisies', 25), ('Olfersea', 30), ('Gypsophilia', 35)
     ) AS fillers(name, price)

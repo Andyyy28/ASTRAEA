@@ -1,0 +1,61 @@
+{
+  "updated": "2026-10-28",
+  "note": "Externally sourced fuzzy wire flower reference thumbnails; not photographs of Astraea's actual products. Version-specific designs are unverified. Existing Rose, Sunflower, and Gerbera photos are reused for their v1/v2 entries.",
+  "images": [
+    {
+      "name": "Anthurium",
+      "url": "https://felt.co.nz/user-images/itemuploads/u315313/i1093081/l.jpg",
+      "source": "https://felt.co.nz/listing/592312/Flower-bouquet--Anthurium--Home-Decor--Pipe-cleaner-flowers"
+    },
+    {
+      "name": "Daisy",
+      "url": "https://handmadegifts.store/cdn/shop/files/8_ebbe1c85-2745-400d-83dd-0553a00affb0.png?v=1757683060&width=600",
+      "source": "https://handmadegifts.store/products/personalised-handmade-flower-pots"
+    },
+    {
+      "name": "Hibiscus",
+      "url": "https://handmadegifts.store/cdn/shop/files/WhatsAppImage2025-08-03at12.41.05AM.jpg?v=1754153467&width=600",
+      "source": "https://handmadegifts.store/products/hibiscus-single-stalk"
+    },
+    {
+      "name": "Lavender v1",
+      "url": "https://craftimate.com.au/cdn/shop/files/MG_3751.png?v=1767709736&width=600",
+      "source": "https://craftimate.com.au/products/lavender-tutorial"
+    },
+    {
+      "name": "Lavender v2",
+      "url": "https://i.etsystatic.com/56673320/r/il/9e623a/6532049172/il_794xN.6532049172_63tc.jpg",
+      "source": "https://www.etsy.com/listing/1850893607/hand-made-pipe-cleaner-flowers"
+    },
+    {
+      "name": "Lily",
+      "url": "https://img.staticdj.com/41a68117445eff855aba737865be8d71.jpg",
+      "source": "https://www.pipecraftpro.com/products/diy-pipe-cleaners-kit-lily-flower-deep-affection-pure-love-expressing-purity-with-white-lilies-this-valentines"
+    },
+    {
+      "name": "Lotus",
+      "url": "https://i.etsystatic.com/34039969/r/il/99630c/7305065769/il_800x800.7305065769_jdln.jpg",
+      "source": "https://www.etsy.com/listing/4381328352/handcrafted-lotus-flower-pipe-cleaner"
+    },
+    {
+      "name": "Poppy",
+      "url": "https://craftimate.com.au/cdn/shop/files/Flower11_0013_Hoa_0093__MG_3093.jpg?v=1768811931&width=600",
+      "source": "https://craftimate.com.au/products/poppy-tutorial"
+    },
+    {
+      "name": "Stargazer",
+      "url": "https://i.etsystatic.com/60724840/r/il/debdc9/7317256812/il_fullxfull.7317256812_pim7.jpg",
+      "source": "https://www.etsy.com/listing/4392053221/stargazer-lily-pipe-cleaner-flowers"
+    },
+    {
+      "name": "Sundrop",
+      "url": "https://afzaai.in/cdn/shop/files/4176308A-B0E3-4571-9D6E-EA204B84BC27.jpg?v=1767906558&width=600",
+      "source": "https://afzaai.in/products/lilumina-rapunzel-tangled-theme-lamp"
+    },
+    {
+      "name": "Tiger Lily",
+      "url": "https://i.pinimg.com/originals/15/27/ed/1527ed06666dd8e98c8867e704e870f0.jpg",
+      "source": "https://mx.pinterest.com/esmeayala94/flores-con-limpiapipas/"
+    }
+  ]
+}

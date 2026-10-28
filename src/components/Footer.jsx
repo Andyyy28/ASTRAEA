@@ -7,7 +7,7 @@ const Footer = () => {
   const starIcon = String.fromCodePoint(9733);
 
   return (
-    <footer className="bg-astraea-cream text-astraea-darkgray pt-16 pb-8 border-t-2 border-dashed border-astraea-pink mt-auto">
+    <footer className="skeuo-chrome bg-astraea-cream text-astraea-darkgray pt-16 pb-8 border-t-2 border-dashed border-astraea-pink mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           
@@ -49,7 +49,7 @@ const Footer = () => {
                 <li key={item.name} className="rounded-full">
                   <Link
                     to={item.path}
-                    className="inline-flex rounded-full px-3 py-1 text-sm font-semibold hover:bg-white/80 hover:text-astraea-pink transition-colors"
+                    className="skeuo-button inline-flex rounded-full px-3 py-1 text-sm font-semibold hover:bg-white/80 hover:text-astraea-pink transition-colors"
                   >
                     {item.name}
                   </Link>

@@ -271,7 +271,7 @@ const AdminBouquets = () => {
         <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Ready-Made Bouquets</h1>
         <button 
           onClick={() => openModal()} 
-          className="min-h-11 flex items-center justify-center px-5 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
+          className="skeuo-button min-h-11 flex items-center justify-center px-5 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
         >
           <Plus className="w-5 h-5 mr-1" /> Add Bouquet
         </button>
@@ -280,7 +280,7 @@ const AdminBouquets = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:hidden">
         {loading ? (
           [1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden p-4 space-y-4">
+            <div key={i} className="skeuo-surface bg-white rounded-xl border border-gray-200 overflow-hidden p-4 space-y-4">
               <Skeleton className="w-full aspect-[4/3] rounded-xl" />
               <div className="space-y-2">
                 <Skeleton className="w-2/3 h-5" />
@@ -298,10 +298,10 @@ const AdminBouquets = () => {
             </div>
           ))
         ) : bouquets.length === 0 ? (
-          <div className="bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No bouquets found.</div>
+          <div className="skeuo-surface bg-white rounded-xl p-8 text-center border border-gray-200 text-gray-500">No bouquets found.</div>
         ) : (
           bouquets.map(b => (
-            <div key={b.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div key={b.id} className="skeuo-surface bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
                 {b.images && b.images[0] ? (
                   <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
@@ -312,37 +312,37 @@ const AdminBouquets = () => {
               <div className="p-4 space-y-3">
                 <div>
                   <p className="font-bold text-gray-800 text-base">{b.name}</p>
-                  <span className="inline-flex mt-1 px-2 py-0.5 bg-[#FDDDE6] text-[#C4658A] rounded text-xs font-medium">{b.stock || 0} in stock</span>
+                  <span className="skeuo-surface inline-flex mt-1 px-2 py-0.5 bg-[#FDDDE6] text-[#C4658A] rounded text-xs font-medium">{b.stock || 0} in stock</span>
                   <p className="font-bold text-astraea-pink">{formatPrice(b.price)}</p>
                 </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-[#F4BFCF] bg-[#FCFAFB] p-3">
+                <div className="skeuo-surface flex items-center justify-between gap-3 rounded-xl border border-[#F4BFCF] bg-[#FCFAFB] p-3">
                   <span className="text-sm font-semibold text-gray-700">Stock</span>
                   <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-4 w-4" /></button>
+                    <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="skeuo-button min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-4 w-4" /></button>
                     <span className="min-w-8 text-center font-bold text-[#C4658A]" aria-live="polite">{b.stock || 0}</span>
-                    <button type="button" onClick={() => adjustStock(b, 1)} className="min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-4 w-4" /></button>
+                    <button type="button" onClick={() => adjustStock(b, 1)} className="skeuo-button min-h-11 min-w-11 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-4 w-4" /></button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleToggleVisibility(b.id, b.is_visible)}
-                    className={`min-h-11 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${b.is_visible ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    className={`skeuo-button min-h-11 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${b.is_visible ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                   >
                     {b.is_visible ? 'Visible' : 'Hidden'}
                   </button>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleToggleFeatured(b.id, b.is_featured)}
-                      className={`min-h-11 min-w-11 p-2 rounded-lg transition-colors ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
+                      className={`skeuo-button min-h-11 min-w-11 p-2 rounded-lg transition-colors ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
                       title={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
                       aria-label={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
                     >
                       <Heart className={`w-4 h-4 ${b.is_featured ? 'fill-current' : ''}`} />
                     </button>
-                    <button onClick={() => openModal(b)} className="min-h-11 min-w-11 p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50">
+                    <button onClick={() => openModal(b)} className="skeuo-button min-h-11 min-w-11 p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-blue-50">
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(b.id)} className="min-h-11 min-w-11 p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50">
+                    <button onClick={() => handleDelete(b.id)} className="skeuo-button min-h-11 min-w-11 p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -353,7 +353,7 @@ const AdminBouquets = () => {
         )}
       </div>
 
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="skeuo-surface hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -401,7 +401,7 @@ const AdminBouquets = () => {
                 bouquets.map(b => (
                   <tr key={b.id} className="border-b border-gray-100 hover:bg-[#FFFDFE] transition-colors">
                     <td className="px-6 py-4">
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <div className="skeuo-surface w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                         {b.images && b.images[0] ? (
                           <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
                         ) : (
@@ -411,23 +411,23 @@ const AdminBouquets = () => {
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-bold text-gray-800 text-base mb-1">{b.name}</p>
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-medium">{b.category}</span>
-                      {b.is_featured && <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Featured</span>}
+                      <span className="skeuo-surface px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-medium">{b.category}</span>
+                      {b.is_featured && <span className="skeuo-surface ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Featured</span>}
                     </td>
                     <td className="px-6 py-4 font-bold text-gray-800">
                       {formatPrice(b.price)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex items-center gap-1">
-                        <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-3 w-3" /></button>
-                        <span className="min-w-10 px-2 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>
-                        <button type="button" onClick={() => adjustStock(b, 1)} className="min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-3 w-3" /></button>
+                        <button type="button" onClick={() => adjustStock(b, -1)} disabled={!b.stock} className="skeuo-button min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A] disabled:opacity-40" aria-label={`Decrease ${b.name} stock`}><Minus className="mx-auto h-3 w-3" /></button>
+                        <span className="skeuo-surface min-w-10 px-2 py-1.5 rounded-full text-xs font-bold bg-[#FDDDE6] text-[#C4658A]">{b.stock || 0}</span>
+                        <button type="button" onClick={() => adjustStock(b, 1)} className="skeuo-button min-h-7 min-w-7 rounded-full border border-[#F4BFCF] text-[#C4658A]" aria-label={`Increase ${b.name} stock`}><Plus className="mx-auto h-3 w-3" /></button>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button 
                         onClick={() => handleToggleVisibility(b.id, b.is_visible)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${b.is_visible ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        className={`skeuo-button px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${b.is_visible ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                       >
                         {b.is_visible ? 'Visible' : 'Hidden'}
                       </button>
@@ -435,16 +435,16 @@ const AdminBouquets = () => {
                     <td className="px-6 py-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleToggleFeatured(b.id, b.is_featured)}
-                        className={`p-2 transition-colors rounded-lg ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
+                        className={`skeuo-button p-2 transition-colors rounded-lg ${b.is_featured ? 'text-rose-500 hover:text-rose-600 hover:bg-rose-50' : 'text-gray-400 hover:text-rose-500 hover:bg-rose-50'}`}
                         title={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
                         aria-label={b.is_featured ? 'Remove from best sellers' : 'Mark as best seller'}
                       >
                         <Heart className={`w-4 h-4 ${b.is_featured ? 'fill-current' : ''}`} />
                       </button>
-                      <button onClick={() => openModal(b)} className="p-2 text-gray-500 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 ml-1">
+                      <button onClick={() => openModal(b)} className="skeuo-button p-2 text-gray-500 hover:text-blue-600 transition-colors rounded-lg hover:bg-blue-50 ml-1">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(b.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 ml-1">
+                      <button onClick={() => handleDelete(b.id)} className="skeuo-button p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 ml-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -461,12 +461,12 @@ const AdminBouquets = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4">
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 w-full h-[94vh] sm:h-auto sm:max-w-2xl animate-fade-in shadow-xl sm:max-h-[90vh] flex flex-col">
+          <div className="skeuo-surface bg-white rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 w-full h-[94vh] sm:h-auto sm:max-w-2xl animate-fade-in shadow-xl sm:max-h-[90vh] flex flex-col">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
               <h3 className="font-bold text-xl text-gray-800">
                 {editingId ? 'Edit Bouquet' : 'Add New Bouquet'}
               </h3>
-              <button onClick={closeModal} disabled={uploading} className="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5" /></button>
+              <button onClick={closeModal} disabled={uploading} className="skeuo-button text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full"><X className="w-5 h-5" /></button>
             </div>
             
             <form onSubmit={handleModalSubmit} className="space-y-4 overflow-y-auto pr-2 flex-grow">
@@ -524,14 +524,14 @@ const AdminBouquets = () => {
                 <p className="text-xs text-gray-500">Add multiple photos. The first photo is the cover shown in the shop.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {imageItems.map((item, index) => (
-                    <div key={item.id} className="relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                    <div key={item.id} className="skeuo-inset relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
                       <img src={item.preview} alt={'Bouquet photo ' + (index + 1)} className="w-full h-full object-cover" />
-                      {index === 0 && <span className="absolute bottom-2 left-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700">Cover photo</span>}
-                      <button type="button" aria-label={'Remove photo ' + (index + 1)} onClick={() => removeImage(item.id)} className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-white text-gray-700 flex items-center justify-center shadow"><X className="w-5 h-5" /></button>
+                      {index === 0 && <span className="skeuo-surface absolute bottom-2 left-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700">Cover photo</span>}
+                      <button type="button" aria-label={'Remove photo ' + (index + 1)} onClick={() => removeImage(item.id)} className="skeuo-button absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-white text-gray-700 flex items-center justify-center shadow"><X className="w-5 h-5" /></button>
                     </div>
                   ))}
                 </div>
-                <label onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); addImageFiles(e.dataTransfer.files); }} className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-astraea-pink rounded-xl p-6 cursor-pointer hover:bg-astraea-blush/20 text-center">
+                <label onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); addImageFiles(e.dataTransfer.files); }} className="skeuo-surface flex flex-col items-center justify-center gap-2 border-2 border-dashed border-astraea-pink rounded-xl p-6 cursor-pointer hover:bg-astraea-blush/20 text-center">
                   <ImageIcon className="w-8 h-8 text-gray-400" />
                   <span className="text-sm font-medium text-gray-600">Add photos — drag & drop or choose files</span>
                   <span className="text-xs text-gray-500">JPEG, PNG or WebP, up to 10 MiB each</span>
@@ -540,7 +540,7 @@ const AdminBouquets = () => {
                 <label htmlFor="bouquet-image-url" className="block text-xs font-semibold text-gray-500">Or add an image URL</label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input id="bouquet-image-url" type="url" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://example.com/image.jpg" className="min-w-0 flex-1 border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-astraea-pink" />
-                  <button type="button" onClick={addImageUrl} disabled={uploading || !imageUrl.trim()} className="min-h-11 px-4 rounded-lg bg-astraea-pink text-white font-bold disabled:opacity-50">Add URL</button>
+                  <button type="button" onClick={addImageUrl} disabled={uploading || !imageUrl.trim()} className="skeuo-button min-h-11 px-4 rounded-lg bg-astraea-pink text-white font-bold disabled:opacity-50">Add URL</button>
                 </div>
               </fieldset>
 
@@ -569,14 +569,14 @@ const AdminBouquets = () => {
                 <button 
                   type="button" 
                   onClick={closeModal} disabled={uploading}
-                  className="min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
+                  className="skeuo-button min-h-11 px-5 py-2.5 bg-[#FCFAFB] text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 hover:bg-gray-100 hover:text-gray-800 active:scale-95 hover:shadow-sm hover:-translate-y-0.5"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={uploading}
-                  className="min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center justify-center gap-2"
+                  className="skeuo-button min-h-11 px-6 py-2.5 bg-astraea-pink text-white rounded-xl font-bold transition-all duration-200 hover:brightness-105 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-lg disabled:opacity-70 flex items-center justify-center gap-2"
                 >
                   {uploading ? (
                     <Skeleton className="w-24 h-5 bg-white/30" />

@@ -1,0 +1,133 @@
+/* Depth only: existing background, text, border colors and fonts stay in charge. */
+:root {
+  --skeuo-shade: rgb(232 145 184 / 24%);
+  --skeuo-light: rgb(255 255 255 / 85%);
+  --skeuo-raised: 9px 9px 22px var(--skeuo-shade), -7px -7px 20px var(--skeuo-light),
+    inset 1px 1px 2px rgb(255 255 255 / 90%), inset -1px -1px 2px rgb(232 145 184 / 12%);
+  --skeuo-small: 4px 4px 10px var(--skeuo-shade), -4px -4px 10px var(--skeuo-light),
+    inset 1px 1px 2px rgb(255 255 255 / 70%), inset -1px -2px 3px rgb(232 145 184 / 18%);
+  --skeuo-pressed: inset 4px 4px 9px rgb(232 145 184 / 28%), inset -4px -4px 9px var(--skeuo-light);
+}
+
+/* Compose with Tailwind rings so selection and validation remain visible. */
+.skeuo-surface,
+.scrapbook-card {
+  border-style: solid;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--skeuo-raised);
+}
+
+.skeuo-surface:where(span, p),
+.kawaii-badge {
+  box-shadow: var(--skeuo-small);
+}
+
+.skeuo-inset {
+  box-shadow: var(--skeuo-pressed);
+}
+
+.skeuo-surface[data-selected="true"] {
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--skeuo-pressed);
+}
+
+.skeuo-chrome {
+  border-style: solid;
+  box-shadow: 0 7px 22px rgb(232 145 184 / 18%), inset 0 1px 2px var(--skeuo-light),
+    inset 0 -1px 2px rgb(232 145 184 / 14%);
+}
+
+aside.skeuo-chrome {
+  box-shadow: 7px 0 22px rgb(232 145 184 / 16%), inset -1px 0 2px var(--skeuo-light);
+}
+
+footer.skeuo-chrome {
+  box-shadow: 0 -7px 22px rgb(232 145 184 / 12%), inset 0 2px 3px var(--skeuo-light);
+}
+
+/* Dark receipt surfaces need a softer highlight than the pastel panels. */
+.skeuo-dark {
+  --skeuo-light: rgb(255 255 255 / 16%);
+  --skeuo-small: 4px 4px 10px rgb(61 44 53 / 45%), -3px -3px 8px rgb(255 255 255 / 12%),
+    inset 1px 1px 2px rgb(255 255 255 / 55%), inset -1px -2px 3px rgb(232 145 184 / 18%);
+}
+
+.skeuo-surface.skeuo-dark {
+  box-shadow: 9px 9px 22px var(--skeuo-shade), -7px -7px 20px rgb(255 255 255 / 55%),
+    inset 1px 1px 2px rgb(255 255 255 / 20%), inset -1px -1px 2px rgb(61 44 53 / 45%);
+}
+
+.skeuo-button,
+.kawaii-btn,
+.kawaii-btn-primary,
+.kawaii-btn-outline {
+  border-style: solid;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--skeuo-small);
+  transition: box-shadow 180ms ease, translate 180ms ease,
+    background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.skeuo-button:where(:not([class*="rounded"], .kawaii-btn, .kawaii-btn-primary, .kawaii-btn-outline)) {
+  border-radius: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(.skeuo-button, .kawaii-btn, .kawaii-btn-primary, .kawaii-btn-outline):hover:where(:not(:disabled, [aria-disabled="true"])) {
+    translate: 0 -1px;
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000),
+      6px 6px 14px rgb(232 145 184 / 30%), -5px -5px 12px var(--skeuo-light),
+      inset 1px 1px 2px rgb(255 255 255 / 80%);
+  }
+}
+
+:is(.skeuo-button, .kawaii-btn, .kawaii-btn-primary, .kawaii-btn-outline):is(:active, [aria-pressed="true"], [aria-current="page"], [aria-expanded="true"], [data-selected="true"]):where(:not(:disabled, [aria-disabled="true"])) {
+  translate: 0 1px;
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--skeuo-pressed);
+}
+
+:is(.skeuo-button, .kawaii-btn, .kawaii-btn-primary, .kawaii-btn-outline):is(:disabled, [aria-disabled="true"]) {
+  translate: none;
+  box-shadow: inset 2px 2px 5px rgb(232 145 184 / 14%), inset -2px -2px 5px rgb(255 255 255 / 55%);
+}
+
+:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="color"]), select, textarea) {
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--skeuo-pressed);
+  transition: box-shadow 180ms ease, border-color 180ms ease;
+}
+
+input:is([type="checkbox"], [type="radio"]) {
+  min-height: auto;
+}
+
+:is(button, a, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid #E891B8;
+  outline-offset: 4px;
+}
+
+thead {
+  box-shadow: inset 0 2px 5px rgb(232 145 184 / 12%), inset 0 -1px 1px var(--skeuo-light);
+}
+
+.kawaii-skeleton {
+  box-shadow: inset 2px 2px 5px rgb(232 145 184 / 14%), inset -2px -2px 5px rgb(255 255 255 / 65%);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --skeuo-raised: 6px 6px 16px var(--skeuo-shade), -5px -5px 14px var(--skeuo-light),
+      inset 1px 1px 2px rgb(255 255 255 / 90%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scrapbook-card:hover,
+  :is(.skeuo-button, .kawaii-btn, .kawaii-btn-primary, .kawaii-btn-outline) {
+    transform: none;
+    translate: none;
+  }
+}

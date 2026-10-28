@@ -124,7 +124,7 @@ export const NotificationProvider = ({ children }) => {
               role="status"
               aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
               key={toast.id}
-              className={`pointer-events-auto w-full sm:w-[300px] max-w-[calc(100vw-2.5rem)] rounded-[16px] border-2 ${style.border} border-l-[5px] ${style.borderLeft} bg-white ${style.shadow} px-4 py-3 font-body text-[#3D2C35] animate-toast-in`}
+              className={`skeuo-surface pointer-events-auto w-full sm:w-[300px] max-w-[calc(100vw-2.5rem)] rounded-[16px] border-2 ${style.border} border-l-[5px] ${style.borderLeft} bg-white ${style.shadow} px-4 py-3 font-body text-[#3D2C35] animate-toast-in`}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full text-white" style={{ backgroundColor: style.iconBg }}>
@@ -139,7 +139,7 @@ export const NotificationProvider = ({ children }) => {
                 <button
                   type="button"
                   onClick={() => removeToast(toast.id)}
-                  className="ml-2 text-lg leading-none text-[#6B5560] hover:text-[#3D2C35]"
+                  className="skeuo-button ml-2 text-lg leading-none text-[#6B5560] hover:text-[#3D2C35]"
                   aria-label="Dismiss notification"
                 >
                   ×
@@ -161,11 +161,11 @@ export const NotificationProvider = ({ children }) => {
             aria-modal="true"
             aria-labelledby="confirmation-title"
             aria-describedby="confirmation-message"
-            className="relative w-full max-w-[320px] rounded-[24px] border-2 border-dashed border-[#F4BFCF] bg-white px-6 py-8 shadow-[6px_6px_0px_#F9A8C9] animate-confirm-pop"
+            className="skeuo-surface relative w-full max-w-[320px] rounded-[24px] border-2 border-dashed border-[#F4BFCF] bg-white px-6 py-8 shadow-[6px_6px_0px_#F9A8C9] animate-confirm-pop"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute left-1/2 top-0 h-2 w-[calc(100%-2rem)] -translate-x-1/2 rounded-full bg-[#F9A8C9]" />
-            <div className="mx-auto mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F9A8C9] text-2xl text-white">
+            <div className="skeuo-surface mx-auto mb-4 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F9A8C9] text-2xl text-white">
               {starIcon}
             </div>
             <h3 id="confirmation-title" className="text-center font-heading text-[18px] font-bold text-[#3D2C35]">
@@ -179,14 +179,14 @@ export const NotificationProvider = ({ children }) => {
               <button
                 type="button"
                 onClick={() => handleCloseConfirm(false)}
-                className="kawaii-btn-outline flex-1 px-4 py-3 text-sm"
+                className="skeuo-button kawaii-btn-outline flex-1 px-4 py-3 text-sm"
               >
                 {confirmState.cancelText}
               </button>
               <button
                 type="button"
                 onClick={() => handleCloseConfirm(true)}
-                className="kawaii-btn-primary flex-1 bg-[#F9A8C9] px-4 py-3 text-sm text-white"
+                className="skeuo-button kawaii-btn-primary flex-1 bg-[#F9A8C9] px-4 py-3 text-sm text-white"
               >
                 {confirmState.confirmText}
               </button>

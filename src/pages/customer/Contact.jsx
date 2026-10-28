@@ -63,7 +63,7 @@ const Contact = () => {
             key={rating}
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, rating }))}
-            className="min-h-11 min-w-11 rounded-full bg-white border-2 border-dashed border-astraea-pink/40 flex items-center justify-center text-astraea-rosegold hover:bg-astraea-blush/40 transition-colors"
+            className="skeuo-button min-h-11 min-w-11 rounded-full bg-white border-2 border-dashed border-astraea-pink/40 flex items-center justify-center text-astraea-rosegold hover:bg-astraea-blush/40 transition-colors"
             aria-label={`${rating} star${rating === 1 ? '' : 's'}`}
           >
             <Star className={`w-5 h-5 ${rating <= formData.rating ? 'fill-current' : 'opacity-30'}`} />
@@ -81,20 +81,20 @@ const Contact = () => {
           <p className="font-accent text-2xl text-astraea-rosegold">We'd love to hear from you. Send us a message or reach out on Messenger.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-0 bg-[#FFFDFE] rounded-3xl shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink overflow-hidden">
+        <div className="skeuo-surface flex flex-col lg:flex-row gap-0 bg-[#FFFDFE] rounded-3xl shadow-[4px_4px_0px_#F9A8C9] border-2 border-dashed border-astraea-pink overflow-hidden">
           <div className="lg:w-1/2 p-4 md:p-12 order-2 lg:order-1">
             <h2 className="section-heading text-xl md:text-3xl mb-8">{flowerIcon} Customer Reviews & Feedback</h2>
             {submitted ? (
               <div className="scrapbook-card bg-astraea-mint/30 text-[#2D7A5F] text-center animate-fade-in">
-                <div className="w-16 h-16 bg-astraea-mint rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-[#A8DFC9]"><Check className="w-8 h-8 text-[#2D7A5F]" /></div>
+                <div className="skeuo-surface w-16 h-16 bg-astraea-mint rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-[#A8DFC9]"><Check className="w-8 h-8 text-[#2D7A5F]" /></div>
                 <h3 className="font-bold text-xl mb-2">Review Submitted!</h3>
                 <p>Thank you for sharing your feedback. It will appear on the Home page after admin approval.</p>
-                <button onClick={() => setSubmitted(false)} className="kawaii-btn-outline mt-6">Leave Another Review</button>
+                <button onClick={() => setSubmitted(false)} className="skeuo-button kawaii-btn-outline mt-6">Leave Another Review</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                  <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
+                  <div className="skeuo-surface p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium">
                     {error}
                   </div>
                 )}
@@ -102,7 +102,7 @@ const Contact = () => {
                 <div><label htmlFor="review-message" className="block text-sm font-medium text-[#C4658A] mb-2">Review / Feedback</label><textarea id="review-message" rows="5" maxLength={2000} required value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="kawaii-input min-h-[100px] resize-none" placeholder="Tell us about your Astraea experience."></textarea></div>
                 {renderRatingInput()}
                 <TurnstileWidget key={turnstileKey} action="review" onToken={setTurnstileToken} onError={() => { setTurnstileToken(''); setError('Security check unavailable. Please try again.'); }} />
-                <button type="submit" disabled={loading} className="kawaii-btn-primary w-full py-4 text-lg">{loading ? 'Submitting...' : 'Submit Review'}</button>
+                <button type="submit" disabled={loading} className="skeuo-button kawaii-btn-primary w-full py-4 text-lg">{loading ? 'Submitting...' : 'Submit Review'}</button>
               </form>
             )}
           </div>
@@ -123,9 +123,9 @@ const Contact = () => {
               <div className="pt-6 border-t-2 border-dashed border-astraea-pink/30">
                 <h4 className="font-bold mb-4">Follow Us</h4>
                 <div className="flex gap-4">
-                  <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Globe className="w-6 h-6" /></a>
-                  <a aria-label="Astraea Collection Messenger" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><AtSign className="w-6 h-6" /></a>
-                  <a aria-label="Video chat with Astraea Collection" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Video className="w-6 h-6" /></a>
+                  <a aria-label="Astraea Collection Facebook page" href="https://www.facebook.com/share/1RzvhQpxG1/" target="_blank" rel="noreferrer" className="skeuo-button w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Globe className="w-6 h-6" /></a>
+                  <a aria-label="Astraea Collection Messenger" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="skeuo-button w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><AtSign className="w-6 h-6" /></a>
+                  <a aria-label="Video chat with Astraea Collection" href="https://www.facebook.com/share/18yY1YAP5n/" target="_blank" rel="noreferrer" className="skeuo-button w-12 h-12 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-astraea-pink/40 hover:text-astraea-pink transition-colors shadow-[3px_3px_0px_#F9A8C9]"><Video className="w-6 h-6" /></a>
                 </div>
               </div>
             </div>

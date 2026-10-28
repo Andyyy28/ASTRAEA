@@ -44,10 +44,10 @@ const AdminSettings = () => {
     <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
       <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Account Settings</h1>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="skeuo-surface bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         
         <div className="p-4 md:p-6 border-b border-gray-200 bg-gray-50 flex items-center">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 mr-4 shadow-sm">
+          <div className="skeuo-surface w-12 h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 mr-4 shadow-sm">
             <Lock className="w-6 h-6 text-astraea-pink" />
           </div>
           <div>
@@ -58,13 +58,13 @@ const AdminSettings = () => {
 
         <div className="p-4 md:p-8">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm font-medium">
+            <div className="skeuo-surface mb-6 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-sm font-medium">
               {error}
             </div>
           )}
           
           {message && (
-            <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 text-sm font-medium flex items-center">
+            <div className="skeuo-surface mb-6 p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 text-sm font-medium flex items-center">
               <CheckCircle2 className="w-5 h-5 mr-2" /> {message}
             </div>
           )}
@@ -97,7 +97,7 @@ const AdminSettings = () => {
             <button 
               type="submit"
               disabled={loading}
-              className="w-full min-h-11 py-3 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
+              className="skeuo-button w-full min-h-11 py-3 bg-astraea-pink text-white rounded-xl font-bold text-lg hover:bg-astraea-pink/90 transition-colors shadow-md disabled:opacity-70 flex justify-center"
             >
               {loading ? <Skeleton className="w-40 h-5 bg-white/30" /> : 'Update Password'}
             </button>

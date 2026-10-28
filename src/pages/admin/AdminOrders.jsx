@@ -105,12 +105,12 @@ const AdminOrders = () => {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'pending': return <span className="px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold capitalize">Pending</span>;
-      case 'confirmed': return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
-      case 'being-made': return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
-      case 'ready': return <span className="px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
-      case 'completed': return <span className="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
-      case 'cancelled': return <span className="px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold capitalize">Cancelled</span>;
+      case 'pending': return <span className="skeuo-surface px-2.5 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold capitalize">Pending</span>;
+      case 'confirmed': return <span className="skeuo-surface px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold capitalize">Confirmed</span>;
+      case 'being-made': return <span className="skeuo-surface px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold capitalize">Being Made</span>;
+      case 'ready': return <span className="skeuo-surface px-2.5 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold capitalize">Ready</span>;
+      case 'completed': return <span className="skeuo-surface px-2.5 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold capitalize">Completed</span>;
+      case 'cancelled': return <span className="skeuo-surface px-2.5 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold capitalize">Cancelled</span>;
       default: return null;
     }
   };
@@ -120,7 +120,7 @@ const AdminOrders = () => {
       <h1 className="text-2xl md:text-3xl font-extrabold text-astraea-darkgray tracking-tight">Orders Management</h1>
       
       {/* Filters Bar */}
-      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-astraea-pink/5 space-y-5">
+      <div className="skeuo-surface bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-astraea-pink/5 space-y-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -180,7 +180,7 @@ const AdminOrders = () => {
             onClick={() => {
               setSearch(''); setStatusFilter('All'); setTypeFilter('All Types'); setDateFrom(''); setDateTo(''); setCurrentPage(1);
             }}
-            className="min-h-11 text-sm text-astraea-pink hover:underline font-medium md:ml-auto"
+            className="skeuo-button min-h-11 text-sm text-astraea-pink hover:underline font-medium md:ml-auto"
           >
             Clear Filters
           </button>
@@ -190,7 +190,7 @@ const AdminOrders = () => {
       <div className="grid gap-4 md:hidden">
         {loading ? (
           [1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
+            <div key={i} className="skeuo-surface bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-2 flex-grow">
                   <Skeleton className="w-1/3 h-5" />
@@ -206,10 +206,10 @@ const AdminOrders = () => {
             </div>
           ))
         ) : currentOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center border border-astraea-pink/5 text-gray-500">No orders found.</div>
+          <div className="skeuo-surface bg-white rounded-2xl p-8 text-center border border-astraea-pink/5 text-gray-500">No orders found.</div>
         ) : (
           currentOrders.map(order => (
-            <div key={order.id} className="bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
+            <div key={order.id} className="skeuo-surface bg-white rounded-2xl p-4 border border-astraea-pink/5 shadow-sm space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-bold text-astraea-pink break-all">{order.reference_number}</p>
@@ -221,7 +221,7 @@ const AdminOrders = () => {
                 <span className="text-gray-500">{typeLabel(order.order_type)}</span>
                 <span className="font-bold">{formatPrice(order.total_amount)}</span>
               </div>
-              <Link to={`/admin/orders/${order.id}`} className="min-h-11 flex items-center justify-center w-full px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
+              <Link to={`/admin/orders/${order.id}`} className="skeuo-button min-h-11 flex items-center justify-center w-full px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100">
                 View
               </Link>
             </div>
@@ -230,7 +230,7 @@ const AdminOrders = () => {
       </div>
 
       {/* Table */}
-      <div className="hidden md:flex bg-white rounded-3xl shadow-sm border border-astraea-pink/5 overflow-hidden flex-col">
+      <div className="skeuo-surface hidden md:flex bg-white rounded-3xl shadow-sm border border-astraea-pink/5 overflow-hidden flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left whitespace-nowrap border-collapse">
             <thead>
@@ -284,8 +284,8 @@ const AdminOrders = () => {
                     <td className="px-6 py-5">{getStatusBadge(order.status)}</td>
                     <td className="px-6 py-5">
                       {order.is_paid 
-                        ? <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">Paid</span>
-                        : <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">Unpaid</span>
+                        ? <span className="skeuo-surface text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg">Paid</span>
+                        : <span className="skeuo-surface text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg">Unpaid</span>
                       }
                     </td>
                     <td className="px-6 py-5 text-right">
@@ -301,7 +301,7 @@ const AdminOrders = () => {
                             <option key={status} value={status} disabled={status !== 'cancelled' && statusOptions.indexOf(status) < statusOptions.indexOf(order.status)}>{status.replace('-', ' ')}</option>
                           ))}
                         </select>
-                      <Link to={`/admin/orders/${order.id}`} className="px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100 inline-block">
+                      <Link to={`/admin/orders/${order.id}`} className="skeuo-button px-4 py-2 bg-[#FCFAFB] text-gray-600 rounded-xl font-bold hover:bg-gray-100 transition-colors border border-gray-100 inline-block">
                         View
                       </Link>
                       </div>
@@ -324,7 +324,7 @@ const AdminOrders = () => {
                 aria-label="Previous page"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
+                className="skeuo-button p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -332,7 +332,7 @@ const AdminOrders = () => {
                 aria-label="Next page"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
+                className="skeuo-button p-1 rounded-md border border-gray-300 text-gray-500 disabled:opacity-50 hover:bg-gray-50 flex items-center justify-center"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -341,9 +341,9 @@ const AdminOrders = () => {
         )}
       </div>
       {!loading && totalCount > 0 && <div className="md:hidden flex items-center justify-between gap-3">
-        <button className="kawaii-btn-outline" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+        <button className="skeuo-button kawaii-btn-outline" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
         <span>Page {currentPage} of {totalPages}</span>
-        <button className="kawaii-btn-outline" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+        <button className="skeuo-button kawaii-btn-outline" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
       </div>}
     </div>
   );

@@ -10,7 +10,7 @@ import Skeleton from '../../components/Skeleton';
 const steps = ['Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
 const money = formatPrice;
-const stockBadge = 'kawaii-badge bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
+const stockBadge = 'kawaii-badge shrink-0 whitespace-nowrap bg-[#FDDDE6] border-[#F9A8C9] text-[#C4658A] text-xs px-2 py-0.5';
 const getColorName = (color) => color?.color_name || color?.name || '';
 const getSelectedWrapperColorName = (selectedWrapperColorId, wrapperColors) => {
   const color = wrapperColors.find(c => String(c.id) === String(selectedWrapperColorId));
@@ -65,7 +65,7 @@ const Customize = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
+  }, [currentStep]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -275,7 +275,7 @@ const Customize = () => {
   };
 
   const renderImage = (item, label) => (
-    <div className="w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+    <div className="skeuo-surface w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center overflow-hidden">
       {item.image_url ? <img src={item.image_url} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
     </div>
   );
@@ -298,17 +298,17 @@ const Customize = () => {
               {dbFlowers.map(f => {
                 const qty = selectedFlowers[f.id] || 0;
                 return (
-                  <div key={f.id} className="bg-white rounded-xl border border-astraea-rosegold/20 p-4 flex flex-col h-full shadow-sm">
+                  <div key={f.id} className="skeuo-surface bg-white rounded-xl border border-astraea-rosegold/20 p-4 flex flex-col h-full shadow-sm">
                     {renderImage(f, f.name)}
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-bold text-astraea-darkgray flex-grow">{f.name}</h3>
                       <span className={stockBadge}>{f.stock} left</span>
                     </div>
                     <p className="text-astraea-pink text-sm mb-4">{money(f.price_per_stem)}/stem</p>
-                    <div className="flex items-center justify-between border border-astraea-rosegold/40 rounded-full bg-astraea-blush/20">
-                      <button onClick={() => updateFlowerQty(f.id, -1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
+                    <div className="skeuo-surface flex items-center justify-between border border-astraea-rosegold/40 rounded-full bg-astraea-blush/20">
+                      <button onClick={() => updateFlowerQty(f.id, -1)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink">-</button>
                       <span className="font-bold">{qty}</span>
-                      <button onClick={() => updateFlowerQty(f.id, 1)} disabled={qty >= Number(f.stock || 0)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300">+</button>
+                      <button onClick={() => updateFlowerQty(f.id, 1)} disabled={qty >= Number(f.stock || 0)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300">+</button>
                     </div>
                   </div>
                 );
@@ -329,14 +329,15 @@ const Customize = () => {
               {selectedFlowerObjs.map(f => {
                 const availableColors = colorsForFlower(f.id);
                 return (
-                  <div key={f.id} className="bg-white p-6 rounded-xl border border-astraea-rosegold/20">
+                  <div key={f.id} className="skeuo-surface bg-white p-6 rounded-xl border border-astraea-rosegold/20">
                     <h3 className="font-bold text-lg mb-4">{f.name} Colors <span className="font-normal text-sm text-astraea-darkgray/50 ml-2">({selectedFlowers[f.id]} stems)</span></h3>
                     <div className="flex flex-wrap gap-4">
                       {availableColors.length > 0 ? availableColors.map(c => (
                         <button
                           key={c.id}
+                          aria-pressed={selectedFlowerColors[f.id]?.id === c.id}
                           onClick={() => setSelectedFlowerColors(prev => ({ ...prev, [f.id]: { id: c.id, colorName: getColorName(c) } }))}
-                          className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedFlowerColors[f.id]?.id === c.id ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
+                          className={`skeuo-button min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${selectedFlowerColors[f.id]?.id === c.id ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                           style={{ backgroundColor: c.hex_code }}
                           title={getColorName(c)}
                         />
@@ -362,9 +363,9 @@ const Customize = () => {
                 return (
                 <div
                   key={f.id}
-                  className={`flex gap-4 p-4 rounded-xl border-2 transition-all ${qty > 0 ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
+                  className={`skeuo-surface flex gap-4 p-4 rounded-xl border-2 transition-all ${qty > 0 ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
-                  <div className="w-20 h-20 shrink-0 overflow-hidden bg-astraea-blush rounded-lg flex items-center justify-center">
+                  <div className="skeuo-surface w-20 h-20 shrink-0 overflow-hidden bg-astraea-blush rounded-lg flex items-center justify-center">
                     {f.image_url ? <img src={f.image_url} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
                   </div>
                   <div className="flex flex-1 flex-col gap-3 min-w-0">
@@ -376,10 +377,10 @@ const Customize = () => {
                           <span className="text-astraea-pink font-medium">+{money(f.price)} each</span>
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center border border-astraea-rosegold/40 rounded-full bg-white">
-                        <button onClick={() => updateFillerQty(f.id, -1)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
+                      <div className="skeuo-surface flex shrink-0 items-center border border-astraea-rosegold/40 rounded-full bg-white">
+                        <button onClick={() => updateFillerQty(f.id, -1)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink"><Minus className="w-4 h-4" /></button>
                         <span className="w-8 text-center font-bold">{qty}</span>
-                        <button onClick={() => updateFillerQty(f.id, 1)} disabled={qty >= Number(f.stock || 0)} className="min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300"><Plus className="w-4 h-4" /></button>
+                        <button onClick={() => updateFillerQty(f.id, 1)} disabled={qty >= Number(f.stock || 0)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray hover:text-astraea-pink disabled:text-gray-300"><Plus className="w-4 h-4" /></button>
                       </div>
                     </div>
                     {qty > 0 && (
@@ -389,8 +390,9 @@ const Customize = () => {
                           {availableColors.length > 0 ? availableColors.map(c => (
                             <button
                               key={c.id}
+                              aria-pressed={selectedFillerColors[f.id]?.id === c.id}
                               onClick={() => setSelectedFillerColors(prev => ({ ...prev, [f.id]: { id: c.id, colorName: getColorName(c) } }))}
-                              className={`min-w-11 min-h-11 w-11 h-11 rounded-full border-4 transition-all focus:outline-none ${selectedFillerColors[f.id]?.id === c.id ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
+                              className={`skeuo-button min-w-11 min-h-11 w-11 h-11 rounded-full border-4 transition-all focus:outline-none ${selectedFillerColors[f.id]?.id === c.id ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                               style={{ backgroundColor: c.hex_code }}
                               title={getColorName(c)}
                             />
@@ -414,13 +416,14 @@ const Customize = () => {
               {dbWrappers.map(w => (
                 <div
                   key={w.id}
+                  data-selected={selectedWrapper === w.id}
                   onClick={() => {
                     setSelectedWrapper(w.id);
                     setSelectedWrapperColorId(null);
                   }}
-                  className={`cursor-pointer overflow-hidden rounded-[12px] border-2 bg-white text-center transition-all ${selectedWrapper === w.id ? 'border-dashed border-[#F9A8C9] shadow-[3px_3px_0px_#F9A8C9]' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
+                  className={`skeuo-surface cursor-pointer overflow-hidden rounded-[12px] border-2 bg-white text-center transition-all ${selectedWrapper === w.id ? 'border-dashed border-[#F9A8C9] shadow-[3px_3px_0px_#F9A8C9]' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
-                  <div className="relative w-full aspect-square overflow-hidden rounded-t-[12px] bg-astraea-blush">
+                  <div className="skeuo-surface relative w-full aspect-square overflow-hidden rounded-t-[12px] bg-astraea-blush">
                     {w.image_url ? (
                       <img
                         src={w.image_url}
@@ -431,7 +434,7 @@ const Customize = () => {
                       <span className="flex h-full w-full items-center justify-center px-2 text-center text-astraea-pink/30 text-sm">{w.material}</span>
                     )}
                     {selectedWrapper === w.id && (
-                      <span className="absolute right-1 top-1 inline-flex items-center rounded-full border border-[#F9A8C9] bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#C4658A] shadow-[1px_1px_0px_#F9A8C9]">
+                      <span className="skeuo-surface absolute right-1 top-1 inline-flex items-center rounded-full border border-[#F9A8C9] bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#C4658A] shadow-[1px_1px_0px_#F9A8C9]">
                         ✓ Selected
                       </span>
                     )}
@@ -441,14 +444,15 @@ const Customize = () => {
               ))}
             </div>
             {selectedWrapper && (
-              <div className="bg-white p-6 rounded-xl border border-astraea-rosegold/20 animate-fade-in">
+              <div className="skeuo-surface bg-white p-6 rounded-xl border border-astraea-rosegold/20 animate-fade-in">
                 <h3 className="font-bold mb-4">Wrapper Color</h3>
                 <div className="flex flex-wrap gap-4">
                   {activeWrapperColors.length > 0 ? activeWrapperColors.map(c => (
                     <button
                       key={c.id}
+                      aria-pressed={String(selectedWrapperColorId) === String(c.id)}
                       onClick={() => setSelectedWrapperColorId(c.id)}
-                      className={`min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${String(selectedWrapperColorId) === String(c.id) ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
+                      className={`skeuo-button min-w-11 min-h-11 w-12 h-12 rounded-full border-4 transition-all focus:outline-none ${String(selectedWrapperColorId) === String(c.id) ? 'border-astraea-pink scale-110 shadow-lg' : 'border-transparent shadow-sm hover:scale-105'}`}
                       style={{ backgroundColor: c.hex_code }}
                       title={c.color_name}
                     />
@@ -465,9 +469,9 @@ const Customize = () => {
             <h2 className="font-heading text-xl md:text-3xl font-bold text-astraea-darkgray">Final touches</h2>
             <div className="space-y-4">
               {addonOptions.map(addon => (
-                <label key={addon.id} className="flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
+                <label key={addon.id} data-selected={!!addons[addon.key]} className="skeuo-surface flex items-center p-4 rounded-xl border border-astraea-rosegold/20 cursor-pointer hover:bg-astraea-blush/30 transition-colors">
                   <input type="checkbox" checked={!!addons[addon.key]} onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })} className="w-5 h-5 accent-astraea-pink mr-4" />
-                  <span className="mr-4 flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-astraea-blush text-astraea-pink/40">
+                  <span className="skeuo-surface mr-4 flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-astraea-blush text-astraea-pink/40">
                     {addon.image_url ? (
                       <img src={addon.image_url} alt={addon.name} className="h-full w-full object-cover" />
                     ) : (
@@ -516,12 +520,12 @@ const Customize = () => {
 
           <div className="flex flex-col lg:flex-row gap-8 animate-fade-in">
             {/* Left box skeleton */}
-            <div className="bg-white p-4 sm:p-8 lg:p-10 rounded-2xl border border-astraea-rosegold/20 min-h-[500px] flex flex-col justify-between shadow-sm">
+            <div className="skeuo-surface bg-white p-4 sm:p-8 lg:p-10 rounded-2xl border border-astraea-rosegold/20 min-h-[500px] flex flex-col justify-between shadow-sm">
               <div className="space-y-6">
                 <Skeleton className="w-48 h-8 mb-6" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="rounded-2xl p-4 md:p-6 border border-gray-150 space-y-4 bg-white/50">
+                    <div key={i} className="skeuo-surface rounded-2xl p-4 md:p-6 border border-gray-150 space-y-4 bg-white/50">
                       <Skeleton className="w-24 h-6" />
                       <Skeleton className="w-32 h-4" />
                       <Skeleton className="w-20 h-6" />
@@ -561,21 +565,21 @@ const Customize = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8 items-start">
-          <div id="bouquet-options" className="min-w-0 scroll-mt-28 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
+          <div id="bouquet-options" className="skeuo-surface min-w-0 scroll-mt-28 bg-white p-4 sm:p-8 lg:p-10 rounded-2xl shadow-sm border border-astraea-rosegold/20 min-h-[500px] flex flex-col">
             <div className="flex-grow">{renderStepContent()}</div>
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-12 pt-6 border-t border-astraea-rosegold/20">
-              <button onClick={handleBack} disabled={currentStep === 0} className={`min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'}`}>
+              <button onClick={handleBack} disabled={currentStep === 0} className={`skeuo-button min-h-11 flex items-center justify-center px-6 py-3 rounded-full font-bold transition-colors ${currentStep === 0 ? 'text-astraea-darkgray/30 cursor-not-allowed' : 'text-astraea-darkgray hover:bg-astraea-blush'}`}>
                 <ChevronLeft className="w-5 h-5 mr-1" /> Back
               </button>
               {currentStep < steps.length - 1 ? (
-                <button onClick={handleNext} className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors">Next <ChevronRight className="w-5 h-5 ml-1" /></button>
+                <button onClick={handleNext} className="skeuo-button min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors">Next <ChevronRight className="w-5 h-5 ml-1" /></button>
               ) : (
-                <button onClick={handleAddToCart} className="min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"><ShoppingBag className="w-5 h-5 mr-2" /> Add to Cart</button>
+                <button onClick={handleAddToCart} className="skeuo-button min-h-11 flex items-center justify-center px-8 py-3 bg-astraea-pink text-white rounded-full font-bold hover:bg-astraea-pink/90 transition-colors shadow-md"><ShoppingBag className="w-5 h-5 mr-2" /> Add to Cart</button>
               )}
             </div>
           </div>
 
-          <aside id="bouquet-summary" aria-label="Bouquet price summary" className="min-w-0 scroll-mt-28 lg:sticky lg:top-28">
+          <aside id="bouquet-summary" aria-label="Bouquet price summary" className="skeuo-chrome min-w-0 scroll-mt-28 lg:sticky lg:top-28">
             <SummaryPanel selectedSize={selectedSize}
               selectedFlowers={selectedFlowers}
               selectedFlowerColors={selectedFlowerColors}
@@ -595,10 +599,10 @@ const Customize = () => {
           </aside>
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
+      <div className="skeuo-chrome skeuo-dark fixed inset-x-0 bottom-0 z-40 bg-astraea-darkgray text-white p-4 shadow-2xl lg:hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div><p className="text-xs text-white/70">Estimated total</p><p className="font-bold text-xl text-astraea-pink" aria-live="polite" aria-atomic="true">{money(calculateTotal())}</p></div>
-          <a href="#bouquet-summary" className="min-h-11 inline-flex items-center px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">View Summary</a>
+          <a href="#bouquet-summary" className="skeuo-button min-h-11 inline-flex items-center px-5 py-2 bg-astraea-pink text-white rounded-full font-bold">View Summary</a>
         </div>
       </div>
     </div>
@@ -606,7 +610,7 @@ const Customize = () => {
 };
 
 const SummaryPanel = ({ selectedSize, selectedFlowers, selectedFlowerColors, dbFlowerColors, dbFlowers, selectedFillers, selectedFillerColors, dbFillerColors, dbFillers, selectedWrapper, selectedWrapperColorId, dbWrapperColors, dbWrappers, selectedAddonOptions, calculateTotal }) => (
-  <div className="bg-astraea-darkgray text-white p-6 rounded-2xl shadow-lg">
+  <div className="skeuo-surface skeuo-dark bg-astraea-darkgray text-white p-6 rounded-2xl shadow-lg">
     <h3 className="font-heading text-2xl font-bold mb-6 text-astraea-pink">Your Bouquet</h3>
     <div className="space-y-4 text-sm font-medium">
       {selectedSize && <div className="flex justify-between border-b border-white/10 pb-2"><span className="text-white/80">Size</span><span>{selectedSize.name} ({money(selectedSize.base_price)})</span></div>}

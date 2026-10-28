@@ -92,7 +92,7 @@ const AdminOrderDetail = () => {
         <Skeleton className="w-32 h-5" />
         
         {/* Header Skeleton */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl border border-gray-200">
+        <div className="skeuo-surface flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl border border-gray-200">
           <div className="space-y-2 w-full md:w-auto">
             <div className="flex flex-wrap items-center gap-3">
               <Skeleton className="w-48 h-8" />
@@ -112,7 +112,7 @@ const AdminOrderDetail = () => {
           {/* Left Col */}
           <div className="space-y-6">
             {/* Customer Info Card */}
-            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
+            <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
               <Skeleton className="w-44 h-6" />
               <div className="space-y-3">
                 <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-32 h-5" /></div>
@@ -121,7 +121,7 @@ const AdminOrderDetail = () => {
               </div>
             </div>
             {/* Delivery Info Card */}
-            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
+            <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl border border-gray-200 space-y-4">
               <Skeleton className="w-44 h-6" />
               <div className="space-y-3">
                 <div className="space-y-1"><Skeleton className="w-16 h-3" /><Skeleton className="w-28 h-5" /></div>
@@ -130,7 +130,7 @@ const AdminOrderDetail = () => {
             </div>
           </div>
           {/* Right Col */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
+          <div className="skeuo-surface lg:col-span-2 bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
             <Skeleton className="w-32 h-6" />
             <div className="space-y-4">
               <div className="flex gap-4 border-b border-gray-100 pb-4">
@@ -161,12 +161,12 @@ const AdminOrderDetail = () => {
 
   const getStatusBadge = (status) => {
     switch(status) {
-      case 'pending': return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold capitalize">Pending</span>;
-      case 'confirmed': return <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold capitalize">Confirmed</span>;
-      case 'being-made': return <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold capitalize">Being Made</span>;
-      case 'ready': return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold capitalize">Ready</span>;
-      case 'completed': return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-bold capitalize">Completed</span>;
-      case 'cancelled': return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold capitalize">Cancelled</span>;
+      case 'pending': return <span className="skeuo-surface px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold capitalize">Pending</span>;
+      case 'confirmed': return <span className="skeuo-surface px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold capitalize">Confirmed</span>;
+      case 'being-made': return <span className="skeuo-surface px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold capitalize">Being Made</span>;
+      case 'ready': return <span className="skeuo-surface px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold capitalize">Ready</span>;
+      case 'completed': return <span className="skeuo-surface px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-bold capitalize">Completed</span>;
+      case 'cancelled': return <span className="skeuo-surface px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold capitalize">Cancelled</span>;
       default: return null;
     }
   };
@@ -196,22 +196,22 @@ const AdminOrderDetail = () => {
       </Link>
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
+      <div className="skeuo-surface flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
         <div>
           <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-2">
             <h1 className="text-xl md:text-2xl font-bold text-gray-800 break-all">{order.reference_number}</h1>
             {getStatusBadge(order.status)}
             {order.is_paid ? (
-              <span className="px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Paid</span>
+              <span className="skeuo-surface px-3 py-1 bg-green-50 text-green-600 rounded-full text-sm font-bold flex items-center"><CheckCircle2 className="w-4 h-4 mr-1" /> Paid</span>
             ) : (
-              <span className="px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm font-bold flex items-center"><Clock className="w-4 h-4 mr-1" /> Unpaid</span>
+              <span className="skeuo-surface px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm font-bold flex items-center"><Clock className="w-4 h-4 mr-1" /> Unpaid</span>
             )}
           </div>
           <p className="text-sm text-gray-500">Placed on {new Date(order.created_at).toLocaleString()}</p>
         </div>
         
         {/* Controls Panel */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full md:w-auto">
+        <div className="skeuo-surface flex flex-col sm:flex-row sm:items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full md:w-auto">
           <select 
             value={order.status}
             onChange={(e) => handleUpdateStatus(e.target.value)}
@@ -228,7 +228,7 @@ const AdminOrderDetail = () => {
           <button
             onClick={handleTogglePaid}
             disabled={updating}
-            className={`min-h-11 whitespace-nowrap px-4 py-2 text-sm font-bold rounded-md text-white transition-colors disabled:opacity-50 ${order.is_paid ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'}`}
+            className={`skeuo-button min-h-11 whitespace-nowrap px-4 py-2 text-sm font-bold rounded-md text-white transition-colors disabled:opacity-50 ${order.is_paid ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'}`}
           >
             Mark {order.is_paid ? 'Unpaid' : 'Paid'}
           </button>
@@ -240,7 +240,7 @@ const AdminOrderDetail = () => {
         {/* Left Col: Info Cards */}
         <div className="space-y-6">
           {/* Customer Info */}
-          <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
+          <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center"><User className="w-5 h-5 mr-2 text-astraea-pink" /> Customer Information</h3>
             <div className="space-y-3 text-sm">
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Name</span><span className="font-medium">{order.customer_name}</span></div>
@@ -266,7 +266,7 @@ const AdminOrderDetail = () => {
           </div>
           
           {/* Logistics Info */}
-          <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
+          <div className="skeuo-surface bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-200">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center"><Truck className="w-5 h-5 mr-2 text-astraea-pink" /> Delivery Information</h3>
             <div className="space-y-3 text-sm">
               <div><span className="text-gray-500 block text-xs uppercase tracking-wider">Method</span><span className="font-medium capitalize">{order.delivery_method}</span></div>
@@ -290,7 +290,7 @@ const AdminOrderDetail = () => {
               {order.special_notes && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <span className="text-gray-500 block text-xs uppercase tracking-wider mb-1">Special Notes</span>
-                  <p className="font-medium bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-yellow-800">{order.special_notes}</p>
+                  <p className="skeuo-surface font-medium bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-yellow-800">{order.special_notes}</p>
                 </div>
               )}
             </div>
@@ -298,7 +298,7 @@ const AdminOrderDetail = () => {
         </div>
 
         {/* Right Col: Order Items */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+        <div className="skeuo-surface lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col">
           <div className="p-6 border-b border-gray-200">
             <h3 className="font-bold text-gray-800 flex items-center"><Receipt className="w-5 h-5 mr-2 text-astraea-pink" /> Order Items</h3>
           </div>
@@ -306,7 +306,7 @@ const AdminOrderDetail = () => {
           <div className="flex-grow p-6 space-y-6 overflow-y-auto">
             {items.map(item => (
               <div key={item.id} className="flex flex-col sm:flex-row gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
-                <div className="w-16 h-16 bg-astraea-blush rounded-xl flex-shrink-0 overflow-hidden relative">
+                <div className="skeuo-surface w-16 h-16 bg-astraea-blush rounded-xl flex-shrink-0 overflow-hidden relative">
                   {item.item_type !== 'custom' && getItemImage(item) ? (
                     <img
                       src={getItemImage(item)}
@@ -319,7 +319,7 @@ const AdminOrderDetail = () => {
                     </div>
                   )}
                   {item.item_type !== 'custom' && (
-                    <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-white/90 text-[10px] font-bold text-astraea-pink shadow-sm">
+                    <div className="skeuo-surface absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-white/90 text-[10px] font-bold text-astraea-pink shadow-sm">
                       {item.quantity}x
                     </div>
                   )}
@@ -333,7 +333,7 @@ const AdminOrderDetail = () => {
                   </div>
                   
                   {/* Detailed Breakdown for Custom Items */}
-                  <div className="text-sm text-gray-600 mt-2 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <div className="skeuo-surface text-sm text-gray-600 mt-2 space-y-1 bg-gray-50 p-3 rounded-lg border border-gray-100">
                     {item.size && <p><span className="font-medium text-gray-800">Size:</span> {item.size}</p>}
                     
                     {item.flowers && item.flowers.length > 0 && (
@@ -363,7 +363,7 @@ const AdminOrderDetail = () => {
                     )}
 
                     {item.message_card && (
-                      <div className="mt-2 p-2 bg-white border border-gray-200 rounded text-gray-800 italic">
+                      <div className="skeuo-surface mt-2 p-2 bg-white border border-gray-200 rounded text-gray-800 italic">
                         "{item.message_card}"
                       </div>
                     )}
@@ -373,7 +373,7 @@ const AdminOrderDetail = () => {
             ))}
           </div>
           
-          <div className="p-4 md:p-6 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
+          <div className="skeuo-surface p-4 md:p-6 bg-gray-50 border-t border-gray-200 rounded-b-2xl">
             <div className="flex justify-between items-center text-lg">
               <span className="font-bold text-gray-800">Grand Total</span>
               <span className="font-bold text-2xl text-astraea-pink">{formatPrice(order.total_amount)}</span>
