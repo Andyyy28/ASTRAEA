@@ -6,7 +6,9 @@
 
 @layer base {
   html, body, #root {
-    @apply w-full max-w-full overflow-x-hidden;
+    @apply w-full max-w-full;
+    /* Clip horizontal overflow without creating a scroll container that breaks sticky headers. */
+    overflow-x: clip;
   }
 
   body {
