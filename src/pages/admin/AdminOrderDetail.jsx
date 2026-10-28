@@ -16,6 +16,7 @@ const AdminOrderDetail = () => {
   const [updating, setUpdating] = useState(false);
   const [proofUrl, setProofUrl] = useState('');
   const [proofError, setProofError] = useState('');
+  const [proofRequest, setProofRequest] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,17 +27,17 @@ const AdminOrderDetail = () => {
       try {
         const url = await getPaymentProofUrl(supabase, order.id);
         if (!cancelled) { setProofUrl(url); setProofError(''); }
-      } catch {
+      } catch (error) {
         if (!cancelled) {
           setProofUrl('');
-          setProofError('Unable to securely load the payment proof.');
+          setProofError(error.message || 'Unable to load the payment proof. Please retry.');
         }
       }
     };
     void loadProof();
     const refresh = window.setInterval(loadProof, 240000);
     return () => { cancelled = true; window.clearInterval(refresh); };
-  }, [order?.id, order?.payment_proof_url]);
+  }, [order?.id, order?.payment_proof_url, proofRequest]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -255,10 +256,19 @@ const AdminOrderDetail = () => {
                       src={proofUrl}
                       alt="GCash proof of payment"
                       referrerPolicy="no-referrer"
+                      onError={() => {
+                        setProofUrl('');
+                        setProofError('The receipt image could not load. Please retry.');
+                      }}
                       className="w-full max-w-xs rounded-xl border border-gray-200 bg-white object-contain"
                     />
                   ) : (
                     <p className="font-medium text-gray-500">{proofError || (order.payment_proof_url ? 'Loading payment proof…' : 'No proof uploaded.')}</p>
+                  )}
+                  {proofError && (
+                    <button type="button" onClick={() => setProofRequest(value => value + 1)} className="mt-2 text-primary font-semibold underline underline-offset-2">
+                      Retry payment proof
+                    </button>
                   )}
                 </div>
               )}

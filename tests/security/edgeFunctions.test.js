@@ -162,3 +162,27 @@ test('frontend rejects unexpected signed URL origins and never falls back to raw
   await assert.rejects(getPaymentProofUrl(client, id));
   client.functions.invoke = async () => ({ error: { message: 'backend unavailable' } }); await assert.rejects(getPaymentProofUrl(client, id));
 });
+
+test('frontend identifies proof authorization failures without exposing backend details', async () => {
+  for (const [code, message] of [
+    ['authorization_unavailable', 'Admin access could not be verified. Please retry.'],
+    ['unauthorized', 'Your admin session has expired. Please sign in again.'],
+    ['private_bucket_required', 'Payment proof storage is temporarily unavailable. Please retry.'],
+    ['unknown', 'Unable to load the payment proof. Please retry.'],
+  ]) {
+    const response = new Response(JSON.stringify({ error: code, message: 'private server details' }), { status: 503 });
+    const client = { functions: { invoke: async () => ({ error: { context: response }, data: null }) } };
+    await assert.rejects(getPaymentProofUrl(client, id), { message });
+    assert.equal(response.bodyUsed, false);
+  }
+});
+
+test('frontend accepts the secure signed receipt URL returned for an authorized admin', async () => {
+  const f = proofFixture();
+  const client = { supabaseUrl: project, functions: { invoke: async (name, { body }) => {
+    assert.equal(name, 'admin-payment-proof');
+    const response = await f.handler(proofRequest(body));
+    return { data: await response.json(), error: null };
+  } } };
+  assert.equal(await getPaymentProofUrl(client, id), `${project}/storage/v1/object/sign/payment-proofs/${id}/${claim}.png?token=test`);
+});

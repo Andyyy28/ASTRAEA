@@ -62,6 +62,10 @@ export function createPaymentProofHandler({ getEnv, createClient }) {
       const { data: signed, error: signError } = await client.storage.from(proof.bucket).createSignedUrl(proof.path, 300);
       if (signError || !signed?.signedUrl) throw new HttpError(503, 'proof_unavailable');
       return jsonResponse(200, { signedUrl: signed.signedUrl, expiresIn: 300, visibility: proof.legacy ? 'legacy-public' : 'private' }, headers);
-    } catch (error) { return errorResponse(error, headers); }
+    } catch (error) {
+      // Log only a fixed error code, never session tokens, signed URLs or receipts.
+      console.error('admin-payment-proof', error instanceof HttpError ? error.code : 'service_unavailable');
+      return errorResponse(error, headers);
+    }
   };
 }

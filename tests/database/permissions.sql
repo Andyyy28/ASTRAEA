@@ -39,6 +39,16 @@ BEGIN
   END IF;
 END $$;
 
+-- Exercise the actual columns used by admin-payment-proof under its database
+-- role. Mocked Edge Function tests cannot detect missing PostgreSQL grants.
+SET LOCAL ROLE service_role;
+DO $$
+BEGIN
+  PERFORM user_id FROM public.admin_users LIMIT 1;
+  PERFORM payment_proof_url FROM public.orders LIMIT 1;
+END $$;
+RESET ROLE;
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims', '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}', true);
 DO $$
