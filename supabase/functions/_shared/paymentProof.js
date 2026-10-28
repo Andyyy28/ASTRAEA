@@ -28,7 +28,9 @@ export function createPaymentProofHandler({ getEnv, createClient }) {
   return async request => {
     let headers = {};
     try {
-      const origins = (getEnv('ALLOWED_ORIGINS') || '').split(',').map(value => value.trim()).filter(Boolean);
+      // Match guest-api's production default when the optional origin setting
+      // is absent. An explicit override (including an empty one) still wins.
+      const origins = (getEnv('ALLOWED_ORIGINS') ?? 'https://astraeacollection.vercel.app').split(',').map(value => value.trim()).filter(Boolean);
       const origin = request.headers.get('origin');
       if (origin && !origins.includes(origin)) throw new HttpError(403, 'origin_not_allowed');
       headers = origin ? {

@@ -116,6 +116,29 @@ test('private proof signs only the persisted path after bucket privacy check', a
   const f = proofFixture(); const res = await f.handler(proofRequest()); assert.equal(res.status, 200); assert.equal((await res.json()).visibility, 'private'); assert.deepEqual(f.signed, [{ bucket: 'payment-proofs', path: `${id}/${claim}.png`, ttl: 300 }]);
   const publicStorage = proofFixture({ publicBucket: true }); assert.equal((await publicStorage.handler(proofRequest())).status, 503); assert.equal(publicStorage.signed.length, 0);
 });
+
+test('proof supports the production storefront when the optional origin setting is absent', async () => {
+  const origin = 'https://astraeacollection.vercel.app';
+  const f = proofFixture({ extraEnv: { ALLOWED_ORIGINS: undefined } });
+  const preflight = await f.handler(new Request(`${project}/proof`, { method: 'OPTIONS', headers: { origin } }));
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), origin);
+  assert.equal(f.signed.length, 0);
+  const response = await f.handler(proofRequest({ order_id: id }, origin));
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('Access-Control-Allow-Origin'), origin);
+  assert.equal((await f.handler(proofRequest({ order_id: id }, 'https://attacker.example.test'))).status, 403);
+  assert.equal(f.signed.length, 1);
+});
+
+test('proof origin overrides never implicitly allow the production storefront', async () => {
+  for (const setting of ['', env.ALLOWED_ORIGINS]) {
+    const f = proofFixture({ extraEnv: { ALLOWED_ORIGINS: setting } });
+    const response = await f.handler(proofRequest({ order_id: id }, 'https://astraeacollection.vercel.app'));
+    assert.equal(response.status, 403);
+    assert.equal(f.signed.length, 0);
+  }
+});
 test('proof rejects arbitrary paths, malformed input, oversized input and unrelated origins', async () => {
   const f = proofFixture();
   assert.equal((await f.handler(proofRequest({ order_id: id, path: 'secret.png' }))).status, 400);
