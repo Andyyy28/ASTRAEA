@@ -348,8 +348,8 @@ const Checkout = () => {
               <h3 className="section-heading text-xl md:text-2xl mb-2">{deliveryMethod === 'pickup' ? 'Pickup Details' : 'Delivery Details'}</h3>
               {deliveryMethod === 'delivery' && <div><label htmlFor="delivery-address" className="block text-sm font-medium text-[#C4658A] mb-2">Delivery Address *</label><textarea id="delivery-address" name="delivery_address" maxLength={500} rows="3" value={formData.delivery_address} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Complete address including landmarks"></textarea>{errors.delivery_address && <p className={errorClass}>{errors.delivery_address}</p>}</div>}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div><label htmlFor="preferred-date" className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input id="preferred-date" min={todayKeyInManila()} type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={fieldClass} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
-                {deliveryMethod === 'pickup' && <div><label htmlFor="preferred-time" className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input id="preferred-time" type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={fieldClass} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
+                <div className="min-w-0"><label htmlFor="preferred-date" className="block text-sm font-medium text-[#C4658A] mb-2">{deliveryMethod === 'pickup' ? 'Preferred Pickup Date *' : 'Preferred Delivery Date *'}</label><input id="preferred-date" min={todayKeyInManila()} type="date" name="preferred_date" value={formData.preferred_date} onChange={handleInputChange} className={`${fieldClass} checkout-schedule-input`} />{errors.preferred_date && <p className={errorClass}>{errors.preferred_date}</p>}</div>
+                {deliveryMethod === 'pickup' && <div className="min-w-0"><label htmlFor="preferred-time" className="block text-sm font-medium text-[#C4658A] mb-2">Preferred Time *</label><input id="preferred-time" type="time" name="preferred_time" value={formData.preferred_time} onChange={handleInputChange} className={`${fieldClass} checkout-schedule-input`} />{errors.preferred_time && <p className={errorClass}>{errors.preferred_time}</p>}</div>}
               </div>
               <div><label htmlFor="special-notes" className="block text-sm font-medium text-[#C4658A] mb-2">Special Instructions (Optional)</label><textarea id="special-notes" name="special_notes" maxLength={1000} rows="2" value={formData.special_notes} onChange={handleInputChange} className="kawaii-input min-h-[100px] resize-none" placeholder="Any additional notes for us..."></textarea></div>
             </div>
@@ -379,12 +379,14 @@ const Checkout = () => {
               <button type="submit" disabled={loading} className="kawaii-btn-primary w-full min-h-11 py-4 text-lg disabled:opacity-70 disabled:hover:translate-y-0">
                 {loading ? <Skeleton className="w-24 h-5 bg-white/30" /> : <><ShoppingBag className="w-5 h-5 mr-2" />{pendingCheckout ? 'Retry Order' : 'Place Order'}</>}
               </button>
-              <TurnstileWidget
-                key={turnstileKey}
-                action="checkout"
-                onToken={setTurnstileToken}
-                onError={() => setTurnstileToken('')}
-              />
+              <div className="mt-8 flex justify-center">
+                <TurnstileWidget
+                  key={turnstileKey}
+                  action="checkout"
+                  onToken={setTurnstileToken}
+                  onError={() => setTurnstileToken('')}
+                />
+              </div>
               {errors.turnstile && <p className="mt-2 text-center text-sm font-medium text-[#C4658A]">{errors.turnstile}</p>}
               <p className="text-center text-xs text-astraea-darkgray/50 mt-4 px-2">Your details are used to process this order. Payment details will be sent after confirmation.</p>
             </div>

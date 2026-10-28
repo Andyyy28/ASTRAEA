@@ -124,6 +124,22 @@
     @apply w-full rounded-xl border-2 border-[#F4BFCF] bg-white px-4 py-3 font-body text-astraea-darkgray outline-none transition-all placeholder:text-astraea-darkgray/30 focus:border-astraea-pink focus:shadow-[0_0_0_3px_#FDDDE6];
   }
 
+  .checkout-schedule-input {
+    @apply block min-w-0 max-w-full h-12 text-base text-left;
+    /* iOS gives native date/time controls an intrinsic width and centered text. */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .checkout-schedule-input::-webkit-date-and-time-value {
+    min-height: 1.5em;
+    text-align: left;
+  }
+
+  .checkout-schedule-input::-webkit-datetime-edit {
+    padding: 0;
+  }
+
   .section-heading {
     @apply inline-block border-b-[3px] border-astraea-pink pb-1 font-heading font-extrabold text-astraea-darkgray;
     letter-spacing: -0.01em;
