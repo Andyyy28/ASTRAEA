@@ -52,3 +52,17 @@ Verification uses the focused Node worker tests and the rollback-only
 empty-body transport, dry runs, abandoned leases, wrong/expired acknowledgements,
 retries, and access restrictions. They do not claim to prove simultaneous workers
 or exactly-once Telegram delivery.
+
+## Server read permissions
+
+The live queue initially failed with `record_unavailable` even after the bot and
+chat settings were saved. The existing `service_role` bypassed RLS but lacked
+SQL SELECT privileges on the canonical order, item, catalog, and review tables.
+`20261028093557_grant_notification_worker_reads.sql` restores those server-only
+read permissions. It grants no browser access or write privileges.
+
+The repair was checked with rollback-only queries under `SET LOCAL ROLE
+service_role`, including the order-item catalog joins. Live verification then
+returned `delivered: 2, retrying: 0`, with no pending events and a successful
+scheduled cron run. Telegram credentials remain in Edge Function secrets and
+are not part of repository files.
