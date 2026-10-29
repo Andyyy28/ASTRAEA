@@ -89,7 +89,7 @@ const Navbar = () => {
               to="/"
               className="font-heading flex min-w-0 max-w-full items-center gap-2 rounded-full px-1 py-2 text-[clamp(1rem,4.8vw,1.5rem)] font-black tracking-wide text-[#DE3163] transition-colors hover:bg-white/70 sm:gap-3 sm:px-3 sm:text-2xl md:text-[2rem]"
             >
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-[45px] sm:w-[45px]" />
+              <img src="/web-logo.webp" width="45" height="45" alt="Astraea Collection logo" className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-[45px] sm:w-[45px]" />
               <span className="truncate">Astraea Collection</span>
             </Link>
           </div>
@@ -171,7 +171,7 @@ const Navbar = () => {
           <div className="shrink-0 border-b-2 border-dashed border-[#E891B8] bg-[#F9A8C9] px-5 pb-4 pt-6">
             <div className="flex items-start justify-between gap-4">
               <div className="font-heading flex items-center gap-2 text-[18px] font-bold text-[#DE3163]">
-                <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
+                <img src="/web-logo.webp" width="45" height="45" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
                 Astraea Collection
               </div>
               <button

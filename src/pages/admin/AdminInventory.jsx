@@ -292,7 +292,7 @@ const AdminInventory = () => {
 
   const imagePreview = (item, label) => (
     <div className="skeuo-surface h-12 w-12 overflow-hidden rounded-xl border border-astraea-rosegold/30 bg-astraea-blush/40 flex items-center justify-center text-[10px] text-astraea-pink/60">
-      {item.image_url ? <img src={item.image_url} alt={label} className="h-full w-full object-cover" /> : 'Image'}
+      {item.image_url ? <img loading="lazy" decoding="async" src={item.image_url} alt={label} className="h-full w-full object-cover" /> : 'Image'}
     </div>
   );
 
@@ -544,7 +544,7 @@ const AdminInventory = () => {
                       />
                       {formData.image_url ? (
                         <div className="skeuo-inset relative group w-28 h-28 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                          <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
                             Change Image
                           </div>

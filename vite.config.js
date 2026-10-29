@@ -17,6 +17,11 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(publicEnv.anonKey),
       'import.meta.env.VITE_TURNSTILE_SITE_KEY': JSON.stringify(publicEnv.turnstileKey),
     },
-    plugins: [react()],
+    plugins: [react(), {
+      name: 'catalog-preconnect',
+      transformIndexHtml() {
+        return publicEnv.url ? [{ tag: 'link', attrs: { rel: 'preconnect', href: publicEnv.url, crossorigin: '' }, injectTo: 'head' }] : [];
+      },
+    }],
   };
 })

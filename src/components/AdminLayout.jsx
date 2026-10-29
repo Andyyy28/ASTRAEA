@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, ShoppingBag, Box, Flower2, Gift, MessageSquareText, Settings, LogOut, Menu, X } from 'lucide-react';
 import Skeleton from './Skeleton';
+import RouteLoading from './RouteLoading';
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, logout } = useAuth();
@@ -88,7 +89,7 @@ const AdminLayout = () => {
       <aside className="skeuo-chrome hidden md:flex flex-col w-72 shrink-0 bg-astraea-blush/70 backdrop-blur-xl border-r-2 border-dashed border-astraea-pink md:sticky md:top-0 md:h-screen">
         <div className="min-h-24 flex items-center px-6 py-4 border-b border-dashed border-astraea-pink/30">
           <Link to="/" className="skeuo-button w-full text-xl font-extrabold leading-tight tracking-tight text-astraea-darkgray flex items-center gap-2 rounded-full px-3 py-3 bg-white/80 shadow-[2px_2px_0px_#F9A8C9]">
-            <img src="/web_logo.png" alt="Astraea Collection logo" className="h-11 w-11 shrink-0 rounded-full object-cover" /> <span>Astraea Admin</span>
+            <img src="/web-logo.webp" alt="Astraea Collection logo" className="h-11 w-11 shrink-0 rounded-full object-cover" /> <span>Astraea Admin</span>
           </Link>
         </div>
         
@@ -139,7 +140,7 @@ const AdminLayout = () => {
               <Menu className="w-6 h-6" />
             </button>
             <span className="flex items-center gap-2 text-lg font-bold tracking-tight text-astraea-pink">
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+              <img src="/web-logo.webp" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" />
               Astraea Admin
             </span>
           </div>
@@ -163,7 +164,7 @@ const AdminLayout = () => {
 
         {/* Page Content */}
         <main className="flex-1 p-4 sm:p-8 lg:p-12 min-w-0 md:min-h-0 md:overflow-y-auto">
-          <Outlet />
+          <Suspense fallback={<RouteLoading />}><Outlet /></Suspense>
         </main>
       </div>
 
@@ -171,7 +172,7 @@ const AdminLayout = () => {
         <div className="fixed inset-0 z-50 bg-astraea-cream md:hidden">
           <div className="min-h-20 py-2 px-4 flex items-center justify-between border-b-2 border-dashed border-astraea-pink/30">
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-xl font-extrabold tracking-tight text-astraea-darkgray flex items-center gap-2">
-              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" /> Astraea Admin
+              <img src="/web-logo.webp" alt="Astraea Collection logo" className="h-9 w-9 shrink-0 rounded-full object-cover" /> Astraea Admin
             </Link>
             <button onClick={() => setIsMobileMenuOpen(false)} className="skeuo-button min-h-11 min-w-11 flex items-center justify-center text-astraea-darkgray rounded-full bg-white/80 border border-dashed border-astraea-pink/40" aria-label="Close admin menu">
               <X className="w-6 h-6" />

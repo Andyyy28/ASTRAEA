@@ -293,7 +293,7 @@ const AdminOtherProducts = () => {
             <div key={product.id} className="skeuo-surface bg-white border-2 border-dashed border-[#F4BFCF] rounded-[20px] shadow-[4px_4px_0px_#F9A8C9] overflow-hidden flex flex-col">
               <div className="aspect-[3/4] bg-astraea-blush flex items-center justify-center overflow-hidden">
                 {product.images?.[0] ? (
-                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover object-top" />
+                  <img loading="lazy" decoding="async" src={product.images[0]} alt={product.name} className="w-full h-full object-cover object-top" />
                 ) : (
                   <Gift className="w-14 h-14 text-astraea-pink/40" />
                 )}
@@ -344,7 +344,7 @@ const AdminOtherProducts = () => {
                 <div className="grid grid-cols-3 gap-3 mb-3">
                   {imageItems.map((item, index) => (
                     <div key={`${item.preview}-${index}`} className="skeuo-inset relative aspect-square rounded-xl overflow-hidden border-2 border-[#F4BFCF] bg-astraea-blush">
-                      <img src={item.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover object-top" />
+                      <img loading="lazy" decoding="async" src={item.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover object-top" />
                       <button type="button" onClick={() => removeImage(index)} className="skeuo-button absolute top-1 right-1 w-7 h-7 rounded-full bg-[#F9A8C9] text-white flex items-center justify-center shadow">
                         <X className="w-4 h-4" />
                       </button>
