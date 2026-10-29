@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useCatalogQuery } from '../../lib/useCatalogQuery';
+import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
 import { Star, CheckCircle, Package, Truck, Heart } from 'lucide-react';
 import violetBouquetFeature from '../../assets/violet-bouquet-feature.jpeg';
@@ -23,8 +23,35 @@ const PersonIcon = () => (
 );
 
 const Home = () => {
-  const { data: featuredBouquets = [], loading: bouquetsLoading } = useCatalogQuery('featured');
-  const { data: reviews = [], loading: reviewsLoading } = useCatalogQuery('reviews');
+  const [featuredBouquets, setFeaturedBouquets] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      const [bouquetsRes, reviewsRes] = await Promise.all([
+        supabase
+          .from('bouquets')
+          .select('*')
+          .eq('is_visible', true)
+          .eq('is_featured', true)
+          .order('created_at', { ascending: false })
+          .limit(4),
+        supabase
+          .from('reviews')
+          .select('id, name, message, rating, admin_reply, created_at')
+          .eq('is_displayed', true)
+          .order('created_at', { ascending: false })
+          .limit(3)
+      ]);
+
+      if (bouquetsRes.data) setFeaturedBouquets(bouquetsRes.data);
+      if (reviewsRes.data) setReviews(reviewsRes.data);
+      setLoading(false);
+    };
+
+    fetchHomeData();
+  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -71,8 +98,6 @@ const Home = () => {
           </div>
 
           <div className="home-hero-desktop-photo relative min-h-[420px] overflow-hidden lg:-ml-24 lg:min-h-full">
-            <picture className="block h-full w-full">
-              <source media="(max-width: 640px)" srcSet="/mobile-view.jpeg" />
             <img
               fetchPriority="high"
               decoding="async"
@@ -80,7 +105,6 @@ const Home = () => {
               alt="Colorful handmade fuzzy wire bouquets"
               className="h-full w-full object-cover object-center"
             />
-            </picture>
             <div className="home-hero-mobile-photo-wash absolute inset-0 bg-[linear-gradient(90deg,rgba(255,231,239,0.98)_0%,rgba(255,231,239,0.92)_14%,rgba(255,231,239,0.55)_28%,rgba(255,231,239,0.18)_46%,rgba(255,231,239,0.03)_60%,rgba(255,231,239,0)_70%),linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.02)_100%)]"></div>
             <div className="home-hero-mobile-bottom-fade absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#FFE7EF] via-[#FFE7EF]/65 to-transparent"></div>
           </div>
@@ -128,7 +152,7 @@ const Home = () => {
             <div className="skeuo-surface absolute -right-3 bottom-0 h-[88%] w-[82%] rotate-[4deg] rounded-[22px] bg-[#F8AEBE]/65 shadow-[8px_14px_22px_rgba(232,145,184,0.25)]"></div>
             <div className="skeuo-surface relative rotate-[1deg] rounded-[24px] bg-white p-4 pb-16 shadow-[0_24px_45px_rgba(96,53,70,0.18)] ring-2 ring-astraea-pink/15">
               <div className="skeuo-inset aspect-[4/3.7] overflow-hidden rounded-[14px] bg-astraea-blush">
-                <img src={violetBouquetFeature} alt="Violet fuzzy wire bouquet" loading="lazy" decoding="async" className="h-full w-full object-cover object-center" />
+                <img src={violetBouquetFeature} alt="Violet fuzzy wire bouquet" className="h-full w-full object-cover object-center" />
               </div>
               <p className="absolute bottom-5 left-0 right-0 text-center font-accent text-3xl font-bold text-astraea-rosegold">
                 ♡
@@ -147,7 +171,7 @@ const Home = () => {
             <h2 className="section-heading text-xl md:text-3xl">★ Our Bestsellers</h2>
           </div>
 
-          {bouquetsLoading ? (
+          {loading ? (
             <div className="flex flex-wrap justify-center gap-4 md:gap-6 mx-auto max-w-6xl">
               {[1, 2, 3].map(i => (
                 <div key={i} className={`scrapbook-card w-full max-w-[20rem] flex-1 basis-[18rem] space-y-4 p-4 ${i === 3 ? 'hidden lg:block' : i === 2 ? 'hidden md:block' : ''}`}>
@@ -234,7 +258,7 @@ const Home = () => {
           <div className="text-center mb-10 md:mb-16">
             <h2 className="section-heading text-xl md:text-3xl">✦ What Our Customers Say</h2>
           </div>
-          {reviewsLoading ? (
+          {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {[1, 2, 3].map(i => (
                 <div key={i} className="scrapbook-card bg-[#FFFDFE] p-4 md:p-6 space-y-4">

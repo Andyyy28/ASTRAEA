@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
@@ -7,11 +7,11 @@ import { useNotifications } from '../../context/NotificationContext';
 import { normalizeStock } from '../../lib/bouquetStock';
 import { Flower2, Filter } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import { useCatalogQuery } from '../../lib/useCatalogQuery';
-import { publicCatalog } from '../../lib/publicCatalog';
 
 const Shop = () => {
-  const { data: bouquets, loading, error, update: setBouquets } = useCatalogQuery('bouquets');
+  const [bouquets, setBouquets] = useState([]);
+  const [filteredBouquets, setFilteredBouquets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [sortOption, setSortOption] = useState('Newest');
   const { addToCart } = useCart();
@@ -24,13 +24,30 @@ const Shop = () => {
   }, []);
 
   useEffect(() => {
+    const fetchBouquets = async () => {
+      const { data } = await supabase
+        .from('bouquets')
+        .select('*')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        setBouquets(data);
+        setFilteredBouquets(data);
+      }
+      setLoading(false);
+    };
+
+    fetchBouquets();
+  }, []);
+
+  useEffect(() => {
     const channel = supabase
       .channel('shop-bouquet-stock')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bouquets' },
         (payload) => {
-          publicCatalog.featured.invalidate();
           setBouquets(prev => {
             if (payload.eventType === 'DELETE') {
               return prev.filter(b => b.id !== payload.old?.id);
@@ -54,9 +71,9 @@ const Shop = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [setBouquets]);
+  }, []);
 
-  const filteredBouquets = useMemo(() => {
+  useEffect(() => {
     let result = [...bouquets];
     if (categoryFilter !== 'All') {
       result = result.filter(b => b.category?.includes(categoryFilter));
@@ -68,7 +85,7 @@ const Shop = () => {
     } else if (sortOption === 'Newest') {
       result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
-    return result;
+    setFilteredBouquets(result);
   }, [categoryFilter, sortOption, bouquets]);
 
   const handleAddToCart = async (bouquet) => {
@@ -163,11 +180,6 @@ const Shop = () => {
                 </div>
               </div>
             ))}
-          </div>
-        ) : error && bouquets.length === 0 ? (
-          <div role="alert" className="scrapbook-card py-12 text-center">
-            <p>Bouquets couldn't load. Please try again.</p>
-            <button onClick={() => publicCatalog.bouquets.load()} className="kawaii-btn-primary mt-4">Try Again</button>
           </div>
         ) : filteredBouquets.length === 0 ? (
           <div className="scrapbook-card flex flex-col items-center justify-center py-20 bg-[#FFFDFE]">

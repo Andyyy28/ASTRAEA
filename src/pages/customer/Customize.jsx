@@ -6,7 +6,6 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, Image as ImageIcon, Minus, Plus, ShoppingBag } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import { useCatalogQuery } from '../../lib/useCatalogQuery';
 
 const steps = ['Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
@@ -38,25 +37,17 @@ const Customize = () => {
   const { addToCart } = useCart();
   const { showToast } = useNotifications();
 
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
-  const flowersQuery = useCatalogQuery('flowers');
-  const flowerColorsQuery = useCatalogQuery('flowerColors');
-  const fillersQuery = useCatalogQuery('fillers');
-  const fillerColorsQuery = useCatalogQuery('fillerColors');
-  const wrappersQuery = useCatalogQuery('wrappers');
-  const wrapperColorsQuery = useCatalogQuery('wrapperColors');
-  const sizesQuery = useCatalogQuery('sizes');
-  const addonsQuery = useCatalogQuery('addons');
-  const dbFlowers = flowersQuery.data;
-  const { data: dbFlowerColors, update: setDbFlowerColors } = flowerColorsQuery;
-  const dbFillers = fillersQuery.data;
-  const dbFillerColors = fillerColorsQuery.data;
-  const dbWrappers = wrappersQuery.data;
-  const dbWrapperColors = wrapperColorsQuery.data;
-  const addonOptions = addonsQuery.data;
-  const selectedSize = sizesQuery.data.find(size => size.key === 'medium') || sizesQuery.data[0] || null;
-  const catalogQueries = [flowersQuery, flowerColorsQuery, fillersQuery, fillerColorsQuery, wrappersQuery, wrapperColorsQuery, sizesQuery, addonsQuery];
-  const loading = catalogQueries.some(query => query.loading);
+  const [dbFlowers, setDbFlowers] = useState([]);
+  const [dbFlowerColors, setDbFlowerColors] = useState([]);
+  const [dbFillers, setDbFillers] = useState([]);
+  const [dbFillerColors, setDbFillerColors] = useState([]);
+  const [dbWrappers, setDbWrappers] = useState([]);
+  const [dbWrapperColors, setDbWrapperColors] = useState([]);
+  const [, setSizeOptions] = useState([]);
+  const [addonOptions, setAddonOptions] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
   const [selectedFlowers, setSelectedFlowers] = useState({});
   const [selectedFlowerColors, setSelectedFlowerColors] = useState({});
   const [selectedFillers, setSelectedFillers] = useState({});
@@ -75,6 +66,38 @@ const Customize = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentStep]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [fRes, fcRes, filRes, ficRes, wRes, wcRes, sizeRes, addonRes] = await Promise.all([
+        supabase.from('flowers').select('*').eq('is_available', true).gt('stock', 0),
+        supabase.from('flower_colors').select('*').eq('is_available', true),
+        supabase.from('fillers').select('*').eq('is_available', true).gt('stock', 0),
+        supabase.from('filler_colors').select('*').eq('is_available', true),
+        supabase.from('wrappers').select('*').eq('is_available', true),
+        supabase.from('wrapper_colors').select('*').eq('is_available', true),
+        supabase.from('bouquet_sizes').select('*').eq('is_available', true).order('display_order', { ascending: true }),
+        supabase.from('bouquet_addons').select('*').eq('is_available', true).order('display_order', { ascending: true }),
+      ]);
+
+      if (fRes.data) setDbFlowers(fRes.data);
+      if (fcRes.data) setDbFlowerColors(fcRes.data);
+      if (filRes.data) setDbFillers(filRes.data);
+      if (ficRes.data) setDbFillerColors(ficRes.data);
+      if (wRes.data) setDbWrappers(wRes.data);
+      if (wcRes.data) setDbWrapperColors(wcRes.data);
+      if (sizeRes.data) {
+        setSizeOptions(sizeRes.data);
+        setSelectedSize(sizeRes.data.find(size => size.key === 'medium') || sizeRes.data[0] || null);
+      }
+      if (addonRes.data) {
+        setAddonOptions(addonRes.data);
+        setAddons(addonRes.data.reduce((acc, addon) => ({ ...acc, [addon.key]: false }), {}));
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const channel = supabase
@@ -106,7 +129,7 @@ const Customize = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [setDbFlowerColors]);
+  }, []);
 
   const calculateTotal = () => {
     let total = Number(selectedSize?.base_price || 0);
@@ -253,7 +276,7 @@ const Customize = () => {
 
   const renderImage = (item, label) => (
     <div className="skeuo-surface w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-      {item.image_url ? <img loading="lazy" decoding="async" src={item.image_url} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
+      {item.image_url ? <img src={item.image_url} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
     </div>
   );
 
@@ -343,7 +366,7 @@ const Customize = () => {
                   className={`skeuo-surface flex gap-4 p-4 rounded-xl border-2 transition-all ${qty > 0 ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
                   <div className="skeuo-surface w-20 h-20 shrink-0 overflow-hidden bg-astraea-blush rounded-lg flex items-center justify-center">
-                    {f.image_url ? <img loading="lazy" decoding="async" src={f.image_url} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
+                    {f.image_url ? <img src={f.image_url} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
                   </div>
                   <div className="flex flex-1 flex-col gap-3 min-w-0">
                     <div className="flex items-start justify-between gap-3">
@@ -450,7 +473,7 @@ const Customize = () => {
                   <input type="checkbox" checked={!!addons[addon.key]} onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })} className="w-5 h-5 accent-astraea-pink mr-4" />
                   <span className="skeuo-surface mr-4 flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-astraea-blush text-astraea-pink/40">
                     {addon.image_url ? (
-                      <img loading="lazy" decoding="async" src={addon.image_url} alt={addon.name} className="h-full w-full object-cover" />
+                      <img src={addon.image_url} alt={addon.name} className="h-full w-full object-cover" />
                     ) : (
                       <ImageIcon className="h-6 w-6" />
                     )}
@@ -476,13 +499,6 @@ const Customize = () => {
         return null;
     }
   };
-
-  if (!loading && catalogQueries.some(query => query.error)) {
-    return <div role="alert" className="scrapbook-card mx-auto my-12 max-w-xl p-8 text-center">
-      <p>Some bouquet options couldn't load. Please try again.</p>
-      <button className="kawaii-btn-primary mt-4" onClick={() => catalogQueries.filter(query => query.error).forEach(query => query.reload())}>Try Again</button>
-    </div>;
-  }
 
   if (loading) {
     return (

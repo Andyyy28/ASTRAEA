@@ -304,7 +304,7 @@ const AdminBouquets = () => {
             <div key={b.id} className="skeuo-surface bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
                 {b.images && b.images[0] ? (
-                  <img loading="lazy" decoding="async" src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
+                  <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
                 ) : (
                   <ImageIcon className="w-8 h-8 text-gray-300" />
                 )}
@@ -403,7 +403,7 @@ const AdminBouquets = () => {
                     <td className="px-6 py-4">
                       <div className="skeuo-surface w-16 h-16 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                         {b.images && b.images[0] ? (
-                          <img loading="lazy" decoding="async" src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
+                          <img src={b.images[0]} alt={b.name} className="w-full h-full object-cover" />
                         ) : (
                           <ImageIcon className="w-6 h-6 text-gray-300" />
                         )}
@@ -525,7 +525,7 @@ const AdminBouquets = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {imageItems.map((item, index) => (
                     <div key={item.id} className="skeuo-inset relative aspect-square overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
-                      <img loading="lazy" decoding="async" src={item.preview} alt={'Bouquet photo ' + (index + 1)} className="w-full h-full object-cover" />
+                      <img src={item.preview} alt={'Bouquet photo ' + (index + 1)} className="w-full h-full object-cover" />
                       {index === 0 && <span className="skeuo-surface absolute bottom-2 left-2 rounded-full bg-white px-2 py-1 text-xs font-bold text-gray-700">Cover photo</span>}
                       <button type="button" aria-label={'Remove photo ' + (index + 1)} onClick={() => removeImage(item.id)} className="skeuo-button absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-white text-gray-700 flex items-center justify-center shadow"><X className="w-5 h-5" /></button>
                     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatPrice } from '../../lib/formatPrice';
@@ -6,7 +6,6 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Flower2, Filter } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
-import { useCatalogQuery } from '../../lib/useCatalogQuery';
 
 const categories = [
   { key: 'All', label: 'All' },
@@ -26,14 +25,45 @@ const categoryLabels = {
 const getStock = (product) => Number(product.stock) || 0;
 
 const OtherProducts = () => {
-  const { data: products, loading, error: queryError, update: setProducts } = useCatalogQuery('products');
-  const error = queryError?.message || '';
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const { addToCart } = useCart();
   const { showToast } = useNotifications();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError('');
+
+      const { data, error } = await supabase
+        .from('other_products')
+        .select('*')
+        .eq('is_visible', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        setError(error.message || 'Unable to load products right now.');
+        setProducts([]);
+        setFilteredProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setProducts(data);
+        setFilteredProducts(data);
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -66,11 +96,14 @@ const OtherProducts = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [setProducts]);
+  }, []);
 
-  const filteredProducts = useMemo(() => categoryFilter === 'All'
+  useEffect(() => {
+    const result = categoryFilter === 'All'
       ? products
-      : products.filter(product => product.category === categoryFilter), [categoryFilter, products]);
+      : products.filter(product => product.category === categoryFilter);
+    setFilteredProducts(result);
+  }, [categoryFilter, products]);
 
   const handleAddToCart = async (product) => {
     if (!product.is_available || getStock(product) === 0) {

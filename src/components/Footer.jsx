@@ -14,7 +14,7 @@ const Footer = () => {
           {/* Brand & Tagline */}
           <div className="space-y-4">
             <h3 className="font-heading flex items-center gap-3 text-2xl font-extrabold text-[#DE3163]">
-              <img src="/web-logo.webp" width="45" height="45" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
+              <img src="/web_logo.png" alt="Astraea Collection logo" className="h-[45px] w-[45px] rounded-full object-cover" />
               Astraea Collection
             </h3>
             <p className="text-sm leading-relaxed max-w-sm">

@@ -6,23 +6,21 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import RouteErrorBoundary from './components/RouteErrorBoundary';
-import RouteLoading from './components/RouteLoading';
-import { customerRoutes, prefetchCustomerLink } from './lib/customerRoutes';
 
 // Customer Pages
 import NotFound from './pages/NotFound';
-const Home = lazy(customerRoutes['/']);
-const Shop = lazy(customerRoutes['/shop']);
-const ShopDetail = lazy(customerRoutes['/shop/:id']);
-const Customize = lazy(customerRoutes['/customize']);
-const OtherProducts = lazy(customerRoutes['/other-products']);
-const OtherProductDetail = lazy(customerRoutes['/other-products/:id']);
-const Cart = lazy(customerRoutes['/cart']);
-const Checkout = lazy(customerRoutes['/checkout']);
-const TrackOrder = lazy(customerRoutes['/track-order']);
-const FAQ = lazy(customerRoutes['/faq']);
-const Contact = lazy(customerRoutes['/contact']);
-const Share = lazy(customerRoutes['/share']);
+const Home = lazy(() => import('./pages/customer/Home'));
+const Shop = lazy(() => import('./pages/customer/Shop'));
+const ShopDetail = lazy(() => import('./pages/customer/ShopDetail'));
+const Customize = lazy(() => import('./pages/customer/Customize'));
+const OtherProducts = lazy(() => import('./pages/customer/OtherProducts'));
+const OtherProductDetail = lazy(() => import('./pages/customer/OtherProductDetail'));
+const Cart = lazy(() => import('./pages/customer/Cart'));
+const Checkout = lazy(() => import('./pages/customer/Checkout'));
+const TrackOrder = lazy(() => import('./pages/customer/TrackOrder'));
+const FAQ = lazy(() => import('./pages/customer/FAQ'));
+const Contact = lazy(() => import('./pages/customer/Contact'));
+const Share = lazy(() => import('./pages/customer/Share'));
 
 // Admin Pages
 import AdminLayout from './components/AdminLayout';
@@ -37,10 +35,10 @@ const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 
 const CustomerLayout = () => (
-  <div className="flex flex-col min-h-screen" onPointerOver={prefetchCustomerLink} onFocusCapture={prefetchCustomerLink} onTouchStart={prefetchCustomerLink}>
+  <div className="flex flex-col min-h-screen">
     <Navbar />
     <main className="flex-grow">
-      <Suspense fallback={<RouteLoading />}><Outlet /></Suspense>
+      <Outlet />
     </main>
     <Footer />
   </div>
@@ -53,7 +51,7 @@ function App() {
       <CartProvider>
         <NotificationProvider>
           <Router>
-            <Suspense fallback={<RouteLoading />}>
+            <Suspense fallback={<div className="flex min-h-[40vh] items-center justify-center text-astraea-darkgray">Loading…</div>}>
             <Routes>
             {/* Customer Routes */}
             <Route element={<CustomerLayout />}>
