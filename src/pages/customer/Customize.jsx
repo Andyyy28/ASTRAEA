@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Check, ChevronLeft, ChevronRight, Image as ImageIcon, Minus, Plus, ShoppingBag } from 'lucide-react';
 import Skeleton from '../../components/Skeleton';
+import { resolveInventoryImageUrl } from '../../lib/inventoryImageUrls';
 
 const steps = ['Flowers', 'Colors', 'Fillers', 'Wrapper', 'Add-ons'];
 
@@ -276,7 +277,7 @@ const Customize = () => {
 
   const renderImage = (item, label) => (
     <div className="skeuo-surface w-full aspect-square bg-astraea-blush rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-      {item.image_url ? <img src={item.image_url} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
+      {item.image_url ? <img src={resolveInventoryImageUrl(item.image_url)} alt={label} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30">{label} icon</span>}
     </div>
   );
 
@@ -366,7 +367,7 @@ const Customize = () => {
                   className={`skeuo-surface flex gap-4 p-4 rounded-xl border-2 transition-all ${qty > 0 ? 'border-astraea-pink bg-astraea-pink/5' : 'border-astraea-rosegold/20 hover:border-astraea-pink/30'}`}
                 >
                   <div className="skeuo-surface w-20 h-20 shrink-0 overflow-hidden bg-astraea-blush rounded-lg flex items-center justify-center">
-                    {f.image_url ? <img src={f.image_url} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
+                    {f.image_url ? <img src={resolveInventoryImageUrl(f.image_url)} alt={f.name} className="w-full h-full object-cover" /> : <span className="text-astraea-pink/30 text-xs">{f.name}</span>}
                   </div>
                   <div className="flex flex-1 flex-col gap-3 min-w-0">
                     <div className="flex items-start justify-between gap-3">
@@ -426,7 +427,7 @@ const Customize = () => {
                   <div className="skeuo-surface relative w-full aspect-square overflow-hidden rounded-t-[12px] bg-astraea-blush">
                     {w.image_url ? (
                       <img
-                        src={w.image_url}
+                        src={resolveInventoryImageUrl(w.image_url)}
                         alt={w.material}
                         className="h-full w-full object-cover object-center"
                       />
@@ -473,7 +474,7 @@ const Customize = () => {
                   <input type="checkbox" checked={!!addons[addon.key]} onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })} className="w-5 h-5 accent-astraea-pink mr-4" />
                   <span className="skeuo-surface mr-4 flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-astraea-blush text-astraea-pink/40">
                     {addon.image_url ? (
-                      <img src={addon.image_url} alt={addon.name} className="h-full w-full object-cover" />
+                      <img src={resolveInventoryImageUrl(addon.image_url)} alt={addon.name} className="h-full w-full object-cover" />
                     ) : (
                       <ImageIcon className="h-6 w-6" />
                     )}
